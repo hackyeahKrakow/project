@@ -6,18 +6,21 @@ Wersja robocza formularza „Add Project”. Pola oznaczone **[DO DECYZJI]** cze
 
 ## Project Name
 
-**[DO DECYZJI]** Wstępna rekomendacja: **Bywaj — studencki Kraków na jednej mapie**
+**[DO DECYZJI]** Szukamy nazwy z twistem, którą społeczność studencka od razu „łapie”. Domeny sprawdzone 3.10.2026, ewentualne konflikty sprawdzone w wyszukiwarce.
 
-| Kandydat | Domena | Konflikty, które znaleźliśmy | Ocena |
+| Kandydat | Twist | Domena | Konflikty, które znaleźliśmy |
 | --- | --- | --- | --- |
-| **Bywaj** | `bywaj.app` wolna, `.pl` i `.com` zajęte | Nie znaleźliśmy aplikacji o tej nazwie | Najlepszy kandydat |
-| **Zajawka** | `zajawka.app` wolna, `.pl` zajęta | Słowo potoczne, więc słaba ochrona znaku | Druga opcja |
-| **Pinezka** | `pinezka.app` wolna, `.pl` zajęta | Słowo pospolite, przez co słaby znak i trudne SEO | Rezerwa |
-| spotted | `.pl` i `.app` zajęte | Spotted.de to aplikacja randkowa w UE, a „Spotted: [uczelnia]” to w PL gatunek anonimowych fanpage'y plotkarskich. Nie przebijemy się w wyszukiwarce | Odradzamy |
-| Wpadaj | `.pl`, `.com` zajęte | Wpadaj.pl to aplikacja do rezerwacji w salonach (iOS, Android), ta sama klasa usług | Odpada |
-| Wbijam | zajęte | wbijam.pl to znany serwis z anime | Odpada |
+| **Kto wbija?** | Pytanie, które pada na każdym grupowym czacie. Od razu znaczy „mikro-wydarzenie oddolne”, nasz wyróżnik na tle GoJammin | `ktowbija.app` wolna, `.pl` zajęta | Nie znaleźliśmy żadnej aplikacji |
+| **Cynk** | „Dać cynk” to po polsku dać znać, co się dzieje. Działa w dwie strony: organizator daje cynk, student dostaje cynk. Logo jako kafelek z układu okresowego „Zn 30” to puszczenie oka do studentów | `dajcynk.app` wolna, `cynk.pl` i `cynk.app` zajęte | „Daj cynk” to zakładki zgłoszeń w lokalnych portalach (Bytom, Pyskowice), więc fraza pospolita. Konfliktu z aplikacją nie znaleźliśmy |
+| **Lecimy** | Jedno słowo, które kończy każdą dyskusję „idziemy czy nie” | `lecimy.app` wolna, `.pl` zajęta | Nie znaleźliśmy aplikacji |
+| **Antyfomo** | Nazwa mówi, jaki problem rozwiązujemy (FOMO) | `antyfomo.app` wolna, `.pl` zajęta | Niemiecka „Was geht” używa hasła „Goodbye to FOMO”, ale to inna nazwa |
+| Wbitka | Slang „wbić się” | `wbitka.app` wolna | Brak, ale słowo mniej znane |
 
-Przed decyzją jedna osoba (PM) sprawdza znak w [TMview](https://www.tmdn.org/tmview/) (EUIPO + UPRP) w klasach Nicejskich 9 (aplikacje), 41 (organizacja wydarzeń) i 42 (SaaS). Zajmie to 5 minut. Na hackathonie wystarczy brak kolizji. Rejestracja znaku to roadmapa.
+Odrzucone: **spotted** (Spotted.de to aplikacja randkowa w UE, a „Spotted: [uczelnia]” to gatunek anonimowych fanpage'y plotkarskich), **Hejnał** (miasto ma oficjalną aplikację „Graj Hejnał”, a hejnał to symbol Krakowa, więc ryzyko z marką miejską), **Wpadaj** (aplikacja do rezerwacji w salonach), **Wbijam** (serwis z anime), **Bywaj**, **Zajawka**, **Pinezka** (poprawne, ale bez twistu).
+
+Rekomendacja: **Kto wbija?**, z hasłem „Studencki Kraków na jednej mapie”. Rezerwa: **Cynk**.
+
+Przed decyzją PM sprawdza znak w [TMview](https://www.tmdn.org/tmview/) (EUIPO + UPRP) w klasach Nicejskich 9, 41 i 42. Wybraną domenę `.app` kupujemy od razu (ok. 14 USD), żeby nikt jej nie zajął po pitchu.
 
 ## Problem
 
@@ -32,7 +35,7 @@ Skutki widać po obu stronach:
 
 ## Solution
 
-Bywaj to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
+[Nazwa] to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
 
 1. **Czysta mapa miasta.** Bez sklepów, stacji i reklam, tylko wydarzenia studenckie i miejsca, w których się odbywają. Każda kategoria ma kolor i ikonę.
 2. **Swipe jak w Tinderze.** W prawo znaczy „interesuje mnie”: wydarzenie trafia na „Moją mapę”. W lewo znaczy „pomiń”. Rekomendacje uczą się z każdego ruchu, a każda karta mówi, dlaczego ją widzisz, np. „Bo lubisz: planszówki · dziś 19:00”. Nie ma czarnej skrzynki.
@@ -75,7 +78,7 @@ Propozycja: zrzut ekranu telefonu z mapą Krakowa i kolorowymi pinami, obok kart
 
 ## Team status
 
-**[DO DECYZJI]** Proponujemy: **Team completed**
+**Team completed**
 
 ## Current team size
 
@@ -83,25 +86,25 @@ Propozycja: zrzut ekranu telefonu z mapą Krakowa i kolorowymi pinami, obok kart
 
 ## Needed skills
 
-Brak, jeśli zespół jest kompletny. Gdybyśmy szukali kogoś jeszcze: *Pitching & Storytelling* albo *Frontend Developer*.
+Brak, zespół jest kompletny.
 
 ## Skills comment
 
-Puste przy kompletnym zespole.
+Puste.
 
 ## Your video presentation
 
-**[DO DECYZJI]** Proponujemy 60–90 s nagrania ekranu telefonu: swipe → mapa → dodanie wydarzenia z AI. Wgrywamy na YouTube jako „Niepubliczny” (Listed). Nagrywamy po zamrożeniu funkcji (21h).
+**[PÓŹNIEJ]** Proponujemy 60–90 s nagrania ekranu telefonu: swipe → mapa → dodanie wydarzenia z AI. Wgrywamy na YouTube jako „Niepubliczny” (Listed). Nagrywamy po zamrożeniu funkcji (21h).
 
 ## Website
 
-**[DO DECYZJI]** Link do działającego demo, jeśli je wystawimy. Bez demo zostawiamy puste.
+**[PÓŹNIEJ]** Link do działającego demo, jeśli je wystawimy. Bez demo zostawiamy puste.
 
 ## Code Repository
 
 https://github.com/hackyeahKrakow/project
 
-Uwaga: repo musi być publiczne albo jury musi mieć do niego dostęp.
+Repo jest publiczne (sprawdzone 3.10.2026), licencja MIT.
 
 ## Instructions on how to open project
 
