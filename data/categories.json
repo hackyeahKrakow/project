@@ -1,0 +1,9 @@
+[
+  { "id": "nauka", "name": "Nauka i koła naukowe", "color": "#2563EB", "icon": "graduation-cap" },
+  { "id": "sport", "name": "Sport i ruch", "color": "#DC2626", "icon": "dumbbell" },
+  { "id": "muzyka", "name": "Muzyka i sztuka", "color": "#7C3AED", "icon": "music" },
+  { "id": "gry", "name": "Gry i planszówki", "color": "#EA580C", "icon": "gamepad-2" },
+  { "id": "imprezy", "name": "Imprezy i integracja", "color": "#DB2777", "icon": "party-popper" },
+  { "id": "kultura", "name": "Kultura", "color": "#0D9488", "icon": "theater" },
+  { "id": "warsztaty", "name": "Warsztaty i rozwój", "color": "#CA8A04", "icon": "wrench" }
+]

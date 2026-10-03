@@ -1,50 +1,53 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version: template → 1.0.0
+- Added principles: I–V (all new)
+- Added sections: Ograniczenia technologiczne, Sposób pracy
+- Templates: plan/spec/tasks templates do not require changes
+-->
+# Studencka mapa wydarzeń — Constitution
+
+Projekt hackathonowy (HackYeah 2026, Smart City), 24 godziny, 4 osoby. Pełny kontekst produktu: `docs/SPEC.md` w katalogu głównym repo.
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Prostota w 24 godziny
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Każda funkcja musi dać się zbudować i pokazać w ramach planu z `docs/PLAN.md`. Wybieramy najprostsze działające rozwiązanie (YAGNI): SQLite zamiast serwera bazy, scoring zamiast modelu ML, link zamiast integracji API. 3 godziny przed końcem nie dodajemy żadnych nowych funkcji, tylko poprawki błędów.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Kontrakt API jest źródłem prawdy
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+`docs/API.md` definiuje obiekty i endpointy. Backend zwraca dokładnie ten format (modele Pydantic w `schemas.py`), frontend korzysta tylko z niego. Zmiana kontraktu wymaga PR z etykietą `contract` i informacji dla zespołu na Discordzie (#decyzje) przed scaleniem.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Legalność danych (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Nie scrapujemy stron, Facebooka ani innych serwisów, także „przez AI”. Wydarzenia dodają ich właściciele albo pochodzą z danych demo pisanych własnymi słowami. Nie używamy treści z Google Places API. Mapa zawsze pokazuje podpis © OpenStreetMap contributors. Geokodowanie Nominatim: maks. 1 zapytanie na sekundę, wyniki zapisywane w bazie.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Prywatność
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Brak kont i danych osobowych. Użytkownik to anonimowy UUID z frontendu (`X-User-Id`). Lokalizacja użytkownika może przyjść w parametrach zapytania, ale nigdy nie jest zapisywana ani logowana. Klucze API tylko w `.env`.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. AI pod kontrolą człowieka
+
+LLM jest używany wyłącznie do zamiany tekstu organizatora na szkic wydarzenia (`POST /events/parse`). Wynik jest walidowany schematem, zawiera pewność kategorii i nigdy nie trafia do bazy bez zatwierdzenia przez człowieka. Rekomendacje liczy jawna formuła z `docs/ARCHITECTURE.md`, nie LLM.
+
+## Ograniczenia technologiczne
+
+- Backend: Python 3.11+, FastAPI, uv, SQLite (SQLModel lub SQLAlchemy). Uruchomienie: `uv run fastapi dev apps/backend/app/main.py`.
+- Frontend: Vite, React, TypeScript, Tailwind CSS, shadcn/ui, MapLibre GL JS, ikony `lucide-react`.
+- Daty w ISO 8601 ze strefą Europe/Warsaw. Interfejs po polsku.
+- CORS dozwolony dla `http://localhost:5173`.
+
+## Sposób pracy
+
+- Commity i gałęzie z prefiksami `feat`, `fix`, `chore`, `docs` (np. `feature/sqlite_schemas`).
+- Praca tylko na gałęziach, PR ze squashem, opis min. 1 zdanie, review drugiej osoby, gdy to możliwe; bez commitów bezpośrednio do `main`.
+- Commit i push co najwyżej co ok. 2 godziny; częsty pull z `main` (`git config --global pull.rebase true`).
+- Każde zadanie to issue na GitHubie z kamieniem milowym M1–M4.
+- Kod wygenerowany przez AI musi być zrozumiały dla autora PR, który potrafi wyjaśnić go jury.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Ta konstytucja ma pierwszeństwo przed innymi ustaleniami technicznymi. Zmiany wymagają zgody zespołu na #decyzje i podbicia wersji. Przy konflikcie z `docs/PLAN.md` w sprawie zakresu decyduje PM.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
