@@ -1,74 +1,62 @@
-# HackYeah Krakow Project Constitution
+<!--
+Sync Impact Report
+- Version: template → 1.0.0
+- Added principles: I–V (all new)
+- Added sections: Ograniczenia technologiczne, Sposób pracy
+- Templates: plan/spec/tasks templates do not require changes
+-->
+# Studencka mapa wydarzeń — Constitution
+
+Projekt hackathonowy (HackYeah 2026, Smart City), 24 godziny, 4 osoby. Pełny kontekst produktu: `docs/SPEC.md` w katalogu głównym repo.
 
 ## Core Principles
 
-### I. Clean, Maintainable Code
-Code MUST be readable, consistently formatted, and easy for a new contributor to
-understand and change. Names MUST describe intent. Functions and modules MUST have
-a single clear responsibility. Comments MUST explain why, not what.
-Rationale: the code is read far more often than written, and several people share
-this repository.
+### I. Prostota w 24 godziny
 
-### II. Modular Design
-Code MUST be split into small, focused modules with explicit boundaries (for the
-backend: routers, schemas, services, and configuration kept separate rather than
-in a single file). Modules MUST depend on each other through narrow, documented
-interfaces so they can be understood, tested, and replaced independently.
-Rationale: modularity keeps changes local and lets the team work in parallel.
+Każda funkcja musi dać się zbudować i pokazać w ramach planu z `docs/PLAN.md`. Wybieramy najprostsze działające rozwiązanie (YAGNI): SQLite zamiast serwera bazy, scoring zamiast modelu ML, link zamiast integracji API. 3 godziny przed końcem nie dodajemy żadnych nowych funkcji, tylko poprawki błędów.
 
-### III. Simplicity First
-The simplest solution that satisfies the requirement MUST be chosen. Features,
-abstractions, and dependencies MUST NOT be added for hypothetical future needs.
-Any added complexity MUST be justified in the spec, plan, or PR description.
-Rationale: complicated code is harder to maintain and slows the team down.
+### II. Kontrakt API jest źródłem prawdy
 
-### IV. Research Before Implementing
-Before implementing a feature, the relevant best practices (framework
-documentation, community conventions, security guidance) MUST be researched and
-the chosen approach recorded in the plan. Implementation MUST follow the
-researched practices.
-Rationale: deciding up front avoids rework and inconsistent patterns.
+`docs/API.md` definiuje obiekty i endpointy. Backend zwraca dokładnie ten format (modele Pydantic w `schemas.py`), frontend korzysta tylko z niego. Zmiana kontraktu wymaga PR z etykietą `contract` i informacji dla zespołu na Discordzie (#decyzje) przed scaleniem.
 
-### V. Ask When Unsure
-When requirements, scope, or the right approach are unclear, contributors and AI
-agents MUST ask for clarification instead of guessing. Assumptions that must be
-made MUST be stated explicitly.
-Rationale: a short question is cheaper than building the wrong thing.
+### III. Legalność danych (NON-NEGOTIABLE)
 
-## Security & Secrets
+Nie scrapujemy stron, Facebooka ani innych serwisów, także „przez AI”. Wydarzenia dodają ich właściciele albo pochodzą z danych demo pisanych własnymi słowami. Nie używamy treści z Google Places API. Mapa zawsze pokazuje podpis © OpenStreetMap contributors. Geokodowanie Nominatim: maks. 1 zapytanie na sekundę, wyniki zapisywane w bazie.
 
-- API keys, tokens, passwords, and other credentials MUST NOT be committed to the
-  repository, including in history, tests, docs, or examples.
-- Configuration secrets MUST be read from environment variables; only
-  placeholder-valued `.env.example` files MAY be committed, and real `.env` files
-  MUST be git-ignored.
-- A leaked secret MUST be treated as compromised and rotated immediately.
-- Backend stack: Python 3.11+, FastAPI, Uvicorn, managed with `uv`.
+### IV. Prywatność
 
-## Development Workflow
+Brak kont i danych osobowych. Użytkownik to anonimowy UUID z frontendu (`X-User-Id`). Lokalizacja użytkownika może przyjść w parametrach zapytania, ale nigdy nie jest zapisywana ani logowana. Klucze API tylko w `.env`.
 
-- Each feature MUST be developed on its own branch, pushed to the remote, named
-  with a type prefix (e.g. `feature/user_endpoints`, `fix/health_check`,
-  `docs/api_usage`, `chore/update_deps`); direct commits to `main` MUST NOT be made.
-- Work MUST be committed and pushed to the feature's remote branch at the end of
-  every turn, so the remote always reflects the current state.
-- Commit messages MUST use type prefixes (`feat`, `fix`, `chore`, `docs`, etc.)
-  followed by a short description, e.g. `feat: add user registration endpoint`,
-  `fix: handle missing config value`, `docs: describe how to run the backend`.
-- Changes MUST be limited to files inside the `apps/backend` directory; files
-  outside it (e.g. `apps/frontend`, `docs`, `README.md`) MUST NOT be modified.
-- Changes MUST land through pull requests with at least a one-sentence
-  description, squash-merged, with review by another person when possible.
-- Branches SHOULD be committed to at least every ~2 hours and synced often with
-  `main` (`git config --global pull.rebase true`).
+### V. AI pod kontrolą człowieka
+
+LLM jest używany wyłącznie do zamiany tekstu organizatora na szkic wydarzenia (`POST /events/parse`). Wynik jest walidowany schematem, zawiera pewność kategorii i nigdy nie trafia do bazy bez zatwierdzenia przez człowieka. Rekomendacje liczy jawna formuła z `docs/ARCHITECTURE.md`, nie LLM.
+
+## Ograniczenia technologiczne
+
+- Backend: Python 3.11+, FastAPI, uv, SQLite (SQLAlchemy, async). Uruchomienie: `uv run fastapi dev apps/backend/app/main.py`.
+- Frontend: Vite, React, TypeScript, Tailwind CSS, shadcn/ui, MapLibre GL JS, ikony `lucide-react`.
+- Daty w ISO 8601 ze strefą Europe/Warsaw. Interfejs po polsku.
+- CORS dozwolony dla `http://localhost:5173`.
+
+## Sposób pracy
+
+- Commity i gałęzie z prefiksami `feat`, `fix`, `chore`, `docs` (np. `feature/sqlite_schemas`).
+- Praca tylko na gałęziach, PR ze squashem, opis min. 1 zdanie, review drugiej osoby, gdy to możliwe; bez commitów bezpośrednio do `main`.
+- Commit i push co najwyżej co ok. 2 godziny; częsty pull z `main` (`git config --global pull.rebase true`).
+- Każde zadanie to issue na GitHubie z kamieniem milowym M1–M4.
+- Kod wygenerowany przez AI musi być zrozumiały dla autora PR, który potrafi wyjaśnić go jury.
+
+## Jakość kodu i zasady pracy (dodane w 1.1.0)
+
+- Kod ma być czysty, modularny i prosty w utrzymaniu: jedna odpowiedzialność na moduł, czytelne nazwy, komentarze wyjaśniają „dlaczego”.
+- Przed implementacją sprawdzamy dobre praktyki (dokumentacja frameworka, bezpieczeństwo) i stosujemy je; nie robimy rozwiązań bardziej skomplikowanych niż trzeba.
+- Gdy wymaganie lub podejście jest niejasne, pytamy zamiast zgadywać.
+- Nigdy nie commitujemy kluczy API, tokenów ani haseł; sekrety tylko w `.env` (w repo wyłącznie `.env.example` z wartościami zastępczymi).
+- Każda funkcja ma własną gałąź zdalną, np. `feature/card_swipe_endpoints`; praca jest commitowana i wypychana na koniec każdej tury.
+- Zmiany dotyczą wyłącznie katalogu `apps/backend`; plików poza nim nie modyfikujemy.
 
 ## Governance
 
-This constitution supersedes other practices for this project. Amendments MUST be
-made through a pull request that documents the change and its rationale and is
-approved by at least one other contributor. Versioning follows semantic
-versioning: MAJOR for removed or redefined principles, MINOR for added principles
-or materially expanded guidance, PATCH for clarifications. All PRs and reviews
-MUST verify compliance, and unjustified complexity MUST be rejected.
+Ta konstytucja ma pierwszeństwo przed innymi ustaleniami technicznymi. Zmiany wymagają zgody zespołu na #decyzje i podbicia wersji. Przy konflikcie z `docs/PLAN.md` w sprawie zakresu decyduje PM.
 
 **Version**: 1.1.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
