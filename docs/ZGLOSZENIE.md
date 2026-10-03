@@ -14,7 +14,7 @@ Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]�
 
 Do pilnowania:
 - **Domeny (3.10.2026):** `spootted.com` (ok. 11 USD) i `spootted.app` (14 USD) są wolne, a `spootted.pl` i `spootted.eu` są zajęte. Kupujemy `.app` albo `.com` od razu.
-- **Kolizje:** pisownia „spootted” odróżnia nas od pospolitego „spotted” i od Spotted.de (aplikacja randkowa w UE). Zawsze piszemy przez dwa „o”. Po hackathonie sprawdzamy znak w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
+- **Kolizje:** pisownia „spootted” odróżnia nas od pospolitego „spotted” i od Spotted.de (aplikacja randkowa w UE). Zawsze piszemy przez dwa „o”. Nazwę zmieniliśmy z „spotted student” na „spootted” (decyzja zespołu z 3.10), więc wcześniejsze ustalenia dotyczące znaku nie obowiązują. Przed komercjalizacją trzeba osobno sprawdzić znak „spootted” w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
 
 ## Problem
 
