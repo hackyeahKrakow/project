@@ -21,6 +21,7 @@ export type SpottedEvent = {
   lat: number
   lng: number
   price: number | null // null = unknown, 0 = free
+  image_url?: string | null // the event's own photo; without it the card shows a stock photo (lib/photos.ts)
   category: CategoryId
   size: Size
   district: string
