@@ -30,7 +30,7 @@ W Polsce studiuje **1,28 mln osób na 352 uczelniach** (GUS, rok akademicki 2024
 
 ## Solution
 
-***Zmatchuj się z eventami.*** spotted student działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Trzy swipe'y wystarczą, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
+***Zmatchuj się z eventami.*** spotted student działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Kilka pytań i kilka swipe'ów wystarczy, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
 
 ### 1. Swipe: decyzja w sekundę
 
@@ -38,11 +38,11 @@ Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo*
 
 ### 2. Profil zainteresowań, który rośnie z każdym ruchem
 
-- **Start w 30 sekund, bez konta.** „Tylko przeglądam” i kilka szybkich pytań: zainteresowania, czego szukasz (ludzi, rozwoju, kultury), kameralne czy duże wydarzenia, twoja dzielnica i jak daleko dojedziesz. Z tego powstaje profil startowy, więc pierwsze karty już do ciebie pasują.
+- **Start w 30 sekund, bez konta.** „Tylko przeglądam” i kilka szybkich pytań: zainteresowania, czego szukasz (ludzi, rozwoju, kultury), kameralne czy duże wydarzenia, twoja dzielnica i jak daleko dojedziesz. Z tego powstaje profil startowy. Po pierwszych sześciu kartach talia dopasowuje się do ciebie i uczy się dalej z każdym ruchem.
 - **Profil uczy się z zachowania, nie z ankiet.** Swipe w prawo podnosi wagę kategorii, swipe w lewo lekko ją obniża. Kara jest celowo mniejsza niż nagroda, więc jedno „nie” nie skreśla całej kategorii.
 - **Dopasowanie łączy cztery sygnały:** twoje zainteresowania, odległość od ciebie, termin (dziś przed „za tydzień”) i organizatorów, których obserwujesz.
 - **Żadnej czarnej skrzynki.** Każda karta mówi, dlaczego ją widzisz: „Bo lubisz: planszówki · 600 m od ciebie · dziś 19:00”. Użytkownik rozumie rekomendację i ma nad nią kontrolę, w duchu wymogów przejrzystości systemów rekomendacyjnych z unijnego DSA.
-- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Profil i lokalizacja zostają na twoim telefonie: wyczyścisz przeglądarkę, to zaczynasz od zera. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
+- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Profil i historia swipe'ów są zapisane pod losowym, anonimowym identyfikatorem, bez danych osobowych. Lokalizacja zostaje na telefonie. Docelowo cały profil gościa ma zostawać tylko na urządzeniu. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
 
 71% konsumentów oczekuje personalizacji, a 76% irytuje się, gdy jej nie dostaje (McKinsey). Studenci nie są wyjątkiem, tylko dziś nikt tego nie robi dla wydarzeń studenckich.
 
@@ -130,7 +130,7 @@ Puste.
 
 ## Your video presentation
 
-**[PÓŹNIEJ]** Proponujemy 60–90 s nagrania ekranu telefonu: swipe → mapa → dodanie wydarzenia z AI. Wgrywamy na YouTube jako „Niepubliczny” (Listed). Nagrywamy po zamrożeniu funkcji (21h).
+**[PÓŹNIEJ]** Proponujemy 60–90 s nagrania ekranu telefonu: swipe → mapa → dodanie wydarzenia z AI. Wgrywamy na YouTube jako „Niepubliczny” (Unlisted). Nagrywamy po zamrożeniu funkcji (21h).
 
 ## Website
 
@@ -148,12 +148,13 @@ Repo jest publiczne (sprawdzone 3.10.2026), licencja MIT.
 git clone https://github.com/hackyeahKrakow/project
 cd project
 
-# Backend (Python 3.11+, uv)
-cp apps/backend/.env.example apps/backend/.env
-uv run fastapi dev apps/backend/app/main.py
+# Backend (Python 3.11+, uv), uruchamiany z katalogu apps/backend
+cd apps/backend
+cp .env.example .env
+uv run fastapi dev app/main.py
 # API: http://localhost:8000, dokumentacja: http://localhost:8000/docs
 
-# Frontend (Node 20+), w drugim terminalu
+# Frontend (Node 20+), w drugim terminalu z katalogu głównego repo
 cd apps/frontend
 cp .env.example .env
 npm install
@@ -161,7 +162,7 @@ npm run dev
 # Aplikacja: http://localhost:5173
 ```
 
-Klucz do LLM (autofill) podajemy w `apps/backend/.env`. Bez klucza aplikacja działa, tylko bez autouzupełniania.
+Klucze do modeli AI (`OPENCODE_API_KEY`, `LLM_API_KEY`) podajemy w `apps/backend/.env`. Bez kluczy aplikacja działa, ale bez funkcji AI.
 
 ## Presentation
 

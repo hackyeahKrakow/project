@@ -41,7 +41,7 @@ Kilka szybkich ekranów, każdy z jednym pytaniem:
 4. Okolica: moja dzielnica plus to, jak daleko mogę dojechać (np. mieszkam na Hucie, ale dojadę na Ruczaj).
 5. Zgody opcjonalne: lokalizacja i powiadomienia. Można je pominąć.
 
-Ostatni ekran mówi: „Twój profil zostaje na tym telefonie. Wyczyścisz przeglądarkę albo zmienisz telefon, to zaczynasz od nowa. Nie mamy twojego maila ani numeru.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
+Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Twoje odpowiedzi i swipe'y zapisujemy pod losowym, anonimowym identyfikatorem, a lokalizacja zostaje na telefonie. Wyczyścisz przeglądarkę albo zmienisz telefon, to zaczynasz od nowa.” Docelowo cały profil gościa ma zostawać na urządzeniu (zob. „Konta i dane lokalne” w [ARCHITECTURE.md](ARCHITECTURE.md)). Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
 
 Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgodzie jednoznacznego działania. Przycisk kosztuje jeden ekran i zamyka temat, zanim jury o niego zapyta.
 
