@@ -37,16 +37,25 @@ export default function Logowanie() {
     setTimeout(() => {
       const { profile, ...account } = pending!
       // The account brings its saved preferences (US-15); a new account keeps what the guest already set.
-      update({ account: { email: account.email, name: account.name, kind: account.kind, org: account.org }, onboarded: true, consent: true, ...(profile && { profile }) })
+      update({
+        account: { email: account.email, name: account.name, kind: account.kind, org: account.org },
+        onboarded: true,
+        consent: true,
+        ...(profile && { profile }),
+      })
       window.location.hash = '#/konto'
     }, 1200)
   }
 
   if (pending) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-5 px-6 text-center">
+      <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-5 px-6 text-center">
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-50">
-          {checking ? <LoaderCircle size={44} className="animate-spin text-brand-600" aria-hidden /> : <Fingerprint size={48} className="text-brand-600" aria-hidden />}
+          {checking ? (
+            <LoaderCircle size={44} className="animate-spin text-brand-600" aria-hidden />
+          ) : (
+            <Fingerprint size={48} className="text-brand-600" aria-hidden />
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[26px] leading-tight font-semibold">{mode === 'login' ? 'Potwierdź, że to ty' : 'Utwórz klucz dostępu'}</h1>
@@ -68,18 +77,17 @@ export default function Logowanie() {
   }
 
   return (
-    <div className="flex flex-col gap-5 px-5 pt-4 pb-8">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-4 pb-8 sm:pt-10">
       <a href="#/start" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
         <ArrowLeft size={22} aria-hidden />
       </a>
       <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">{mode === 'login' ? 'Zaloguj się' : 'Załóż konto'}</h1>
-      <div className="inline-flex rounded-[14px] bg-track p-1" role="tablist">
+      <div className="inline-flex rounded-[14px] bg-track p-1" role="group" aria-label="Logowanie lub rejestracja">
         {(['login', 'register'] as const).map((m) => (
           <button
             key={m}
             type="button"
-            role="tab"
-            aria-selected={mode === m}
+            aria-pressed={mode === m}
             onClick={() => (setMode(m), setError(''))}
             className={`h-10 flex-1 rounded-[11px] text-[15px] ${mode === m ? 'bg-white font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
           >
@@ -98,7 +106,14 @@ export default function Logowanie() {
                   ['org', 'Jako organizacja', Building2],
                 ] as const
               ).map(([k, label, Icon]) => (
-                <button key={k} type="button" role="radio" aria-checked={kind === k} onClick={() => setKind(k)} className={`flex flex-col items-center gap-1.5 rounded-2xl p-4 text-[15px] font-medium ${kind === k ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}>
+                <button
+                  key={k}
+                  type="button"
+                  role="radio"
+                  aria-checked={kind === k}
+                  onClick={() => setKind(k)}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl p-4 text-[15px] font-medium ${kind === k ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
+                >
                   <Icon size={26} className="text-brand-600" aria-hidden />
                   {label}
                 </button>
@@ -112,14 +127,32 @@ export default function Logowanie() {
         )}
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-muted">E-mail</span>
-          <input className={input} type="text" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" placeholder="ola@demo" />
+          <input
+            className={input}
+            type="text"
+            inputMode="email"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'login-error' : undefined}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            placeholder="ola@demo"
+          />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-muted">Hasło</span>
-          <input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
+          <input
+            className={input}
+            type="password"
+            aria-invalid={!!error}
+            aria-describedby={error ? 'login-error' : undefined}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+          />
         </label>
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
+          <div id="login-error" role="alert" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
             <CircleAlert size={18} className="flex-none" aria-hidden />
             {error}
           </div>

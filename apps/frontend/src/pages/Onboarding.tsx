@@ -48,7 +48,11 @@ export default function Onboarding() {
 
   const finish = () => {
     update({ profile: p, location: loc, notifications, onboarded: true, consent: true })
-    if (loc) navigator.geolocation?.getCurrentPosition(() => {}, () => {}) // ask the browser now, not mid-demo
+    if (loc)
+      navigator.geolocation?.getCurrentPosition(
+        () => {},
+        () => {},
+      ) // ask the browser now, not mid-demo
     window.location.hash = '#/odkrywaj'
   }
 
@@ -61,7 +65,13 @@ export default function Onboarding() {
           {CATEGORIES.map((c) => {
             const on = p.interests.includes(c.id)
             return (
-              <button key={c.id} type="button" aria-pressed={on} onClick={() => set({ interests: toggle<CategoryId>(p.interests, c.id, 5) })} className={chip(on)}>
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => set({ interests: toggle<CategoryId>(p.interests, c.id, 5) })}
+                className={chip(on)}
+              >
                 <c.Icon size={18} color={on ? '#fff' : c.color} strokeWidth={2.2} aria-hidden />
                 {c.name}
               </button>
@@ -88,7 +98,13 @@ export default function Onboarding() {
       body: (
         <div className="flex flex-wrap gap-2">
           {GOALS.map(([g, label]) => (
-            <button key={g} type="button" aria-pressed={p.goals.includes(g)} onClick={() => set({ goals: toggle(p.goals, g, 3) })} className={chip(p.goals.includes(g))}>
+            <button
+              key={g}
+              type="button"
+              aria-pressed={p.goals.includes(g)}
+              onClick={() => set({ goals: toggle(p.goals, g, 3) })}
+              className={chip(p.goals.includes(g))}
+            >
               {label}
             </button>
           ))}
@@ -109,7 +125,11 @@ export default function Onboarding() {
           </Group>
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-muted">Gdzie mieszkasz albo studiujesz?</span>
-            <select value={p.district} onChange={(e) => set({ district: e.target.value })} className="h-12 rounded-xl border-line text-[15px] focus:border-brand-600 focus:ring-brand-600">
+            <select
+              value={p.district}
+              onChange={(e) => set({ district: e.target.value })}
+              className="h-12 rounded-xl border-line text-[15px] focus:border-brand-600 focus:ring-brand-600"
+            >
               {Object.keys(DISTRICTS).map((d) => (
                 <option key={d}>{d}</option>
               ))}
@@ -124,7 +144,13 @@ export default function Onboarding() {
           </Group>
           <Group label="Kiedy masz czas?">
             {TIMES.map(([t, label]) => (
-              <button key={t} type="button" aria-pressed={p.times.includes(t)} onClick={() => set({ times: toggle(p.times, t) })} className={chip(p.times.includes(t))}>
+              <button
+                key={t}
+                type="button"
+                aria-pressed={p.times.includes(t)}
+                onClick={() => set({ times: toggle(p.times, t) })}
+                className={chip(p.times.includes(t))}
+              >
                 {label}
               </button>
             ))}
@@ -159,12 +185,25 @@ export default function Onboarding() {
   const canNext = step !== 0 || p.interests.length >= 3
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="mx-auto flex h-full w-full max-w-xl flex-col sm:py-6">
       <div className="flex flex-none items-center gap-3 px-4 pt-4">
-        <button type="button" onClick={() => (step ? setStep(step - 1) : (window.location.hash = '#/start'))} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
+        <button
+          type="button"
+          onClick={() => (step ? setStep(step - 1) : (window.location.hash = '#/start'))}
+          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white"
+          aria-label="Wstecz"
+        >
           <ArrowLeft size={22} aria-hidden />
         </button>
-        <div className="flex flex-1 gap-1.5" aria-label={`Krok ${Math.min(step + 1, 4)} z 4`}>
+        <div
+          className="flex flex-1 gap-1.5"
+          role="progressbar"
+          aria-label="Postęp"
+          aria-valuemin={1}
+          aria-valuemax={4}
+          aria-valuenow={Math.min(step + 1, 4)}
+          aria-valuetext={`Krok ${Math.min(step + 1, 4)} z 4`}
+        >
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? 'bg-brand-600' : 'bg-track'}`} />
           ))}
@@ -201,7 +240,7 @@ export default function Onboarding() {
         )}
       </div>
 
-      <div className="flex-none border-t border-line bg-white px-5 py-4">
+      <div className="flex-none border-t border-line bg-white px-5 py-4 sm:rounded-2xl sm:border-0 sm:bg-transparent">
         {privacy ? (
           <button type="button" onClick={finish} className={`${btnPrimary} h-14 w-full text-lg`}>
             Rozumiem, zaczynam
@@ -218,7 +257,12 @@ export default function Onboarding() {
 
 function Option({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
   return (
-    <button type="button" aria-pressed={on} onClick={onClick} className={`flex min-h-14 items-center justify-between rounded-2xl px-4 text-left text-[16px] font-medium ${on ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}>
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={`flex min-h-14 items-center justify-between rounded-2xl px-4 text-left text-[16px] font-medium ${on ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
+    >
       {label}
       {on && <Check size={20} strokeWidth={2.6} className="text-brand-600" aria-hidden />}
     </button>

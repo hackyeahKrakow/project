@@ -53,11 +53,13 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* spotted tokens from docs/DESIGN.md, plus a few tints used by the design.
+/* spootted tokens from docs/DESIGN.md, plus a few tints used by the design.
    Declared after shadcn's @theme inline so --color-muted (text #4A5B7D) wins over shadcn's muted background. */
 @theme {
     --color-ink-900: #0A1F44;
     --color-brand-600: #1D5CFF;
+    /* brand-600 on brand-50 is 4.48:1, just under AA; text on light-blue fills uses this one (5.9:1). */
+    --color-brand-700: #174BD9;
     --color-sky-300: #7DB8FF;
     --color-violet-600: #6B4EE6;
     --color-spark-500: #FF8A3D;
@@ -163,4 +165,13 @@
 .pin-drop { animation: pin-drop .6s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .pin-drop { animation: none; }
+}
+
+/* WCAG 2.4.7: one clearly visible focus ring for every control (shadcn's base sets a faint 50% gray outline). */
+:focus-visible {
+  outline: 3px solid #1D5CFF;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }

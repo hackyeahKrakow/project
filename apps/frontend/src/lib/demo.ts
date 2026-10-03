@@ -36,8 +36,24 @@ export const findAccount = (email: string, password: string) =>
 export type Package = { id: string; name: string; price: number; ai: string; stats: string; boost: string; feedback: boolean }
 export const PACKAGES: Package[] = [
   { id: 'iskra', name: 'Iskra', price: 10, ai: '1 wydarzenie z AI', stats: 'Wyświetlenia', boost: 'Bez wyróżnienia', feedback: false },
-  { id: 'plomien', name: 'Płomień', price: 49, ai: '5 wydarzeń z AI', stats: 'Wyświetlenia, w prawo, w lewo, pominięte', boost: 'Wyróżnienie w talii i na mapie', feedback: true },
-  { id: 'ognisko', name: 'Ognisko', price: 149, ai: 'Bez limitu', stats: 'Pełne statystyki i zainteresowania odbiorców', boost: 'Mocniejsze wyróżnienie', feedback: true },
+  {
+    id: 'plomien',
+    name: 'Płomień',
+    price: 49,
+    ai: '5 wydarzeń z AI',
+    stats: 'Wyświetlenia, w prawo, w lewo, pominięte',
+    boost: 'Wyróżnienie w talii i na mapie',
+    feedback: true,
+  },
+  {
+    id: 'ognisko',
+    name: 'Ognisko',
+    price: 149,
+    ai: 'Bez limitu',
+    stats: 'Pełne statystyki i zainteresowania odbiorców',
+    boost: 'Mocniejsze wyróżnienie',
+    feedback: true,
+  },
 ]
 export const ORG_PLAN = { package: 'plomien', aiUsed: 2, aiLimit: 5 }
 
@@ -53,7 +69,11 @@ export const LIBRARY_STATS: Record<string, { views: number; right: number; left:
 }
 
 export const LIBRARY_FEEDBACK = [
-  { event: 'Cicha czytelnia do 23:00', stars: 5, text: 'Wreszcie miejsce do nauki wieczorem, które nie jest kawiarnią. Przydałoby się więcej gniazdek przy oknach.' },
+  {
+    event: 'Cicha czytelnia do 23:00',
+    stars: 5,
+    text: 'Wreszcie miejsce do nauki wieczorem, które nie jest kawiarnią. Przydałoby się więcej gniazdek przy oknach.',
+  },
   { event: 'Spotkanie autorskie: kryminał po krakowsku', stars: 3, text: 'Ciekawa rozmowa, ale zaczęło się 20 minut później i sala była za mała.' },
   { event: 'Noc gier w bibliotece', stars: 5, text: 'Instruktorzy przy stołach to strzał w dziesiątkę, poznałam ekipę na kolejne granie.' },
 ]

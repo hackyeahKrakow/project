@@ -11,7 +11,7 @@ export default function Statystyki() {
   const { state } = useStore()
   if (state.account?.kind !== 'org') {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-[26px] font-semibold">Statystyki są dla organizacji</h1>
         <p className="text-muted">Zaloguj się jako biblioteka@demo, żeby zobaczyć panel organizatora.</p>
         <a href="#/logowanie" className={`${btnPrimary} h-12 w-full`}>
@@ -23,11 +23,16 @@ export default function Statystyki() {
 
   const names = new Map(catalog().map((e) => [e.id, e.event_name]))
   const rows = Object.entries(LIBRARY_STATS).sort((a, b) => b[1].views - a[1].views)
-  const total = rows.reduce((t, [, s]) => ({ views: t.views + s.views, right: t.right + s.right, left: t.left + s.left, neutral: t.neutral + s.neutral }), { views: 0, right: 0, left: 0, neutral: 0 })
+  const total = rows.reduce((t, [, s]) => ({ views: t.views + s.views, right: t.right + s.right, left: t.left + s.left, neutral: t.neutral + s.neutral }), {
+    views: 0,
+    right: 0,
+    left: 0,
+    neutral: 0,
+  })
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4 pb-8">
-      <div className="flex items-center gap-2">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 pb-8 sm:px-8 sm:pt-8 md:grid md:grid-cols-2 md:items-start">
+      <div className="flex items-center gap-2 md:col-span-2">
         <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
           <ArrowLeft size={22} aria-hidden />
         </a>
@@ -37,14 +42,14 @@ export default function Statystyki() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:col-span-2 md:grid-cols-4">
         <Tile Icon={Eye} label="Wyświetlenia" value={total.views} />
         <Tile Icon={Heart} label="W prawo" value={total.right} sub={pct(total.right, total.views)} />
         <Tile Icon={ThumbsDown} label="W lewo" value={total.left} sub={pct(total.left, total.views)} />
         <Tile Icon={TimerOff} label="Pominięte" value={total.neutral} sub="zamknięte bez swipe'a" />
       </div>
 
-      <section className={`${card} flex flex-col gap-3 p-4`}>
+      <section className={`${card} flex flex-col gap-3 p-4 md:row-span-2`}>
         <h2 className="font-semibold">Wydarzenia</h2>
         <div className="flex gap-3 text-xs text-muted" aria-hidden>
           <Legend color="#1D5CFF" label="w prawo" />
@@ -93,10 +98,13 @@ export default function Statystyki() {
           <figure key={f.event} className="flex flex-col gap-1 border-t border-line pt-3 first:border-0 first:pt-0">
             <figcaption className="flex items-center justify-between gap-2 text-sm font-medium">
               {f.event}
-              <span className="flex flex-none" aria-label={`${f.stars} na 5`}>
+              <span className="flex flex-none" role="img" aria-label={`Ocena ${f.stars} na 5`}>
                 {Array.from({ length: 5 }, (_, i) => (
                   <Star key={i} size={14} className={i < f.stars ? 'fill-spark-500 text-spark-500' : 'text-line'} aria-hidden />
                 ))}
+                <span className="ml-1 text-xs text-muted" aria-hidden>
+                  {f.stars}/5
+                </span>
               </span>
             </figcaption>
             <blockquote className="text-sm text-muted">„{f.text}”</blockquote>

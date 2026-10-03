@@ -55,7 +55,7 @@ export const fresh = (): State => ({
   myEvents: [],
 })
 
-const KEY = 'spotted:v1'
+const KEY = 'spootted:v1'
 
 // Storage can be missing or throw (private mode, blocked site data): the app still works, it just forgets.
 export function load(): State {

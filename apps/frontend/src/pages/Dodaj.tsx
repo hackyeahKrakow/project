@@ -10,9 +10,26 @@ import { CategoryBadge, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 type Form = { title: string; category: CategoryId; price: string; date: string; time: string; place: string; size: Size; description: string }
 type Key = keyof Form
 
-const EMPTY: Form = { title: '', category: 'gry', price: '0', date: warsawDay(new Date().toISOString()), time: '19:00', place: '', size: 'small', description: '' }
+const EMPTY: Form = {
+  title: '',
+  category: 'gry',
+  price: '0',
+  date: warsawDay(new Date().toISOString()),
+  time: '19:00',
+  place: '',
+  size: 'small',
+  description: '',
+}
 const input = 'h-12 w-full rounded-xl px-3.5 text-base focus:border-brand-600 focus:ring-brand-600'
-const FIELD_OF: Record<string, Key> = { title: 'title', category: 'category', price: 'price', starts_at: 'date', address: 'place', size: 'size', description: 'description' }
+const FIELD_OF: Record<string, Key> = {
+  title: 'title',
+  category: 'category',
+  price: 'price',
+  starts_at: 'date',
+  address: 'place',
+  size: 'size',
+  description: 'description',
+}
 
 /** Next Friday 20:00 in Warsaw, for the demo answer to SAMPLE_POST ("w piątek od 20:00"). */
 const nextFriday = () => {
@@ -50,7 +67,7 @@ export default function Dodaj() {
 
   if (!account) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
         <h1 className="text-[26px] font-semibold">Dodawanie wymaga konta</h1>
         <p className="text-muted">Przeglądać możesz anonimowo. Żeby dodać wydarzenie, zaloguj się jako student albo organizacja.</p>
         <a href="#/logowanie" className={`${btnPrimary} h-12 w-full`}>
@@ -123,15 +140,17 @@ export default function Dodaj() {
       </label>
     )
   }
-  const text = (k: Key, type = 'text') => (cls: string) => <input type={type} className={cls} value={form[k]} onChange={(e) => set(k, e.target.value)} />
+  const text =
+    (k: Key, type = 'text') =>
+    (cls: string) => <input type={type} className={cls} value={form[k]} onChange={(e) => set(k, e.target.value)} />
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4 pb-8">
-      <div className="flex items-center gap-2">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 pb-8 sm:px-8 sm:pt-8 md:grid md:grid-cols-[380px_minmax(0,1fr)] md:items-start md:gap-6">
+      <div className="flex items-center gap-2 md:col-span-2">
         <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
           <ArrowLeft size={22} aria-hidden />
         </a>
-        <h1 className="text-[26px] font-semibold tracking-[-0.02em]">Dodaj wydarzenie</h1>
+        <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-[32px]">Dodaj wydarzenie</h1>
       </div>
 
       {org ? (
@@ -144,7 +163,12 @@ export default function Dodaj() {
               AI: {ORG_PLAN.aiUsed} z {ORG_PLAN.aiLimit}
             </span>
           </div>
-          <textarea id="paste" value={paste} onChange={(e) => setPaste(e.target.value)} className="h-36 resize-none rounded-xl border border-line bg-canvas px-3.5 py-3 text-[15px] leading-[1.45] focus:border-brand-600 focus:ring-brand-600" />
+          <textarea
+            id="paste"
+            value={paste}
+            onChange={(e) => setPaste(e.target.value)}
+            className="h-36 resize-none rounded-xl border border-line bg-canvas px-3.5 py-3 text-[15px] leading-[1.45] focus:border-brand-600 focus:ring-brand-600"
+          />
           <button type="button" className={`${btnSpark} h-12 w-full`} onClick={fill} disabled={!!busy || paste.trim().length < 10}>
             {busy === 'ai' ? <LoaderCircle size={20} className="animate-spin" aria-hidden /> : <Sparkles size={20} strokeWidth={2.2} aria-hidden />}
             {busy === 'ai' ? 'AI czyta post…' : 'Wypełnij z AI'}
@@ -169,7 +193,12 @@ export default function Dodaj() {
         {field('category', 'Kategoria', (cls) => (
           <div className={`${cls} relative flex items-center`}>
             <CategoryBadge cat={category(form.category)} className="text-sm" />
-            <select aria-label="Kategoria" value={form.category} onChange={(e) => set('category', e.target.value)} className="absolute inset-0 cursor-pointer opacity-0">
+            <select
+              aria-label="Kategoria"
+              value={form.category}
+              onChange={(e) => set('category', e.target.value)}
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
               {CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -198,7 +227,9 @@ export default function Dodaj() {
             'flex-1',
           )}
         </div>
-        {field('description', 'Opis', (cls) => <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />)}
+        {field('description', 'Opis', (cls) => (
+          <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />
+        ))}
         {notice && (
           <div role="status" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
             <Info size={18} className="flex-none" aria-hidden />

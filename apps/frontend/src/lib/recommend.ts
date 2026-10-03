@@ -13,7 +13,10 @@ const GOAL_CATS: Record<Goal, CategoryId[]> = {
 
 /** Category weights: onboarding gives 0.7 / 0.3, goals +0.1, each swipe right +0.1, left −0.05 (docs/ARCHITECTURE.md). */
 export function weights(profile: Profile, swipes: Record<string, Decision>, events: SpottedEvent[]) {
-  const w = Object.fromEntries(CATEGORIES.map((c) => [c.id, profile.interests.length ? (profile.interests.includes(c.id) ? 0.7 : 0.3) : 0.5])) as Record<CategoryId, number>
+  const w = Object.fromEntries(CATEGORIES.map((c) => [c.id, profile.interests.length ? (profile.interests.includes(c.id) ? 0.7 : 0.3) : 0.5])) as Record<
+    CategoryId,
+    number
+  >
   for (const g of profile.goals) for (const c of GOAL_CATS[g]) w[c] += 0.1
   const byId = new Map(events.map((e) => [e.id, e]))
   for (const [id, d] of Object.entries(swipes)) {
@@ -49,7 +52,9 @@ export function score(ev: SpottedEvent, p: Profile, w: Record<CategoryId, number
   const s = 0.45 * w[ev.category] + 0.25 * proximity + 0.2 * soon * timeFit(ev, p) + 0.1 * sizeFit
 
   // "Bo lubisz…" lists only what really drove the match (docs/SPEC.md, DSA transparency).
-  const parts = [w[ev.category] >= 0.6 ? category(ev.category).short.toLowerCase() : null, p.sizes.includes(ev.size) ? SIZE_LABEL[ev.size] : null].filter(Boolean)
+  const parts = [w[ev.category] >= 0.6 ? category(ev.category).short.toLowerCase() : null, p.sizes.includes(ev.size) ? SIZE_LABEL[ev.size] : null].filter(
+    Boolean,
+  )
   const reason = [
     parts.length ? `Bo lubisz: ${parts.join(', ')}` : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,

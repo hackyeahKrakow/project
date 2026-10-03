@@ -24,6 +24,7 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
   return (
     <>
       <Screen
+        wide
         title="Moje"
         sub={`${mine.length} nadchodzących polubionych`}
         action={
@@ -35,14 +36,13 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
           )
         }
       >
-        <div className="flex gap-2">
-          <div className="inline-flex flex-1 rounded-[14px] bg-track p-1" role="tablist" aria-label="Widok">
+        <div className="flex gap-2 sm:max-w-md">
+          <div className="inline-flex flex-1 rounded-[14px] bg-track p-1" role="group" aria-label="Widok">
             {(['agenda', 'miesiac'] as const).map((v) => (
               <button
                 key={v}
                 type="button"
-                role="tab"
-                aria-selected={view === v}
+                aria-pressed={view === v}
                 onClick={() => setView(v)}
                 className={`h-10 flex-1 rounded-[11px] text-[15px] ${view === v ? 'bg-white font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
               >
@@ -50,7 +50,13 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
               </button>
             ))}
           </div>
-          <button type="button" disabled={!mine.length} onClick={() => downloadIcs(mine)} className={`${btnOutline} h-12 px-3`} aria-label="Eksportuj do kalendarza (.ics)">
+          <button
+            type="button"
+            disabled={!mine.length}
+            onClick={() => downloadIcs(mine)}
+            className={`${btnOutline} h-12 px-3`}
+            aria-label="Eksportuj do kalendarza (.ics)"
+          >
             <CalendarArrowDown size={20} aria-hidden />
             .ics
           </button>
@@ -68,9 +74,11 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
             {[...byDay].map(([day, list]) => (
               <section key={day} className="flex flex-col gap-2">
                 <h2 className="text-sm font-semibold tracking-[.04em] text-muted uppercase">{day === today ? 'Dziś' : formatDay(day)}</h2>
-                {list.map((ev) => (
-                  <Row key={ev.id} ev={ev} onOpen={() => setOpenId(ev.id)} />
-                ))}
+                <div className="grid gap-2 lg:grid-cols-2">
+                  {list.map((ev) => (
+                    <Row key={ev.id} ev={ev} onOpen={() => setOpenId(ev.id)} />
+                  ))}
+                </div>
               </section>
             ))}
           </div>
@@ -129,14 +137,24 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
   const list = byDay.get(picked) ?? []
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="grid items-start gap-3 md:grid-cols-[minmax(0,420px)_1fr] md:gap-6">
       <div className={`${card} p-3`}>
         <div className="mb-2 flex items-center justify-between">
-          <button type="button" onClick={() => shift(-1)} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-canvas" aria-label="Poprzedni miesiąc">
+          <button
+            type="button"
+            onClick={() => shift(-1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-canvas"
+            aria-label="Poprzedni miesiąc"
+          >
             <ChevronLeft size={20} aria-hidden />
           </button>
           <span className="font-semibold capitalize">{monthFmt.format(first)}</span>
-          <button type="button" onClick={() => shift(1)} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-canvas" aria-label="Następny miesiąc">
+          <button
+            type="button"
+            onClick={() => shift(1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-canvas"
+            aria-label="Następny miesiąc"
+          >
             <ChevronRight size={20} aria-hidden />
           </button>
         </div>
@@ -171,8 +189,16 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
           })}
         </div>
       </div>
-      <h2 className="text-sm font-semibold tracking-[.04em] text-muted uppercase">{formatDay(picked)}</h2>
-      {list.length ? list.map((ev) => <Row key={ev.id} ev={ev} onOpen={() => onOpen(ev.id)} />) : <p className="text-muted">Brak polubionych wydarzeń tego dnia.</p>}
+      <div className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold tracking-[.04em] text-muted uppercase" aria-live="polite">
+          {formatDay(picked)}
+        </h2>
+        {list.length ? (
+          list.map((ev) => <Row key={ev.id} ev={ev} onOpen={() => onOpen(ev.id)} />)
+        ) : (
+          <p className="text-muted">Brak polubionych wydarzeń tego dnia.</p>
+        )}
+      </div>
     </div>
   )
 }

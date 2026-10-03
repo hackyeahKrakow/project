@@ -1,11 +1,11 @@
 import { Calendar, Heart, MapPin, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { saveSwipe, starterDeck } from '@/lib/api'
-import { category } from '@/lib/categories'
+import { CATEGORIES, category } from '@/lib/categories'
 import { STARTER, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
-import { recommend, type Scored } from '@/lib/recommend'
+import { recommend, weights, type Scored } from '@/lib/recommend'
 import { useStore, type Decision } from '@/lib/store'
-import { CategoryBadge, OrganizerLine, PromotedTag, btnPrimary } from '@/ui'
+import { CategoryBadge, OrganizerLine, PromotedTag, btnPrimary, card } from '@/ui'
 
 const THRESHOLD = 90
 const FLY_MS = 260
@@ -28,7 +28,11 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
     }
   }, [userId])
   useEffect(() => {
-    if (state.location) navigator.geolocation?.getCurrentPosition((p) => setHere([p.coords.latitude, p.coords.longitude]), () => {})
+    if (state.location)
+      navigator.geolocation?.getCurrentPosition(
+        (p) => setHere([p.coords.latitude, p.coords.longitude]),
+        () => {},
+      )
   }, [state.location])
 
   const starterLeft = starter.filter((e) => !swipes[e.id])
@@ -39,9 +43,7 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
     if (more.length) setQueue((q) => [...q, ...more])
   }, [starterLeft.length, pending.length]) // eslint-disable-line react-hooks/exhaustive-deps -- refill only when the deck runs low
 
-  const deck: Scored[] = starterLeft.length
-    ? starterLeft.map((ev) => ({ ev, score: 0, distance: 0, reason: 'Karta startowa: poznajemy twój gust' }))
-    : pending
+  const deck: Scored[] = starterLeft.length ? starterLeft.map((ev) => ({ ev, score: 0, distance: 0, reason: 'Karta startowa: poznajemy twój gust' })) : pending
   const top = deck[0]
 
   const decide = (d: Decision) => {
@@ -50,15 +52,48 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
     saveSwipe(userId, top.ev.id, d)
   }
 
+  const w = weights(profile, swipes, events)
+  const learnt = CATEGORIES.map((c) => ({ c, v: w[c.id] }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 4)
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pt-4 pb-3">
-      <div className="flex flex-none items-center justify-between">
-        <h1 className="text-[26px] font-semibold tracking-[-0.02em]">Odkrywaj</h1>
-        <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-muted" aria-live="polite">
-          {starterLeft.length ? `Start ${STARTER.length - starterLeft.length + 1} z ${STARTER.length}` : top ? 'Dopasowane do ciebie' : 'Koniec talii'}
-        </span>
-      </div>
-      <Deck key={top?.ev.id} deck={deck} onDecide={decide} />
+    <div className="flex min-h-0 flex-1 justify-center gap-10 px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-6">
+      <section className="flex min-h-0 w-full max-w-[480px] flex-col gap-3 md:max-h-[860px]" aria-labelledby="odkrywaj-h">
+        <div className="flex flex-none items-center justify-between">
+          <h1 id="odkrywaj-h" className="text-[26px] font-semibold tracking-[-0.02em] sm:text-[32px]">
+            Odkrywaj
+          </h1>
+          <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-muted">
+            {starterLeft.length ? `Start ${STARTER.length - starterLeft.length + 1} z ${STARTER.length}` : top ? 'Dopasowane do ciebie' : 'Koniec talii'}
+          </span>
+        </div>
+        {/* Stays mounted while Deck remounts per card, so screen readers announce each new card. */}
+        <p className="sr-only" aria-live="polite">
+          {top ? `${top.ev.event_name}, ${formatDate(top.ev.starts_at)}. ${top.reason}` : 'Koniec talii'}
+        </p>
+        <Deck key={top?.ev.id} deck={deck} onDecide={decide} />
+      </section>
+
+      {/* Laptops: what the profile is learning, next to the deck. */}
+      <aside className="hidden w-80 flex-none flex-col gap-4 pt-16 lg:flex" aria-label="Twój profil">
+        <div className={`${card} flex flex-col gap-3 p-5`}>
+          <h2 className="text-[15px] font-semibold">Czego się uczymy</h2>
+          {learnt.map(({ c, v }) => (
+            <div key={c.id} className="flex items-center gap-2.5 text-sm">
+              <c.Icon size={18} color={c.color} strokeWidth={2.2} aria-hidden />
+              <span className="w-24">{c.short}</span>
+              <div className="h-2 flex-1 rounded bg-track" aria-hidden>
+                <div className="h-2 rounded" style={{ width: `${Math.round(v * 100)}%`, background: c.color }} />
+              </div>
+              <span className="w-9 text-right text-muted">{Math.round(v * 100)}%</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[13px] leading-snug text-muted">
+          Przeciągnij kartę w prawo, żeby polubić, w lewo, żeby pominąć. Na klawiaturze: strzałka w prawo i w lewo.
+        </p>
+      </aside>
     </div>
   )
 }
@@ -93,6 +128,17 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
     else setDx(0)
   }
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement
+      if (t.closest('input, textarea, select, [role=dialog]')) return
+      if (e.key === 'ArrowRight') fly(1)
+      if (e.key === 'ArrowLeft') fly(-1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   const style = (pos: number): CSSProperties => {
     const transition = drag ? 'none' : `transform ${FLY_MS / 1000}s ease`
     if (pos === 0) return { zIndex: 3, transform: `translateX(${dx}px) rotate(${dx / 18}deg)`, transition }
@@ -102,10 +148,24 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
 
   return (
     <>
-      <div className="relative min-h-0 flex-1 cursor-grab touch-pan-y select-none" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+      <div
+        className="relative min-h-0 flex-1 cursor-grab touch-pan-y select-none"
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+      >
         {deck
           .slice(0, 3)
-          .map((x, k) => <SwipeCard key={x.ev.id} item={x} style={style(k)} like={k ? 0 : Math.max(0, Math.min(dx / 110, 1))} skip={k ? 0 : Math.max(0, Math.min(-dx / 110, 1))} />)
+          .map((x, k) => (
+            <SwipeCard
+              key={x.ev.id}
+              item={x}
+              style={style(k)}
+              like={k ? 0 : Math.max(0, Math.min(dx / 110, 1))}
+              skip={k ? 0 : Math.max(0, Math.min(-dx / 110, 1))}
+            />
+          ))
           .reverse()}
         {done && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center">
@@ -122,10 +182,22 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
         )}
       </div>
       <div className="flex flex-none justify-center gap-10">
-        <button type="button" aria-label="Pomiń wydarzenie" onClick={() => fly(-1)} disabled={done} className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50">
+        <button
+          type="button"
+          aria-label="Pomiń wydarzenie"
+          onClick={() => fly(-1)}
+          disabled={done}
+          className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+        >
           <X size={28} strokeWidth={2.4} aria-hidden />
         </button>
-        <button type="button" aria-label="Interesuje mnie" onClick={() => fly(1)} disabled={done} className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50">
+        <button
+          type="button"
+          aria-label="Interesuje mnie"
+          onClick={() => fly(1)}
+          disabled={done}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+        >
           <Heart size={28} color="#fff" aria-hidden />
         </button>
       </div>
@@ -167,7 +239,9 @@ function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProper
           {ev.address}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>{formatPrice(ev.price)}</span>
+          <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>
+            {formatPrice(ev.price)}
+          </span>
           <OrganizerLine ev={ev} className="text-[13px] text-brand-50" />
         </div>
         <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-ink-900">
