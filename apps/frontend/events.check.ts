@@ -1,7 +1,8 @@
 // Run: npm run check — asserts the date, recommendation and calendar logic the pages rely on.
 import assert from 'node:assert/strict'
-import { at, catalog, formatDate, formatPrice, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
+import { at, catalog, eventDays, formatDate, formatPrice, formatRange, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
 import { fold, ics } from './src/lib/ics.ts'
+import { describe, persona } from './src/lib/persona.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
 import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
@@ -10,12 +11,24 @@ assert.equal(formatPrice(0), 'Za darmo')
 assert.equal(formatPrice(15), '15 zł')
 // 23:30 UTC is already the next day in Warsaw
 assert.equal(warsawDay('2026-10-08T23:30:00Z'), '2026-10-09')
-assert.ok(inRange('2026-10-08T10:00:00+02:00', 'dzis', '2026-10-08'))
-assert.ok(!inRange('2026-10-09T10:00:00+02:00', 'dzis', '2026-10-08'))
-assert.ok(inRange('2026-10-14T23:00:00+02:00', 'tydzien', '2026-10-08'))
-assert.ok(!inRange('2026-10-15T10:00:00+02:00', 'tydzien', '2026-10-08'))
-assert.ok(!inRange('2026-10-07T10:00:00+02:00', 'tydzien', '2026-10-08'))
-assert.ok(inRange('2026-11-20T10:00:00+01:00', 'wszystkie', '2026-10-08'))
+assert.ok(inRange({ starts_at: '2026-10-08T10:00:00+02:00' }, 'dzis', '2026-10-08'))
+assert.ok(!inRange({ starts_at: '2026-10-09T10:00:00+02:00' }, 'dzis', '2026-10-08'))
+assert.ok(inRange({ starts_at: '2026-10-14T23:00:00+02:00' }, 'tydzien', '2026-10-08'))
+assert.ok(!inRange({ starts_at: '2026-10-15T10:00:00+02:00' }, 'tydzien', '2026-10-08'))
+assert.ok(!inRange({ starts_at: '2026-10-07T10:00:00+02:00' }, 'tydzien', '2026-10-08'))
+assert.ok(inRange({ starts_at: '2026-11-20T10:00:00+01:00' }, 'wszystkie', '2026-10-08'))
+
+// Multi-day events count on every day they run.
+const fair = { starts_at: '2026-10-06T10:00:00+02:00', ends_at: '2026-10-09T18:00:00+02:00' }
+assert.ok(inRange(fair, 'dzis', '2026-10-08'))
+assert.ok(!inRange(fair, 'dzis', '2026-10-10'))
+assert.ok(inRange(fair, 'tydzien', '2026-10-02'))
+assert.ok(!inRange(fair, 'wszystkie', '2026-10-10'))
+assert.deepEqual(eventDays(fair), ['2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'])
+assert.deepEqual(eventDays(fair, '2026-10-08'), ['2026-10-08', '2026-10-09'])
+// A long exhibition keeps showing up after its first month.
+assert.equal(eventDays({ starts_at: '2026-10-01T10:00:00+02:00', ends_at: '2026-11-30T18:00:00+01:00' }, '2026-11-05')[0], '2026-11-05')
+assert.equal(formatRange({ starts_at: '2026-10-08T19:00:00+02:00', ends_at: '2026-10-08T23:00:00+02:00' }), 'czw., 8 paź, 19:00–23:00')
 
 // Relative demo dates keep Warsaw summer/winter offsets.
 const oct3 = new Date('2026-10-03T10:00:00Z')
@@ -63,3 +76,12 @@ assert.ok(folded.split('\r\n').every((l) => new TextEncoder().encode(l).length <
 assert.equal(folded.replace(/\r\n /g, ''), long)
 assert.equal(fold('SHORT:ok'), 'SHORT:ok')
 console.log('events checks ok')
+
+// Persona: strongest category is the type, a close second adds the twist, ties follow the onboarding order.
+const flat = Object.fromEntries(Object.keys(weights(EMPTY_PROFILE, {}, [])).map((k) => [k, 0.5])) as ReturnType<typeof weights>
+assert.equal(persona(flat), null)
+assert.equal(persona({ ...flat, gry: 0.7, imprezy: 0.7 }, ['imprezy', 'gry'])?.title, 'Dusza towarzystwa z kostką do gry w kieszeni')
+assert.equal(persona({ ...flat, gry: 0.7, imprezy: 0.7 }, ['gry', 'imprezy'])?.title, 'Głowa do gier z imprezowym pazurem')
+assert.deepEqual(persona({ ...flat, nauka: 0.9, sport: 0.6 })?.ids, ['nauka'])
+assert.equal(describe(['kultura']).title, 'Mól książkowy')
+console.log('persona checks ok')

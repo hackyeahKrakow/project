@@ -1,13 +1,26 @@
 import { ArrowLeft, CircleAlert, Info, LoaderCircle, LogIn, Sparkles } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
-import { parseEvent, type Draft } from '@/lib/api'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { parseEvent, searchAddress, type Draft, type Place } from '@/lib/api'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
-import { DISTRICTS, LIBRARY, at, daysFromToday, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
+import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
+import { myPersona } from '@/lib/persona'
 import { useStore } from '@/lib/store'
-import { CategoryBadge, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
+import { CategoryBadge, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 
-type Form = { title: string; category: CategoryId; price: string; date: string; time: string; place: string; district: string; size: Size; description: string }
+type Form = {
+  title: string
+  category: CategoryId
+  price: string
+  date: string
+  time: string
+  endDate: string // optional: multi-day or long events
+  endTime: string
+  place: string
+  district: string
+  size: Size
+  description: string
+}
 type Key = keyof Form
 
 const EMPTY: Form = {
@@ -16,17 +29,20 @@ const EMPTY: Form = {
   price: '0',
   date: warsawDay(new Date().toISOString()),
   time: '19:00',
+  endDate: '',
+  endTime: '',
   place: '',
   district: 'Stare Miasto',
   size: 'small',
   description: '',
 }
-const input = 'h-12 w-full rounded-xl px-3.5 text-base focus:border-brand-600 focus:ring-brand-600'
+const input = 'h-12 w-full rounded-xl px-3.5 text-base focus:border-link focus:ring-link'
 const FIELD_OF: Record<string, Key> = {
   title: 'title',
   category: 'category',
   price: 'price',
   starts_at: 'date',
+  ends_at: 'endDate',
   address: 'place',
   size: 'size',
   description: 'description',
@@ -47,11 +63,18 @@ function validate(f: Form, today = warsawDay(new Date().toISOString())) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) return 'Podaj datę.'
   if (f.date < today) return 'Data nie może być w przeszłości.'
   if (!/^\d{2}:\d{2}$/.test(f.time)) return 'Podaj godzinę.'
+  if (f.endDate || f.endTime) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f.endDate) || !/^\d{2}:\d{2}$/.test(f.endTime)) return 'Podaj datę i godzinę końca albo zostaw oba pola puste.'
+    if (`${f.endDate}T${f.endTime}` <= `${f.date}T${f.time}`) return 'Koniec musi być po początku.'
+  }
   if (!f.place.trim()) return 'Podaj adres.'
   const price = Number(f.price.replace(',', '.'))
   if (f.price.trim() === '' || !Number.isFinite(price) || price < 0) return 'Cena musi być liczbą od 0 w górę.'
   return ''
 }
+
+const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })
+const nearestDistrict = ([lat, lng]: [number, number]) => Object.keys(DISTRICTS).sort((a, b) => km(DISTRICTS[a], [lat, lng]) - km(DISTRICTS[b], [lat, lng]))[0]
 
 function fromDraft(d: Draft, prev: Form): Form {
   const start = d.starts_at ? new Date(d.starts_at) : null
@@ -60,7 +83,9 @@ function fromDraft(d: Draft, prev: Form): Form {
     category: d.category ?? prev.category,
     price: d.price != null ? String(d.price) : prev.price,
     date: start ? warsawDay(d.starts_at!) : prev.date,
-    time: start ? start.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' }) : prev.time,
+    time: start ? hhmm(d.starts_at!) : prev.time,
+    endDate: d.ends_at ? warsawDay(d.ends_at) : prev.endDate,
+    endTime: d.ends_at ? hhmm(d.ends_at) : prev.endTime,
     place: d.address ?? prev.place,
     district: prev.district,
     size: d.size ?? prev.size,
@@ -78,6 +103,9 @@ export default function Dodaj() {
   const [flagged, setFlagged] = useState(new Set<Key>())
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState<'' | 'ai' | 'publish'>('')
+  const [showType, setShowType] = useState(false) // publishing the type is the student's choice, off by default
+  const me = myPersona(state)
+  const [coords, setCoords] = useState<[number, number] | null>(null) // from a picked address suggestion
 
   if (!account) {
     return (
@@ -92,7 +120,14 @@ export default function Dodaj() {
     )
   }
 
+  const pickPlace = (p: Place, base = form) => {
+    setCoords([p.lat, p.lng])
+    setForm({ ...base, place: p.label, district: nearestDistrict([p.lat, p.lng]) })
+    setFlagged((f) => new Set([...f].filter((x) => x !== 'place')))
+  }
+
   const set = (k: Key, v: string) => {
+    if (k === 'place') setCoords(null) // typed by hand: no exact pin until a suggestion is picked
     setForm({ ...form, [k]: v })
     setFlagged((f) => new Set([...f].filter((x) => x !== k))) // editing a field = the person checked it
   }
@@ -107,7 +142,14 @@ export default function Dodaj() {
     }
     const draft = real ?? demoDraft(nextFriday())
     if (!real) setNotice('Model AI jest teraz niedostępny, więc pokazujemy przykładową odpowiedź dla tego posta.')
-    setForm(fromDraft(draft, form))
+    const next = fromDraft(draft, form)
+    // The AI gives an address as text: look it up once so the pin and district are right too.
+    const [hit] = (draft.address && (await searchAddress(draft.address))) || []
+    if (hit) pickPlace(hit, next)
+    else {
+      if (draft.address) setCoords(null) // a new address we couldn't find: don't keep the pin of the old one
+      setForm(next)
+    }
     setFlagged(new Set(draft.missing_fields.map((f) => FIELD_OF[f]).filter(Boolean)))
     setBusy('')
   }
@@ -117,16 +159,17 @@ export default function Dodaj() {
     if (error) return setNotice(error)
     setBusy('publish')
     const iso = at(daysFromToday(`${form.date}T12:00:00Z`), form.time)
-    // ponytail: pin at the district center (small spread so pins don't stack); geocoding the address needs a backend proxy
-    // that respects the Nominatim policy (User-Agent, 1 req/s, cache: docs/LEGAL.md)
+    const endIso = form.endDate ? at(daysFromToday(`${form.endDate}T12:00:00Z`), form.endTime) : undefined
+    // A picked address gives the exact pin; otherwise the district center, slightly spread so pins don't stack.
     const spread = () => (Math.random() - 0.5) * 0.006
-    const [lat, lng] = DISTRICTS[form.district].map((v) => v + spread())
+    const [lat, lng] = coords ?? DISTRICTS[form.district].map((v) => v + spread())
     const district = form.district
     const ev: SpottedEvent = {
       id: `my_${Date.now()}`,
       event_name: form.title.trim(),
       description: form.description.trim() || form.title.trim(),
       starts_at: iso,
+      ...(endIso && { ends_at: endIso }),
       address: form.place.trim(),
       lat,
       lng,
@@ -137,7 +180,13 @@ export default function Dodaj() {
       organizer:
         org && account.org === LIBRARY.name
           ? LIBRARY
-          : { id: `usr_${account.email}`, name: account.org ?? account.name, verified: false, kind: org ? 'org' : 'student' },
+          : {
+              id: `usr_${account.email}`,
+              name: account.org ?? account.name,
+              verified: false,
+              kind: org ? 'org' : 'student',
+              ...(!org && showType && me && { persona: me.ids }),
+            },
     }
     // ponytail: no create-event endpoint yet, so the event lives on this device only
     update((s) => ({ myEvents: [...s.myEvents, ev], swipes: { ...s.swipes, [ev.id]: 'right' } }))
@@ -158,7 +207,7 @@ export default function Dodaj() {
             </span>
           )}
         </span>
-        {control(`${input} ${check ? 'border-2 border-spark-500 bg-spark-50' : 'border border-line bg-white'}`)}
+        {control(`${input} ${check ? 'border-2 border-spark-500 bg-spark-50' : 'border border-line bg-surface'}`)}
       </label>
     )
   }
@@ -169,7 +218,7 @@ export default function Dodaj() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 pb-8 sm:px-8 sm:pt-8 md:grid md:grid-cols-[380px_minmax(0,1fr)] md:items-start md:gap-6">
       <div className="flex items-center gap-2 md:col-span-2">
-        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
+        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface" aria-label="Wstecz">
           <ArrowLeft size={22} aria-hidden />
         </a>
         <h1 className="text-[26px] font-semibold tracking-[-0.02em] sm:text-[32px]">Dodaj wydarzenie</h1>
@@ -190,7 +239,7 @@ export default function Dodaj() {
             maxLength={4000}
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
-            className="h-36 resize-none rounded-xl border border-line bg-canvas px-3.5 py-3 text-[15px] leading-[1.45] focus:border-brand-600 focus:ring-brand-600"
+            className="h-36 resize-none rounded-xl border border-line bg-canvas px-3.5 py-3 text-[15px] leading-[1.45] focus:border-link focus:ring-link"
           />
           <button type="button" className={`${btnSpark} h-12 w-full`} onClick={fill} disabled={!!busy || paste.trim().length < 10}>
             {busy === 'ai' ? <LoaderCircle size={20} className="animate-spin" aria-hidden /> : <Sparkles size={20} strokeWidth={2.2} aria-hidden />}
@@ -214,9 +263,7 @@ export default function Dodaj() {
       >
         {field('title', 'Tytuł', text('title'))}
         {field('category', 'Kategoria', (cls) => (
-          <div
-            className={`${cls} relative flex items-center has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600`}
-          >
+          <div className={`${cls} relative flex items-center has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link`}>
             <CategoryBadge cat={category(form.category)} className="text-sm" />
             <select
               aria-label="Kategoria"
@@ -236,7 +283,13 @@ export default function Dodaj() {
           {field('date', 'Data', text('date', 'date'), 'flex-[3]')}
           {field('time', 'Godzina', text('time', 'time'), 'flex-[2]')}
         </div>
-        {field('place', 'Adres', text('place'))}
+        <div className="flex gap-3">
+          {field('endDate', 'Koniec: data (opcjonalnie)', text('endDate', 'date'), 'flex-[3]')}
+          {field('endTime', 'Koniec: godzina', text('endTime', 'time'), 'flex-[2]')}
+        </div>
+        {field('place', 'Adres', (cls) => (
+          <AddressInput className={cls} value={form.place} onChange={(v) => set('place', v)} onPick={(p) => pickPlace(p)} />
+        ))}
         {field('district', 'Dzielnica (pin na mapie)', (cls) => (
           <select className={cls} value={form.district} onChange={(e) => set('district', e.target.value)}>
             {Object.keys(DISTRICTS).map((d) => (
@@ -262,6 +315,7 @@ export default function Dodaj() {
         {field('description', 'Opis', (cls) => (
           <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />
         ))}
+        {!org && me && <Toggle label="Pokaż przy wydarzeniu mój typ" hint={me.title} on={showType} onChange={setShowType} />}
         {notice && (
           <div role="status" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
             <Info size={18} className="flex-none" aria-hidden />
@@ -278,6 +332,94 @@ export default function Dodaj() {
           </button>
         </div>
       </form>
+    </div>
+  )
+}
+
+/** Address field with suggestions from GET /geocode (ARIA combobox: arrows, Enter, Escape). */
+function AddressInput({ value, onChange, onPick, className }: { value: string; onChange: (v: string) => void; onPick: (p: Place) => void; className: string }) {
+  const [items, setItems] = useState<Place[]>([])
+  const [listOpen, setOpen] = useState(false)
+  const [active, setActive] = useState(-1)
+  const picked = useRef('')
+  const id = useId()
+  const open = listOpen && value.trim().length >= 3 // erasing the text hides stale suggestions
+
+  useEffect(() => {
+    if (value.trim().length < 3 || value === picked.current) return
+    let stale = false // a slower answer for older text must not replace the current one
+    const t = setTimeout(async () => {
+      const found = await searchAddress(value)
+      if (stale) return
+      setItems(found ?? [])
+      setOpen(!!found?.length)
+      setActive(-1)
+    }, 350)
+    return () => {
+      stale = true
+      clearTimeout(t)
+    }
+  }, [value])
+
+  const pick = (p: Place) => {
+    picked.current = p.label
+    setOpen(false)
+    onPick(p)
+  }
+  const onKey = (e: KeyboardEvent) => {
+    if (!open) return
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActive((a) => (a + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length)
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault()
+      pick(items[active])
+    } else if (e.key === 'Escape') setOpen(false)
+  }
+
+  return (
+    <div className="relative">
+      <input
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={id}
+        aria-autocomplete="list"
+        aria-activedescendant={open && active >= 0 ? `${id}-${active}` : undefined}
+        autoComplete="off"
+        placeholder="np. Józefińska 20"
+        className={className}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKey}
+        onBlur={() => setOpen(false)}
+      />
+      <span className="sr-only" aria-live="polite">
+        {open ? `${items.length} podpowiedzi adresu, wybierz strzałkami` : ''}
+      </span>
+      {open && (
+        <ul
+          id={id}
+          role="listbox"
+          aria-label="Podpowiedzi adresu"
+          className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-line bg-surface shadow-lg"
+        >
+          {items.map((p, i) => (
+            <li
+              key={`${p.label}-${i}`}
+              id={`${id}-${i}`}
+              role="option"
+              aria-selected={i === active}
+              onMouseDown={(e) => {
+                e.preventDefault() // keep focus in the input
+                pick(p)
+              }}
+              className={`flex min-h-11 cursor-pointer items-center px-3.5 text-[15px] ${i === active ? 'bg-brand-50 text-brand-700' : 'hover:bg-canvas'}`}
+            >
+              {p.label}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

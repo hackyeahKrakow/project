@@ -1,5 +1,5 @@
 import { CATEGORIES, category, type CategoryId } from './categories.ts'
-import { DISTRICTS, SIZE_LABEL, daysFromToday, formatPrice, km, todayYmd, whenLabel, type SpottedEvent } from './events.ts'
+import { DISTRICTS, SIZE_LABEL, daysFromToday, formatPrice, inRange, km, todayYmd, whenLabel, type SpottedEvent } from './events.ts'
 import type { Decision, Goal, Profile } from './store'
 
 const GOAL_CATS: Record<Goal, CategoryId[]> = {
@@ -89,7 +89,7 @@ export function recommend(
   const w = weights(p, swipes, events)
   const today = todayYmd()
   return events
-    .filter((e) => !swipes[e.id] && !exclude.has(e.id) && daysFromToday(e.starts_at, today) >= 0 && fitsBudget(e, p))
+    .filter((e) => !swipes[e.id] && !exclude.has(e.id) && inRange(e, 'wszystkie', today) && fitsBudget(e, p))
     .map((e) => score(e, p, w, here, today, follows))
     .filter((x) => !p.distanceKm || x.distance <= p.distanceKm + 1)
     .sort((a, b) => b.score - a.score)

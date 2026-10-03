@@ -33,7 +33,7 @@ export default function Statystyki() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 pb-8 sm:px-8 sm:pt-8 md:grid md:grid-cols-2 md:items-start">
       <div className="flex items-center gap-2 md:col-span-2">
-        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
+        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface" aria-label="Wstecz">
           <ArrowLeft size={22} aria-hidden />
         </a>
         <div>
@@ -91,7 +91,7 @@ export default function Statystyki() {
 
       <section className={`${card} flex flex-col gap-3 p-4`}>
         <h2 className="flex items-center gap-2 font-semibold">
-          <MessageSquareQuote size={20} className="text-brand-600" aria-hidden />
+          <MessageSquareQuote size={20} className="text-link" aria-hidden />
           Opinie po wydarzeniach
         </h2>
         {LIBRARY_FEEDBACK.map((f) => (

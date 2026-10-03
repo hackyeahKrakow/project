@@ -27,6 +27,9 @@ export type State = {
   location: boolean
   notifications: boolean
   bigText: boolean
+  theme: 'system' | 'light' | 'dark'
+  highContrast: boolean
+  navCollapsed: boolean // sidebar on tablets and laptops
   account: Account | null
   myEvents: SpottedEvent[]
 }
@@ -53,6 +56,9 @@ export const fresh = (): State => ({
   location: false,
   notifications: false,
   bigText: false,
+  theme: 'system',
+  highContrast: false,
+  navCollapsed: false,
   account: null,
   myEvents: [],
 })

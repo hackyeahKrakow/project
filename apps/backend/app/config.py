@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     parse_model: str = "minimax-m2.5-free"
     parse_url: str = "https://opencode.ai/zen/v1/chat/completions"
     parse_timeout_seconds: float = 20.0
+    # GET /geocode: address suggestions from Photon (OpenStreetMap), identified by our User-Agent
+    geocode_url: str = "https://photon.komoot.io/api/"
+    geocode_user_agent: str = "spootted/0.1 (HackYeah 2026 demo)"
+    geocode_timeout_seconds: float = 6.0
 
     @property
     def cors_origin_list(self) -> list[str]:

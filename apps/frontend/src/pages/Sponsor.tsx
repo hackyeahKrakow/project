@@ -13,7 +13,7 @@ export default function Sponsor() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 pb-8 sm:px-8 sm:pt-8">
       <div className="flex items-center gap-2">
-        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
+        <a href="#/konto" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface" aria-label="Wstecz">
           <ArrowLeft size={22} aria-hidden />
         </a>
         <h1 className="text-[26px] leading-tight font-semibold tracking-[-0.02em] sm:text-[32px]">Zostań sponsorem</h1>
@@ -50,7 +50,7 @@ export default function Sponsor() {
               <ul className="flex flex-col gap-1.5 text-sm">
                 {[p.ai, p.stats, p.boost, p.feedback ? 'Opinie po wydarzeniach' : null].filter(Boolean).map((t) => (
                   <li key={t} className="flex gap-2">
-                    <Check size={18} className="flex-none text-brand-600" aria-hidden />
+                    <Check size={18} className="flex-none text-link" aria-hidden />
                     {t}
                   </li>
                 ))}
@@ -80,8 +80,8 @@ export default function Sponsor() {
 
 function Perk({ Icon, text }: { Icon: typeof Flame; text: string }) {
   return (
-    <li className="flex items-start gap-2 rounded-xl bg-white p-3">
-      <Icon size={18} className="flex-none text-brand-600" aria-hidden />
+    <li className="flex items-start gap-2 rounded-xl bg-surface p-3">
+      <Icon size={18} className="flex-none text-link" aria-hidden />
       {text}
     </li>
   )

@@ -39,7 +39,7 @@ export function ics(events: SpottedEvent[], now = new Date()) {
       `UID:${ev.id}@spootted.app`,
       `DTSTAMP:${stamp(now)}`,
       `DTSTART:${stamp(start)}`,
-      `DTEND:${stamp(new Date(start.getTime() + 2 * 3_600_000))}`,
+      `DTEND:${stamp(ev.ends_at ? new Date(ev.ends_at) : new Date(start.getTime() + 2 * 3_600_000))}`,
       `SUMMARY:${text(ev.event_name)}`,
       `LOCATION:${text(ev.address)}`,
       `DESCRIPTION:${text(`${ev.description}\n\nOrganizator: ${ev.organizer.name}`)}`,

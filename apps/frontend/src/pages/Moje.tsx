@@ -1,8 +1,9 @@
-import { CalendarArrowDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { CalendarArrowDown, ChevronLeft, ChevronRight, Plus, Users } from 'lucide-react'
 import { useState } from 'react'
 import { category } from '@/lib/categories'
-import { formatDay, formatPrice, formatTime, todayYmd, warsawDay, type SpottedEvent } from '@/lib/events'
+import { eventDays, formatDay, formatPrice, formatTime, inRange, todayYmd, warsawDay, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
+import { photoUrl } from '@/lib/photos'
 import { useStore } from '@/lib/store'
 import { CategoryBadge, EventCard, OrganizerLine, Screen, Sheet, Thumb, btnOutline, btnPrimary, card } from '@/ui'
 
@@ -15,11 +16,13 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
   const [view, setView] = useState<'agenda' | 'miesiac'>('agenda')
   const [openId, setOpenId] = useState<string>()
   const today = todayYmd()
-  const mine = events.filter((e) => liked.has(e.id) && warsawDay(e.starts_at) >= today).sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+  const mine = events.filter((e) => liked.has(e.id) && inRange(e, 'wszystkie', today)).sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   const open = events.find((e) => e.id === openId)
 
   const byDay = new Map<string, SpottedEvent[]>()
-  for (const ev of mine) byDay.set(warsawDay(ev.starts_at), [...(byDay.get(warsawDay(ev.starts_at)) ?? []), ev])
+  // A multi-day event shows up on every day it runs (from today on in the agenda).
+  for (const ev of mine) for (const day of eventDays(ev, today)) byDay.set(day, [...(byDay.get(day) ?? []), ev])
+  const days = [...byDay.keys()].sort()
 
   return (
     <>
@@ -44,7 +47,7 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
                 type="button"
                 aria-pressed={view === v}
                 onClick={() => setView(v)}
-                className={`h-10 flex-1 rounded-[11px] text-[15px] ${view === v ? 'bg-white font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
+                className={`h-10 flex-1 rounded-[11px] text-[15px] ${view === v ? 'bg-surface font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
               >
                 {v === 'agenda' ? 'Agenda' : 'Miesiąc'}
               </button>
@@ -62,6 +65,17 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
           </button>
         </div>
 
+        <a href="#/organizatorzy" className={`${card} flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-canvas sm:max-w-md`}>
+          <Users size={22} className="flex-none text-link" aria-hidden />
+          <span className="flex flex-1 flex-col">
+            <span className="font-semibold">Organizatorzy</span>
+            <span className="text-[13px] text-muted">
+              {state.follows.length ? `Obserwujesz: ${state.follows.length}` : 'Znajdź koła, kluby i miejsca do obserwowania'}
+            </span>
+          </span>
+          <ChevronRight size={20} className="flex-none" aria-hidden />
+        </a>
+
         {!mine.length ? (
           <div className={`${card} flex flex-col items-center gap-4 p-8 text-center`}>
             <p className="text-lg">Nie masz jeszcze polubionych wydarzeń.</p>
@@ -71,16 +85,18 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
           </div>
         ) : view === 'agenda' ? (
           <div className="flex flex-col gap-5">
-            {[...byDay].map(([day, list]) => (
-              <section key={day} className="flex flex-col gap-2">
-                <h2 className="text-sm font-semibold tracking-[.04em] text-muted uppercase">{day === today ? 'Dziś' : formatDay(day)}</h2>
-                <div className="grid gap-2 lg:grid-cols-2">
-                  {list.map((ev) => (
-                    <Row key={ev.id} ev={ev} onOpen={() => setOpenId(ev.id)} />
-                  ))}
-                </div>
-              </section>
-            ))}
+            {days
+              .map((day) => [day, byDay.get(day)!] as const)
+              .map(([day, list]) => (
+                <section key={day} className="flex flex-col gap-2">
+                  <h2 className="text-sm font-semibold tracking-[.04em] text-muted uppercase">{day === today ? 'Dziś' : formatDay(day)}</h2>
+                  <div className="grid gap-2 lg:grid-cols-2">
+                    {list.map((ev) => (
+                      <Row key={ev.id} ev={ev} day={day} onOpen={() => setOpenId(ev.id)} />
+                    ))}
+                  </div>
+                </section>
+              ))}
           </div>
         ) : (
           <Month byDay={byDay} today={today} onOpen={setOpenId} />
@@ -109,17 +125,21 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
   )
 }
 
-function Row({ ev, onOpen }: { ev: SpottedEvent; onOpen: () => void }) {
+function Row({ ev, day, onOpen }: { ev: SpottedEvent; day: string; onOpen: () => void }) {
   const c = category(ev.category)
+  const starts = warsawDay(ev.starts_at) === day // later days of a multi-day event say "trwa" instead of a start time
   return (
     <button type="button" onClick={onOpen} className={`${card} flex items-center gap-3 p-2.5 text-left`}>
-      <div className="w-12 flex-none text-center text-lg font-semibold">{formatTime(ev.starts_at)}</div>
-      <Thumb cat={c} iconSize={24} className="h-14 w-14 rounded-xl" />
+      <div className={`w-12 flex-none text-center font-semibold ${starts ? 'text-lg' : 'text-sm text-muted'}`}>
+        {starts ? formatTime(ev.starts_at) : 'trwa'}
+      </div>
+      <Thumb cat={c} iconSize={24} className="h-14 w-14 rounded-xl" photo={photoUrl(ev, 160)} />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="leading-tight font-semibold">{ev.event_name}</span>
         <CategoryBadge cat={c} />
         <span className="text-[13px] text-muted">
           {ev.district} · {formatPrice(ev.price)}
+          {ev.ends_at && warsawDay(ev.ends_at) !== warsawDay(ev.starts_at) && ` · do ${formatDay(warsawDay(ev.ends_at))}`}
         </span>
         <OrganizerLine ev={ev} className="text-[12px] text-muted" />
       </span>
@@ -181,7 +201,7 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
                 onClick={() => setPicked(ymd)}
                 aria-pressed={on}
                 aria-label={`${i + 1}${evs.length ? `, ${evs.length} wydarzeń` : ''}`}
-                className={`flex h-11 flex-col items-center justify-center rounded-xl text-[15px] ${on ? 'bg-brand-600 font-semibold text-white' : ymd === today ? 'bg-brand-50 font-semibold text-ink-900' : 'text-ink-900'}`}
+                className={`flex h-11 flex-col items-center justify-center rounded-xl text-[15px] ${on ? 'bg-brand-600 font-semibold text-white' : ymd === today ? 'bg-brand-50 font-semibold text-fg' : 'text-fg'}`}
               >
                 {i + 1}
                 <span className="flex h-1.5 gap-0.5">
@@ -199,7 +219,7 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
           {formatDay(picked)}
         </h2>
         {list.length ? (
-          list.map((ev) => <Row key={ev.id} ev={ev} onOpen={() => onOpen(ev.id)} />)
+          list.map((ev) => <Row key={ev.id} ev={ev} day={picked} onOpen={() => onOpen(ev.id)} />)
         ) : (
           <p className="text-muted">Brak polubionych wydarzeń tego dnia.</p>
         )}

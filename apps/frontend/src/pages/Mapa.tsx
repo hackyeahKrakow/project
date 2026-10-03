@@ -1,7 +1,8 @@
-import { ChevronDown, List } from 'lucide-react'
+import { ChevronDown, Heart, Info, List, Megaphone } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { formatTime, inRange, whenLabel, type SpottedEvent, type When } from '@/lib/events'
+import { photoUrl } from '@/lib/photos'
 import { useStore } from '@/lib/store'
 import { CategoryBadge, EventCard, EventMap, Sheet, Thumb, chip } from '@/ui'
 
@@ -20,11 +21,12 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const [mine, setMine] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
+  const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
 
   const shown = useMemo(
     () =>
       events
-        .filter((e) => inRange(e.starts_at, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)))
+        .filter((e) => inRange(e, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)))
         .sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
     [events, when, cat, free, mine, liked],
   )
@@ -49,9 +51,9 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
               type="button"
               onClick={() => setSelectedId(ev.id)}
               aria-current={ev.id === selectedId}
-              className={`flex w-full items-center gap-3 rounded-2xl p-2.5 text-left ${ev.id === selectedId ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
+              className={`flex w-full items-center gap-3 rounded-2xl p-2.5 text-left ${ev.id === selectedId ? 'border-2 border-link bg-brand-50' : 'border border-line bg-surface'}`}
             >
-              <Thumb cat={c} iconSize={26} className="h-16 w-16 rounded-xl" />
+              <Thumb cat={c} iconSize={26} className="h-16 w-16 rounded-xl" photo={photoUrl(ev, 160)} />
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="leading-tight font-semibold">{ev.event_name}</span>
                 <CategoryBadge cat={c} />
@@ -87,9 +89,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
               {label}
             </button>
           ))}
-          <label
-            className={`${chip(!!cat)} relative shadow-sm has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600`}
-          >
+          <label className={`${chip(!!cat)} relative shadow-sm has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link`}>
             {cat ? category(cat).short : 'Kategoria'}
             <ChevronDown size={16} aria-hidden />
             <select
@@ -114,11 +114,48 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
           </button>
         </div>
 
+        {/* Legend: what pin colors and badges mean (color is never the only carrier, so each row has the icon too). */}
+        <details className="group absolute bottom-20 left-3 z-10 max-w-[240px] rounded-2xl bg-surface/95 text-sm shadow-lg md:bottom-4" open={legendOpen}>
+          <summary
+            className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 font-semibold"
+            onClick={(e) => {
+              e.preventDefault()
+              setLegendOpen(!legendOpen)
+            }}
+          >
+            <Info size={18} aria-hidden />
+            Legenda
+            <ChevronDown size={16} className="ml-auto transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <ul className="flex flex-col gap-1.5 px-3.5 pb-3">
+            {CATEGORIES.map((c) => (
+              <li key={c.id} className="flex items-center gap-2">
+                <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full border-2 border-white" style={{ background: c.color }}>
+                  <c.Icon size={13} color="#fff" strokeWidth={2.4} aria-hidden />
+                </span>
+                {c.name}
+              </li>
+            ))}
+            <li className="flex items-center gap-2 border-t border-line pt-1.5">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-spark-500">
+                <Heart size={12} fill="#0A1F44" color="#0A1F44" aria-hidden />
+              </span>
+              Polubione przez ciebie
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-spark-500">
+                <Megaphone size={12} color="#0A1F44" aria-hidden />
+              </span>
+              Promowane
+            </li>
+          </ul>
+        </details>
+
         {!selected && (
           <button
             type="button"
             onClick={() => setOpenList(true)}
-            className="absolute bottom-4 left-1/2 z-10 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-ink-900 px-5 font-semibold text-white shadow-lg md:hidden"
+            className="absolute bottom-4 left-1/2 z-10 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-fg px-5 font-semibold text-surface shadow-lg md:hidden"
           >
             <List size={20} aria-hidden />
             Lista ({shown.length})

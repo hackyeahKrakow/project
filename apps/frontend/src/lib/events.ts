@@ -1,7 +1,13 @@
 import type { CategoryId } from './categories'
 
 export type Size = 'small' | 'medium' | 'large'
-export type Organizer = { id: string; name: string; verified: boolean; kind: 'org' | 'student' }
+export type Organizer = {
+  id: string
+  name: string
+  verified: boolean
+  kind: 'org' | 'student'
+  persona?: CategoryId[] // a student's type (lib/persona.ts), shown only if they chose to publish it with the event
+}
 
 // Fields event_name…price mirror the backend's CardFetchResponse; the rest has no API yet.
 export type SpottedEvent = {
@@ -9,6 +15,7 @@ export type SpottedEvent = {
   event_name: string
   description: string
   starts_at: string
+  ends_at?: string // multi-day events (exhibitions, fairs) span every day up to this one
   address: string
   lat: number
   lng: number
@@ -48,8 +55,8 @@ const AZS = o('org_azs', 'Sekcja Biegowa AZS (demo)')
 const TEATR = o('org_teatr', 'Teatr Studencki (demo)')
 const EKO = o('org_eko', 'Koło Ekologiczne (demo)')
 const PRZEWODNICY = o('org_przew', 'Koło Przewodników (demo)')
-const KASIA = o('usr_kasia', 'Kasia, studentka AGH', 'student')
-const MIKOLAJ = o('usr_mikolaj', 'Mikołaj, student UJ', 'student')
+const KASIA: Organizer = { ...o('usr_kasia', 'Kasia, studentka AGH', 'student'), persona: ['imprezy', 'gry'] }
+const MIKOLAJ: Organizer = { ...o('usr_mikolaj', 'Mikołaj, student UJ', 'student'), persona: ['gry', 'warsztaty'] }
 
 // Warsaw UTC offset for a given day, e.g. "+02:00" (CEST) or "+01:00" (CET).
 const offsetFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Warsaw', timeZoneName: 'longOffset' })
@@ -105,14 +112,23 @@ const ROWS: Row[] = [
 
 // The six fixed starter cards come from the backend seed (GET /card/new/{user_id}); same ids, so swipes can be saved.
 export const STARTER: SpottedEvent[] = [
-  { id: '01a10200-0830-7370-ae21-2e47cc06805f', event_name: 'Studencki Nocny Market', description: 'Street food, muzyka na żywo i stoiska kół naukowych.', starts_at: '2026-11-14T18:00:00+01:00', address: 'Rynek Główny 1', lat: 50.0617, lng: 19.9373, price: 0, category: 'imprezy', size: 'large', district: 'Stare Miasto', organizer: SAMORZAD },
+  { id: '01a10200-0830-7370-ae21-2e47cc06805f', event_name: 'Studencki Nocny Market', description: 'Street food, muzyka na żywo i stoiska kół naukowych.', starts_at: '2026-11-14T18:00:00+01:00', ends_at: '2026-11-14T23:00:00+01:00', address: 'Rynek Główny 1', lat: 50.0617, lng: 19.9373, price: 0, category: 'imprezy', size: 'large', district: 'Stare Miasto', organizer: SAMORZAD },
   { id: '01a10200-0831-797f-b50e-774683352488', event_name: 'Turniej gier planszowych', description: 'Open turniej dla początkujących i zaawansowanych, nagrody dla zwycięzców.', starts_at: '2026-11-15T16:00:00+01:00', address: 'ul. Reymonta 17', lat: 50.0647, lng: 19.9234, price: 10, category: 'gry', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: PLANSZ },
-  { id: '01a10200-0832-7c17-aa31-2be7e76e7a57', event_name: 'Hackathon dla początkujących', description: 'Całodniowe warsztaty programowania w zespołach z mentorami.', starts_at: '2026-11-20T09:00:00+01:00', address: 'ul. Podchorążych 2', lat: 50.0701, lng: 19.9026, price: 0, category: 'nauka', size: 'medium', district: 'Bronowice', organizer: DS },
+  { id: '01a10200-0832-7c17-aa31-2be7e76e7a57', event_name: 'Hackathon dla początkujących', description: 'Całodniowe warsztaty programowania w zespołach z mentorami.', starts_at: '2026-11-20T09:00:00+01:00', ends_at: '2026-11-20T20:00:00+01:00', address: 'ul. Podchorążych 2', lat: 50.0701, lng: 19.9026, price: 0, category: 'nauka', size: 'medium', district: 'Bronowice', organizer: DS },
   { id: '01a10200-0833-793b-baed-a7c26b03f790', event_name: 'Koncert w Rotundzie', description: 'Wieczór z lokalnymi zespołami studenckimi.', starts_at: '2026-11-21T19:30:00+01:00', address: 'ul. Oleandry 1', lat: 50.0603, lng: 19.9238, price: 25, category: 'muzyka', size: 'large', district: 'Krowodrza', organizer: AKORD },
-  { id: '01a10200-0834-7591-8c3e-835ac248aba0', event_name: 'Spacer po Kazimierzu z przewodnikiem', description: 'Dwugodzinny spacer śladami historii dzielnicy, zniżki dla studentów.', starts_at: '2026-11-22T11:00:00+01:00', address: 'Plac Wolnica 1', lat: 50.0494, lng: 19.9455, price: 15, category: 'kultura', size: 'small', district: 'Kazimierz', organizer: PRZEWODNICY },
+  { id: '01a10200-0834-7591-8c3e-835ac248aba0', event_name: 'Spacer po Kazimierzu z przewodnikiem', description: 'Dwugodzinny spacer śladami historii dzielnicy, zniżki dla studentów.', starts_at: '2026-11-22T11:00:00+01:00', ends_at: '2026-11-22T13:00:00+01:00', address: 'Plac Wolnica 1', lat: 50.0494, lng: 19.9455, price: 15, category: 'kultura', size: 'small', district: 'Kazimierz', organizer: PRZEWODNICY },
   { id: '01a10200-0835-7c78-8dba-f85e707ea49e', event_name: 'Wieczór kina studenckiego', description: 'Pokaz krótkich filmów studentów i dyskusja z reżyserami.', starts_at: '2026-11-27T20:00:00+01:00', address: 'ul. Św. Tomasza 11', lat: 50.0636, lng: 19.9411, price: 0, category: 'kultura', size: 'medium', district: 'Stare Miasto', organizer: DKF },
 ]
 export const STARTER_IDS = new Set(STARTER.map((e) => e.id))
+
+// End times as [days from today, hh:mm] for events that run longer than one evening.
+const ENDS: Record<string, [number, string]> = {
+  evt_komiks: [9, '18:00'],
+  evt_targi: [9, '16:00'],
+  evt_noc_bibl: [7, '06:00'],
+  evt_hack: [3, '21:00'],
+  evt_czytelnia: [0, '23:00'],
+}
 
 export const catalog = (today = new Date()): SpottedEvent[] => [
   ...ROWS.map(([id, event_name, category, days, time, address, district, lat, lng, price, size, organizer, description]) => ({
@@ -120,6 +136,7 @@ export const catalog = (today = new Date()): SpottedEvent[] => [
     event_name,
     description,
     starts_at: at(days, time, today),
+    ...(ENDS[id] && { ends_at: at(ENDS[id][0], ENDS[id][1], today) }),
     address: `${address}, Kraków`,
     lat,
     lng,
@@ -162,12 +179,30 @@ export function whenLabel(iso: string, today = todayYmd()) {
 
 export type When = 'dzis' | 'tydzien' | 'wszystkie'
 
-/** Today, the 7 days starting today, or anything not in the past, counted in Warsaw calendar days. */
-export function inRange(startsAt: string, when: When, today = todayYmd()) {
-  const diff = daysFromToday(startsAt, today)
-  if (when === 'dzis') return diff === 0
-  if (when === 'tydzien') return diff >= 0 && diff < 7
-  return diff >= 0
+/** Does the event run today, during the 7 days starting today, or at any point from today on (Warsaw calendar days)? */
+export function inRange(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>, when: When, today = todayYmd()) {
+  const from = daysFromToday(ev.starts_at, today)
+  const to = ev.ends_at ? daysFromToday(ev.ends_at, today) : from
+  if (when === 'dzis') return from <= 0 && to >= 0
+  if (when === 'tydzien') return from < 7 && to >= 0
+  return to >= 0
+}
+
+/** Every Warsaw calendar day the event runs on (yyyy-mm-dd), only from `from` on when given (e.g. today). */
+export function eventDays(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>, from = '') {
+  const start = Date.parse(warsawDay(ev.starts_at))
+  const first = from ? Math.max(start, Date.parse(from)) : start
+  const last = ev.ends_at ? Date.parse(warsawDay(ev.ends_at)) : start
+  const days: string[] = []
+  // ponytail: a year is a guard against a broken end date, not a product limit
+  for (let t = first; t <= last && days.length < 366; t += 86_400_000) days.push(new Date(t).toISOString().slice(0, 10))
+  return days
+}
+
+/** "czw., 8 paź, 19:00–23:00" or "pt., 9 paź, 20:00 – sob., 10 paź, 06:00". */
+export function formatRange(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>) {
+  if (!ev.ends_at) return formatDate(ev.starts_at)
+  return warsawDay(ev.starts_at) === warsawDay(ev.ends_at) ? `${formatDate(ev.starts_at)}–${formatTime(ev.ends_at)}` : `${formatDate(ev.starts_at)} – ${formatDate(ev.ends_at)}`
 }
 
 /** Straight-line distance in km. */

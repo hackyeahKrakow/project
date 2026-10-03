@@ -159,7 +159,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
             <select
               value={p.district}
               onChange={(e) => set({ district: e.target.value })}
-              className="h-12 rounded-xl border-line text-[15px] focus:border-brand-600 focus:ring-brand-600"
+              className="h-12 rounded-xl border-line bg-surface text-[15px] focus:border-link focus:ring-link"
             >
               {Object.keys(DISTRICTS).map((d) => (
                 <option key={d}>{d}</option>
@@ -197,13 +197,13 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
       body: (
         <div className={`${card} flex flex-col divide-y divide-line px-4`}>
           <div className="flex items-center gap-3">
-            <LocateFixed size={22} className="flex-none text-brand-600" aria-hidden />
+            <LocateFixed size={22} className="flex-none text-link" aria-hidden />
             <div className="flex-1">
               <Toggle label="Lokalizacja" hint="Odległość na kartach i twoja kropka na mapie. Nie zapisujemy jej na serwerze." on={loc} onChange={setLoc} />
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Bell size={22} className="flex-none text-brand-600" aria-hidden />
+            <Bell size={22} className="flex-none text-link" aria-hidden />
             <div className="flex-1">
               <Toggle label="Powiadomienia" hint="Wkrótce: przypomnienie o polubionym wydarzeniu." on={notifications} onChange={setNotifications} />
             </div>
@@ -223,7 +223,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
         <button
           type="button"
           onClick={() => (step && !privacyOnly ? setStep(step - 1) : (window.location.hash = privacyOnly ? '#/logowanie' : '#/start'))}
-          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white"
+          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface"
           aria-label="Wstecz"
         >
           <ArrowLeft size={22} aria-hidden />
@@ -251,7 +251,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-4">
         {privacy ? (
           <div className="flex flex-col gap-4">
-            <ShieldCheck size={44} className="text-brand-600" aria-hidden />
+            <ShieldCheck size={44} className="text-link" aria-hidden />
             <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">Twoje dane, twoje zasady</h1>
             <ul className="flex flex-col gap-3 text-[15px] leading-snug">
               <Li>Nie mamy twojego maila ani numeru telefonu.</Li>
@@ -264,7 +264,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
         ) : (
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
-              {step < 4 && <span className="text-sm font-semibold text-brand-600">{step + 1} / 4</span>}
+              {step < 4 && <span className="text-sm font-semibold text-link">{step + 1} / 4</span>}
               <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">{current.title}</h1>
               <p className="text-[15px] text-muted">{current.hint}</p>
             </div>
@@ -273,7 +273,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
         )}
       </div>
 
-      <div className="flex-none border-t border-line bg-white px-5 py-4 sm:rounded-2xl sm:border-0 sm:bg-transparent">
+      <div className="flex-none border-t border-line bg-surface px-5 py-4 sm:rounded-2xl sm:border-0 sm:bg-transparent">
         {privacy ? (
           <button type="button" onClick={finish} className={`${btnPrimary} h-14 w-full text-lg`}>
             Rozumiem, zaczynam
@@ -294,13 +294,13 @@ function Option({ on, onClick, label, Icon }: { on: boolean; onClick: () => void
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`flex min-h-14 items-center justify-between rounded-2xl px-4 text-left text-[16px] font-medium ${on ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
+      className={`flex min-h-14 items-center justify-between rounded-2xl px-4 text-left text-[16px] font-medium ${on ? 'border-2 border-link bg-brand-50' : 'border border-line bg-surface'}`}
     >
       <span className="flex items-center gap-3">
-        <Icon size={22} className="text-brand-600" aria-hidden />
+        <Icon size={22} className="text-link" aria-hidden />
         {label}
       </span>
-      {on && <Check size={20} strokeWidth={2.6} className="text-brand-600" aria-hidden />}
+      {on && <Check size={20} strokeWidth={2.6} className="text-link" aria-hidden />}
     </button>
   )
 }
@@ -317,7 +317,7 @@ function Group({ label, children }: { label: string; children: ReactNode }) {
 function Li({ children }: { children: ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <Check size={20} strokeWidth={2.6} className="mt-0.5 flex-none text-brand-600" aria-hidden />
+      <Check size={20} strokeWidth={2.6} className="mt-0.5 flex-none text-link" aria-hidden />
       {children}
     </li>
   )

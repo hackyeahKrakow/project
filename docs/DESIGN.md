@@ -22,7 +22,7 @@ Wymagania: kontrast pinu min. 3:1 względem podkładu mapy, kolory rozróżnialn
 
 Kolejność od góry: grafika 16:9 → tytuł → badge kategorii (kolor + ikona) → data i godzina („czw., 8 paź, 19:00”) → adres → cena („Za darmo” albo „15 zł”) → organizator ze znaczkiem „zweryfikowane” → opis (rozwijany).
 
-Brak grafiki: tło w kolorze kategorii z dużą ikoną.
+Grafika: na razie poglądowe zdjęcie z Unsplash dobrane do kategorii (`apps/frontend/src/lib/photos.ts`, zob. LEGAL.md). Pod zdjęciem zawsze leży tło w kolorze kategorii z dużą ikoną: widać je, zanim zdjęcie się wczyta, i zostaje, gdy się nie wczyta. Piny na mapie mają tylko kolor i ikonę kategorii, bez zdjęć.
 
 ## Ekrany (mobile 390 px)
 
@@ -32,7 +32,11 @@ Brak grafiki: tło w kolorze kategorii z dużą ikoną.
 4. **Moje:** lista i mapa polubionych wydarzeń.
 5. **Dodaj wydarzenie:** pole „wklej opis”, przycisk „Wypełnij z AI”, formularz z podświetleniem pól do sprawdzenia.
 
-Nawigacja: Mapa / Odkrywaj / Moje / Konto. Telefon (do 600 px): pasek na dole. Tablet (600–900 px): wąska kolumna z ikonami po lewej. Laptop (od 900 px): boczny panel z logo i podpisami, lista wydarzeń obok mapy, karta wydarzenia jako panel po prawej. Dodawanie wydarzenia jako osobna akcja „+ Dodaj wydarzenie” dla zalogowanych.
+Nawigacja: Mapa / Odkrywaj / Moje / Konto. Telefon (do 600 px): pasek na dole. Tablet (600–900 px): wąska kolumna z ikonami po lewej. Laptop (od 900 px): boczny panel z logo i podpisami, lista wydarzeń obok mapy, karta wydarzenia jako panel po prawej. Dodawanie wydarzenia jako osobna akcja „+ Dodaj wydarzenie” dla zalogowanych. Boczny panel na laptopie można zwinąć do kolumny z ikonami (przycisk na dole panelu); na mapie startuje zwinięty. Mapa ma rozwijaną legendę (kolory kategorii, polubione, promowane), na laptopie otwartą od startu.
+
+**Motywy.** Kolory, które zmieniają się z motywem, są zmiennymi `--c-*` w `src/index.css` (`surface`, `fg`, `link`, `canvas`, `line`, `muted`, `brand-50`, `brand-700`, `violet-50`, `spark-50`, `track`, `map`). Klasa `dark` na `<html>` włącza ciemny motyw (z ustawień albo z systemu), klasa `hc` wysoki kontrast: mocniejszy tekst pomocniczy i obramowania, grubszy fokus (4 px); `dark hc` to czarne tło i biały tekst. Kolory marki (`ink-900`, `brand-600`, `spark-500`) są stałe. Ciemna mapa to odwrócony jasny podkład (filtr CSS), piny zostają w swoich kolorach. Logo ma ciemny napis, więc w ciemnym motywie stoi na białej plakietce, dopóki nie będzie jasnej wersji z pomarańczowymi oczami.
+
+**Ruch.** Ekrany pojawiają się z krótkim wygaszeniem (200 ms), panel wydarzenia wjeżdża z dołu (telefon) albo z prawej (tablet, laptop), nowa karta w talii lekko rośnie, a karta puszczona przed progiem wraca ze sprężystym odbiciem. Przy `prefers-reduced-motion` wszystkie animacje i przejścia trwają 1 ms.
 
 Dostępność (WCAG 2.1 AA): raport i zasady w [ACCESSIBILITY.md](ACCESSIBILITY.md).
 

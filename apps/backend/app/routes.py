@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from pydantic.types import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +14,7 @@ from app.event_parser import (
     get_event_parser,
     warsaw_today,
 )
+from app.geocode import GeocodeError, Geocoder, Place, get_geocoder
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
 from app.recommender import get_recommendations
@@ -168,3 +169,29 @@ async def events_parse(
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI unavailable") from None
     log.info("parse_done", missing=len(draft.missing_fields))
     return draft
+
+
+@router.get(
+    "/geocode",
+    operation_id="geocode",
+    summary="Address suggestions in Kraków",
+    description=(
+        "Returns up to 5 places matching the typed address, limited to Kraków. Data comes from "
+        "OpenStreetMap through Photon; results are cached and the server asks Photon at most once "
+        "per second. Returns 503 when the geocoder is unavailable."
+    ),
+    response_model=list[Place],
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "Geocoder unavailable"},
+    },
+)
+async def geocode(
+    geocoder: Annotated[Geocoder, Depends(get_geocoder)],
+    q: Annotated[str, Query(min_length=3, max_length=120, description="Typed address")],
+) -> list[Place]:
+    try:
+        return await geocoder.search(q)
+    except GeocodeError as exc:
+        log.warning("geocode_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Geocoder unavailable") from None
