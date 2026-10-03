@@ -117,3 +117,9 @@ description: "Task list for Card Swipe API"
 - **MVP**: Phase 1 + Phase 2 + User Story 1 (running service with working `/health`).
 - Then add US2 and US3 in priority order, committing and pushing to `feature/card_swipe_endpoints` after each turn.
 - Real database logic for `card_fetch` and `card_response` is out of scope; it becomes a later feature.
+
+## Phase 7: Convergence
+
+- [ ] T025 Add a custom handler in app/main.py for `RequestValidationError` that returns HTTP 422 with an `ErrorResponse` body (`{"detail": "<message>"}`), and declare `422` with `ErrorResponse` in the `responses` of `card_fetch` and `card_response` in app/routes.py, so all error responses share one shape per FR-009 (partial)
+- [ ] T026 [P] Add an example `user_id` (e.g. `018f3b5e-7c1a-7d2b-9a4e-3f6c2b1d5e90`) to the `user_id` path parameters of `card_fetch` and `card_response` in app/routes.py using `Path(..., examples=[...], description=...)` so `/docs` shows an example request for both endpoints per FR-007, SC-002 and contracts/api.md (partial)
+- [ ] T027 Extend tests/test_cards.py to assert the 422 body from T025 contains a string `detail` (depends on T025) per FR-009 (partial)
