@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { CATEGORIES, category } from '@/lib/categories'
 import { DEMO_ACCOUNTS, ORG_PLAN, PACKAGES } from '@/lib/demo'
 import { LIBRARY, formatRange, type SpottedEvent } from '@/lib/events'
+import { askPermission } from '@/lib/notify'
 import { persona } from '@/lib/persona'
 import { weights } from '@/lib/recommend'
 import { useStore } from '@/lib/store'
@@ -24,6 +25,7 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
   const me = persona(w, state.profile.interests)
   const MeIcon = me ? category(me.ids[0]).Icon : UserRound
   const [shared, setShared] = useState('')
+  const [blocked, setBlocked] = useState(false)
   const share = async () => {
     if (!me) return
     const text = `Mój typ w spootted: ${me.title}. A jaki jest twój?`
@@ -173,7 +175,20 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
               on={state.location}
               onChange={(location) => update({ location })}
             />
-            <Toggle label="Powiadomienia" hint="Wkrótce" on={state.notifications} onChange={(notifications) => update({ notifications })} />
+            <Toggle
+              label="Powiadomienia"
+              hint={
+                blocked
+                  ? 'Przeglądarka blokuje powiadomienia: włącz je w ustawieniach strony.'
+                  : 'Godzinę przed polubionym wydarzeniem, gdy aplikacja jest otwarta. „Dodaj do kalendarza” przypomni też przy zamkniętej.'
+              }
+              on={state.notifications}
+              onChange={async (on) => {
+                const ok = !on || (await askPermission())
+                setBlocked(!ok)
+                update({ notifications: on && ok })
+              }}
+            />
             <Toggle label="Większy tekst" hint="Dostępność" on={state.bigText} onChange={(bigText) => update({ bigText })} />
             <Toggle
               label="Wysoki kontrast"

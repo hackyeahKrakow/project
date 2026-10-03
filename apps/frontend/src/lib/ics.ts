@@ -43,6 +43,12 @@ export function ics(events: SpottedEvent[], now = new Date()) {
       `SUMMARY:${text(ev.event_name)}`,
       `LOCATION:${text(ev.address)}`,
       `DESCRIPTION:${text(`${ev.description}\n\nOrganizator: ${ev.organizer.name}`)}`,
+      // The calendar reminds an hour before, also with the app closed.
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'TRIGGER:-PT1H',
+      `DESCRIPTION:${text(ev.event_name)}`,
+      'END:VALARM',
       'END:VEVENT',
     )
   }

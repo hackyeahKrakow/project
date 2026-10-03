@@ -60,6 +60,7 @@ assert.ok(!recommend(events, { ...profile, interests: [...profile.interests] }, 
 const cal = ics([{ ...events[0], event_name: 'A, B; C' }], new Date('2026-10-03T10:00:00Z'))
 assert.ok(cal.includes('SUMMARY:A\\, B\\; C'))
 assert.equal(cal.match(/BEGIN:VEVENT/g)?.length, 1)
+assert.ok(cal.includes('BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H')) // the calendar reminds an hour before
 assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
 // Following an organizer lifts its events and is named in the reason.
 const lib = events.find((e) => e.id === 'evt_ksiazka')!

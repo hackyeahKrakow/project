@@ -28,6 +28,7 @@ import {
 import { useState, type ReactNode } from 'react'
 import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { DISTRICTS, type Size } from '@/lib/events'
+import { askPermission } from '@/lib/notify'
 import { useStore, type Budget, type Goal, type Profile, type TimeOfDay } from '@/lib/store'
 import { Toggle, btnPrimary, card, chip } from '@/ui'
 
@@ -205,7 +206,12 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
           <div className="flex items-center gap-3">
             <Bell size={22} className="flex-none text-link" aria-hidden />
             <div className="flex-1">
-              <Toggle label="Powiadomienia" hint="Wkrótce: przypomnienie o polubionym wydarzeniu." on={notifications} onChange={setNotifications} />
+              <Toggle
+                label="Powiadomienia"
+                hint="Godzinę przed polubionym wydarzeniem, gdy aplikacja jest otwarta. „Dodaj do kalendarza” przypomni też przy zamkniętej."
+                on={notifications}
+                onChange={async (on) => setNotifications(on && (await askPermission()))}
+              />
             </div>
           </div>
         </div>

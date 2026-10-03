@@ -60,3 +60,19 @@ async def test_endpoint_503_on_upstream_error_and_422_on_short_query(status_code
             assert (await client.get("/geocode", params={"q": "ab"})).status_code == 422
     finally:
         app.dependency_overrides.clear()
+
+
+async def test_endpoint_lets_the_cdn_cache_answers_but_not_errors():
+    g = make(lambda request: httpx.Response(200, json={"features": [FEATURE]}))
+    app.dependency_overrides[get_geocoder] = lambda: g
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            ok = await client.get("/geocode", params={"q": "Józefińska 20"})
+            assert ok.status_code == 200 and "s-maxage=86400" in ok.headers["cache-control"]
+        g = make(lambda request: httpx.Response(500))
+        app.dependency_overrides[get_geocoder] = lambda: g
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            bad = await client.get("/geocode", params={"q": "Rynek Główny"})
+            assert bad.status_code == 503 and "s-maxage" not in bad.headers.get("cache-control", "")
+    finally:
+        app.dependency_overrides.clear()

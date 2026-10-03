@@ -5,11 +5,29 @@ import type { Decision } from './store'
 // Empty VITE_API_URL = offline demo on the mock catalog. Locally http://localhost:8000, on Vercel /api.
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
+const read = (k: string) => {
+  try {
+    return localStorage.getItem(k)
+  } catch {
+    return null
+  }
+}
+const write = (k: string) => {
+  try {
+    localStorage.setItem(k, '1')
+  } catch {
+    /* private mode: sync again next visit */
+  }
+}
+
 type Card = Pick<SpottedEvent, 'id' | 'event_name' | 'description' | 'starts_at' | 'address' | 'lat' | 'lng' | 'price'>
 
 /** The six fixed starter cards: local copies (category, organizer) updated with what GET /card/new/{user_id} returns. */
 export async function starterDeck(userId: string): Promise<SpottedEvent[]> {
-  if (!API) return STARTER
+  // The local copies are the same file as the backend seed, so the backend is asked once per user, not on every visit
+  // (Vercel Hobby: each request is a function invocation).
+  const done = `spootted:starter:${userId}`
+  if (!API || read(done)) return STARTER
   const fromApi = new Map<string, Card>()
   try {
     for (let i = 0; i < STARTER.length; i++) {
@@ -19,6 +37,7 @@ export async function starterDeck(userId: string): Promise<SpottedEvent[]> {
       // null = not known yet in the backend (coordinates, price), keep the local value
       fromApi.set(card.id, Object.fromEntries(Object.entries(card).filter(([, v]) => v !== null)) as Card)
     }
+    write(done) // only after the loop finished: a half-done sync is retried next time
   } catch {
     /* offline: local copies only */
   }
