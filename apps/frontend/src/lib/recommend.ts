@@ -30,8 +30,12 @@ export function weights(profile: Profile, swipes: Record<string, Decision>, even
 const hourOf = (iso: string) => Number(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Europe/Warsaw' }).format(new Date(iso)))
 const weekdayOf = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Europe/Warsaw' })
 
-/** Budget is a hard filter; everything else is a score. */
-export const fitsBudget = (ev: SpottedEvent, p: Profile) => (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price !== null && ev.price <= 20 : true)
+/**
+ * Budget is a hard filter on known prices; everything else is a score. Unknown price (null) passes: the card says „Cena nieznana”,
+ * and the backend catalog has no prices yet, so a strict filter would leave budget users with an empty deck.
+ */
+export const fitsBudget = (ev: SpottedEvent, p: Profile) =>
+  ev.price === null || (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price <= 20 : true)
 
 function timeFit(ev: SpottedEvent, p: Profile) {
   if (!p.times.length) return 1
@@ -85,9 +89,9 @@ export function recommend(
   n: number,
   here?: [number, number],
   follows: ReadonlySet<string> = new Set(),
+  today = todayYmd(),
 ) {
   const w = weights(p, swipes, events)
-  const today = todayYmd()
   return events
     .filter((e) => !swipes[e.id] && !exclude.has(e.id) && inRange(e, 'wszystkie', today) && fitsBudget(e, p))
     .map((e) => score(e, p, w, here, today, follows))

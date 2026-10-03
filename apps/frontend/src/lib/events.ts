@@ -135,7 +135,11 @@ const ENDS: Record<string, [number, string]> = {
   evt_czytelnia: [0, '23:00'],
 }
 
-export const catalog = (today = new Date()): SpottedEvent[] => [
+/** The events the app shows: only the 20 cards of the backend catalog. */
+export const catalog = (): SpottedEvent[] => CARDS
+
+/** The mock events above (ROWS) plus the 20 cards. Not shown in the app; kept for the demo screens and checks. */
+export const demoCatalog = (today = new Date()): SpottedEvent[] => [
   ...ROWS.map(([id, event_name, category, days, time, address, district, lat, lng, price, size, organizer, description]) => ({
     id,
     event_name,
