@@ -54,8 +54,8 @@ class Card(Base):
     starts_at: Mapped[datetime] = mapped_column(UTCDateTime)
     ends_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     address: Mapped[str] = mapped_column(String(300))
-    lat: Mapped[float] = mapped_column(Float)
-    lng: Mapped[float] = mapped_column(Float)
+    lat: Mapped[float | None] = mapped_column(Float)
+    lng: Mapped[float | None] = mapped_column(Float)
     price: Mapped[float] = mapped_column(Float, default=0)
 
 
