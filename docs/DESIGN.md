@@ -32,7 +32,9 @@ Brak grafiki: tło w kolorze kategorii z dużą ikoną.
 4. **Moje:** lista i mapa polubionych wydarzeń.
 5. **Dodaj wydarzenie:** pole „wklej opis”, przycisk „Wypełnij z AI”, formularz z podświetleniem pól do sprawdzenia.
 
-Dolna nawigacja: Mapa / Odkrywaj / Moje / Konto. Dodawanie wydarzenia jako osobna akcja „+ Dodaj wydarzenie” dla zalogowanych.
+Nawigacja: Mapa / Odkrywaj / Moje / Konto. Telefon (do 600 px): pasek na dole. Tablet (600–900 px): wąska kolumna z ikonami po lewej. Laptop (od 900 px): boczny panel z logo i podpisami, lista wydarzeń obok mapy, karta wydarzenia jako panel po prawej. Dodawanie wydarzenia jako osobna akcja „+ Dodaj wydarzenie” dla zalogowanych.
+
+Dostępność (WCAG 2.1 AA): raport i zasady w [ACCESSIBILITY.md](ACCESSIBILITY.md).
 
 ## Zasady mapy
 
@@ -46,11 +48,11 @@ Dolna nawigacja: Mapa / Odkrywaj / Moje / Konto. Dodawanie wydarzenia jako osobn
 - Eksport do WebP, nazwa pliku = `id` wydarzenia (`evt_001.webp`), katalog `apps/backend/static/img/`.
 - Tylko własne lub wygenerowane grafiki, bez plakatów organizatorów. Sprawdźcie licencję elementów z Canvy.
 
-## Koncept UI: strona WWW (spotted)
+## Koncept UI: strona WWW (spootted)
 
 Interaktywny podgląd całego konceptu (logo, 5 ekranów × desktop 1440 / tablet 820 / telefon 390 px, plansza Handoff): [design/spotted-koncept-ui.html](design/spotted-koncept-ui.html) (pobierz i otwórz w przeglądarce). Biblioteka komponentów: Preline UI na Tailwind.
 
-**Nazwa i logo:** `spotted`, napis (Outfit 600, małe litery) z falującą flagą pod spodem w czterech pasach: `#7DB8FF`, `#1D5CFF`, `#6B4EE6`, `#FF8A3D`, maszt `#0A1F44`.
+**Nazwa i logo:** `spootted`. Logo to napis z dwojgiem oczu w „oo” (`apps/frontend/src/assets/logo-full.svg`), a ikona aplikacji i favicon to same oczy (`apps/frontend/src/assets/icon.svg`). Oba pliki to kwadratowe eksporty z Canvy, więc w aplikacji napis jest przycinany przez `object-fit`. Logo ma ciemny napis: na ciemnym tle stawiamy je na białej plakietce. Wcześniejsza wersja z flagą jest nieaktualna.
 
 **Kolory marki:** Głęboka woda `#0A1F44`, Nurt `#1D5CFF`, Tafla `#7DB8FF`, Zmierzch `#6B4EE6`, Iskra `#FF8A3D` (CTA, tylko jako wypełnienie z granatowym tekstem). Tło `#F3F7FF`, obramowanie `#D9E2F2`, tekst pomocniczy `#4A5B7D`. Kolory kategorii bez zmian (tymczasowe, patrz wyżej).
 
@@ -66,6 +68,7 @@ Interaktywny podgląd całego konceptu (logo, 5 ekranów × desktop 1440 / table
   --font-sans: "Outfit", system-ui, sans-serif;
   --color-ink-900: #0A1F44;
   --color-brand-600: #1D5CFF;
+  --color-brand-700: #174BD9; /* tekst na tle brand-50, kontrast 5.9:1 */
   --color-sky-300: #7DB8FF;
   --color-violet-600: #6B4EE6;
   --color-spark-500: #FF8A3D;
