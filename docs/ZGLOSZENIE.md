@@ -42,7 +42,7 @@ Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo*
 - **Profil uczy się z zachowania, nie z ankiet.** Swipe w prawo podnosi wagę kategorii, swipe w lewo lekko ją obniża. Kara jest celowo mniejsza niż nagroda, więc jedno „nie” nie skreśla całej kategorii.
 - **Dopasowanie łączy cztery sygnały:** twoje zainteresowania, odległość od ciebie, termin (dziś przed „za tydzień”) i organizatorów, których obserwujesz.
 - **Żadnej czarnej skrzynki.** Każda karta mówi, dlaczego ją widzisz: „Bo lubisz: planszówki · 600 m od ciebie · dziś 19:00”. Użytkownik rozumie rekomendację i ma nad nią kontrolę, w duchu wymogów przejrzystości systemów rekomendacyjnych z unijnego DSA.
-- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Odpowiedzi z pierwszych pytań i lokalizacja zostają na telefonie, a historię swipe'ów zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych. Docelowo cały profil gościa ma zostawać tylko na urządzeniu. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
+- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Lokalizacja zostaje na telefonie, a dane do personalizacji i historia swipe'ów działają pod losowym identyfikatorem, bez danych osobowych. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
 
 71% konsumentów oczekuje personalizacji, a 76% irytuje się, gdy jej nie dostaje (McKinsey). Studenci nie są wyjątkiem, tylko dziś nikt tego nie robi dla wydarzeń studenckich.
 
@@ -107,7 +107,7 @@ Propozycja: zrzut ekranu telefonu z mapą Krakowa i kolorowymi pinami, obok kart
 
 **Cel na koniec hackathonu:**
 - Przepływ end-to-end: ekran powitalny → onboarding → swipe → mapa → kalendarz z eksportem `.ics`.
-- Rekomendacje z prostą, wyjaśnialną formułą (kategoria, odległość, czas), dociągane w tle partiami po 10 kart.
+- Rekomendacje przez Jev (TypeSafe AI), dociągane w tle partiami po 10 kart, z losowym fallbackiem gdy model jest niedostępny.
 - Dwa konta demo (student i organizacja), formularz dodawania wydarzenia i funkcje AI dla organizacji.
 - Ekran pakietów sponsora i statystyk na danych demo.
 - 30–50 wydarzeń demo w Krakowie.

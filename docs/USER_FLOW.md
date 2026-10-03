@@ -42,7 +42,7 @@ Cztery pytania z [SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu):
 
 Po pytaniach są zgody opcjonalne na lokalizację i powiadomienia. Można je pominąć.
 
-Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Twoje odpowiedzi i lokalizacja zostają na telefonie, a swipe'y zapisujemy pod losowym, anonimowym identyfikatorem. Wyczyścisz przeglądarkę albo zmienisz telefon, to zaczynasz od nowa.” Docelowo cały profil gościa ma zostawać na urządzeniu (zob. „Konta i dane lokalne” w [ARCHITECTURE.md](ARCHITECTURE.md)). Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
+Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Lokalizacja zostaje na telefonie, a dane do personalizacji i swipe'y działają pod losowym identyfikatorem, bez danych osobowych.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
 
 Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgodzie jednoznacznego działania. Przycisk kosztuje jeden ekran i zamyka temat, zanim jury o niego zapyta.
 
@@ -51,7 +51,7 @@ Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgo
 Pobieranie kart (backend):
 1. Start: 6 kart startowych na sztywno (`GET /card/new/{user_id}`, ten endpoint już działa).
 2. Po 6 kartach startowych frontend pobiera polecone karty (`GET /card/recommendations/{user_id}`, do 10 naraz, ranking na podstawie swipe'ów).
-3. Gdy w talii zostaje 5 kart, frontend w tle pobiera kolejne 10, więc w talii jest do 15 kart.
+3. Gdy w talii zostaje 5 kart, frontend w tle pobiera kolejne 10, więc w talii jest do 15 kart (API nie gwarantuje unikalności kart, które są już w buforze i nie dostały jeszcze swipe'a).
 
 Karta pokazuje:
 - grafikę, tytuł, godzinę i cenę;
@@ -113,7 +113,7 @@ Ustalenia do pakietów:
 ## Scenariusz filmu (60–90 s)
 
 1. Ekran powitalny, „Tylko przeglądam”.
-2. Onboarding: 3 szybkie ekrany i „Rozumiem, zaczynam”.
+2. Onboarding: 4 szybkie ekrany i „Rozumiem, zaczynam”.
 3. Kilka swipe'ów z widocznym „Bo lubisz…”.
 4. Mapa z polubionymi wydarzeniami.
 5. Kalendarz i eksport `.ics`.

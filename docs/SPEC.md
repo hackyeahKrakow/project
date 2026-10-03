@@ -40,7 +40,7 @@ GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mies
 - W prawo = interesuje mnie: wydarzenie trafia na „Moją mapę” i jest wyróżnione na mapie.
 - W lewo = nie interesuje: znika z talii, a algorytm obniża wagę tej kategorii.
 - Każda karta pokazuje, dlaczego ją widzisz, np. „Twój match: małe wydarzenia · planszówki · dziś 19:00”.
-- Decyzje gościa (polubienia, pominięcia, obserwowani) zapisują się lokalnie na urządzeniu i tworzą jego własną bazę wydarzeń. Konto jest potrzebne dopiero do tworzenia treści i community.
+- Przeglądanie nie wymaga konta, maila ani numeru telefonu. Decyzje swipe zapisują się pod losowym identyfikatorem użytkownika, bez danych osobowych, a lokalizacja nie jest zapisywana na serwerze.
 
 ### Personalizacja przy pierwszym uruchomieniu
 
@@ -53,7 +53,7 @@ Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery 
 | 3. Czego szukasz | „Czego dziś szukasz?” | Do 3 z: poznać ludzi, nauczyć się czegoś, dobrze się bawić, ruszyć się, kultura i spokój, oszczędzić | Dodatkowa waga kategorii i typów wydarzeń powiązanych z celem |
 | 4. Czego potrzebujesz | „Co jest dla ciebie ważne?” | Budżet (tylko darmowe / do 20 zł / bez limitu), odległość (1 km / 3 km / 5 km / cały Kraków), pora (po zajęciach / wieczory / weekendy) | Twarde filtry domyślne (budżet, pora) i parametr bliskości |
 
-- Odpowiedzi zapisują się wyłącznie na urządzeniu (pamięć przeglądarki), bez konta i bez wysyłania na serwer.
+- Odpowiedzi z onboardingu zapisują się lokalnie i służą do personalizacji rekomendacji; backend operuje na danych pseudonimowych (UUID, bez maila i numeru telefonu).
 - Po ostatnim kroku użytkownik od razu dostaje pierwszą talię, a każda karta tłumaczy dopasowanie („Twój match: kameralne · planszówki · za darmo”).
 - Preferencje można zmienić w ekranie „Moje preferencje”, a swipe'y dalej je dostrajają.
 - Brak odpowiedzi nie blokuje aplikacji: bez personalizacji talia jest posortowana po czasie i bliskości.
@@ -98,24 +98,6 @@ Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowan
 ## Ścieżka użytkownika
 
 Ścieżka demo, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
-
-**Tydzień 1: gość, bez konta**
-
-1. Otwiera aplikację po raz pierwszy i przechodzi personalizację (cztery krótkie pytania, ok. 30 s): lubi gry i naukę, woli kameralne wydarzenia, szuka ludzi do poznania, potrzebuje darmowych wydarzeń do 3 km od akademika.
-2. Od razu dostaje talię 10 kart dopasowanych do odpowiedzi, z uzasadnieniem „Twój match: kameralne · planszówki · za darmo”, i swipe'uje. Po kilku ruchach karty dopasowują się jeszcze lepiej.
-3. Przechodzi do mapy i widzi wyróżnione polubione wydarzenia, które tworzą jej lokalną bazę na telefonie.
-4. Otwiera kartę quizu w barze planszówkowym i sprawdza adres oraz godzinę.
-5. Obserwuje koło naukowe, więc jego wydarzenia są wyżej w talii.
-
-**Tydzień 2: użytkownik z kontem**
-
-6. Zakłada konto (link na e-mail), a jej baza, preferencje i obserwowani przenoszą się na konto.
-7. W piątek dodaje wydarzenie „planszówki w akademiku, 4/6 osób”, a inni mogą dołączyć.
-8. Obserwują ją osoby, które były na planszówkach. Poleca im quiz w barze planszówkowym, który zapisała w swojej bazie.
-
-**Druga strona rynku (Kuba)**
-
-9. Kuba jako administrator profilu koła wkleja tekst posta, sprawdza propozycję AI i publikuje wydarzenie. Później widzi, ile osób je polubiło, a ile odrzuciło.
 
 ## Zakres MVP (24h)
 
