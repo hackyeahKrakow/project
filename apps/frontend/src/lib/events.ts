@@ -19,7 +19,7 @@ export type SpottedEvent = {
   address: string
   lat: number
   lng: number
-  price: number
+  price: number | null // null = unknown, 0 = free
   category: CategoryId
   size: Size
   district: string
@@ -54,7 +54,7 @@ const KARIER = o('org_karier', 'Biuro Karier (demo)')
 const AZS = o('org_azs', 'Sekcja Biegowa AZS (demo)')
 const TEATR = o('org_teatr', 'Teatr Studencki (demo)')
 const EKO = o('org_eko', 'Koło Ekologiczne (demo)')
-const PRZEWODNICY = o('org_przew', 'Koło Przewodników (demo)')
+const ORGANIZER_TBD = o('org_tbd', 'Organizator wydarzenia', 'org', false)
 const KASIA: Organizer = { ...o('usr_kasia', 'Kasia, studentka AGH', 'student'), persona: ['imprezy', 'gry'] }
 const MIKOLAJ: Organizer = { ...o('usr_mikolaj', 'Mikołaj, student UJ', 'student'), persona: ['gry', 'warsztaty'] }
 
@@ -110,14 +110,15 @@ const ROWS: Row[] = [
   ['evt_standup', 'Stand-up studencki', 'imprezy', 13, '20:00', 'ul. Bożego Ciała 10', 'Kazimierz', 50.0517, 19.9434, 25, 'medium', TEATR, 'Pięcioro debiutantów, każdy po 10 minut. Prowadzi zwycięzca zeszłej edycji.'],
 ]
 
-// The six fixed starter cards come from the backend seed (GET /card/new/{user_id}); same ids, so swipes can be saved.
+// The six fixed starter cards are the first six events in the backend seed (GET /card/new/{user_id}); same ids, so swipes can be saved.
+// The seed has no size or organizer, so they get the documented default (medium) and a neutral organizer.
 export const STARTER: SpottedEvent[] = [
-  { id: '01a10200-0830-7370-ae21-2e47cc06805f', event_name: 'Studencki Nocny Market', description: 'Street food, muzyka na żywo i stoiska kół naukowych.', starts_at: '2026-11-14T18:00:00+01:00', ends_at: '2026-11-14T23:00:00+01:00', address: 'Rynek Główny 1', lat: 50.0617, lng: 19.9373, price: 0, category: 'imprezy', size: 'large', district: 'Stare Miasto', organizer: SAMORZAD },
-  { id: '01a10200-0831-797f-b50e-774683352488', event_name: 'Turniej gier planszowych', description: 'Open turniej dla początkujących i zaawansowanych, nagrody dla zwycięzców.', starts_at: '2026-11-15T16:00:00+01:00', address: 'ul. Reymonta 17', lat: 50.0647, lng: 19.9234, price: 10, category: 'gry', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: PLANSZ },
-  { id: '01a10200-0832-7c17-aa31-2be7e76e7a57', event_name: 'Hackathon dla początkujących', description: 'Całodniowe warsztaty programowania w zespołach z mentorami.', starts_at: '2026-11-20T09:00:00+01:00', ends_at: '2026-11-20T20:00:00+01:00', address: 'ul. Podchorążych 2', lat: 50.0701, lng: 19.9026, price: 0, category: 'nauka', size: 'medium', district: 'Bronowice', organizer: DS },
-  { id: '01a10200-0833-793b-baed-a7c26b03f790', event_name: 'Koncert w Rotundzie', description: 'Wieczór z lokalnymi zespołami studenckimi.', starts_at: '2026-11-21T19:30:00+01:00', address: 'ul. Oleandry 1', lat: 50.0603, lng: 19.9238, price: 25, category: 'muzyka', size: 'large', district: 'Krowodrza', organizer: AKORD },
-  { id: '01a10200-0834-7591-8c3e-835ac248aba0', event_name: 'Spacer po Kazimierzu z przewodnikiem', description: 'Dwugodzinny spacer śladami historii dzielnicy, zniżki dla studentów.', starts_at: '2026-11-22T11:00:00+01:00', ends_at: '2026-11-22T13:00:00+01:00', address: 'Plac Wolnica 1', lat: 50.0494, lng: 19.9455, price: 15, category: 'kultura', size: 'small', district: 'Kazimierz', organizer: PRZEWODNICY },
-  { id: '01a10200-0835-7c78-8dba-f85e707ea49e', event_name: 'Wieczór kina studenckiego', description: 'Pokaz krótkich filmów studentów i dyskusja z reżyserami.', starts_at: '2026-11-27T20:00:00+01:00', address: 'ul. Św. Tomasza 11', lat: 50.0636, lng: 19.9411, price: 0, category: 'kultura', size: 'medium', district: 'Stare Miasto', organizer: DKF },
+  { id: '01a103a0-2efc-750f-ad11-896f7fa55c5d', event_name: 'Patriarkh: Epitafium dla Proroka Ilji – Misterium Wierszalińskie', description: 'Blackmetalowy spektakl muzyczno-teatralny o strukturze rytuału, inspirowany historią Wierszalina i postacią Eliasza Klimowicza. Obrzędowe pieśni Podlasia i kresów to oś całego przedstawienia – „podlaskie requiem ludowe”.', starts_at: '2026-10-10T00:00:00+02:00', address: 'Klub Studio, ul. Budryka 4, Kraków', lat: 50.06803, lng: 19.90824, price: null, category: 'muzyka', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: ORGANIZER_TBD },
+  { id: '01a103a0-2efd-7c8f-88d3-1e9e8a8f95f2', event_name: 'Kabaret Młodych Panów: Z żartami nie ma żartów', description: 'Premierowy program na 20-lecie kabaretu – satyra, inteligentny humor, ulubione postacie i pożegnanie kilku bohaterów skeczów.', starts_at: '2026-10-11T00:00:00+02:00', address: 'Nowohuckie Centrum Kultury, al. Jana Pawła II 232, Kraków', lat: 50.07077, lng: 20.03484, price: null, category: 'kultura', size: 'medium', district: 'Nowa Huta', organizer: ORGANIZER_TBD },
+  { id: '01a103a0-2efe-732f-9fce-231eca24c9c6', event_name: 'Hello, Roxette?', description: 'Energetyczne show z największymi hitami Roxette („Joyride”, „The Look”, „Listen to Your Heart”) w nowych aranżacjach, z oprawą wizualną i tancerzami; śpiewa Olga Szomańska.', starts_at: '2026-10-11T00:00:00+02:00', address: 'Centrum Kongresowe ICE Kraków, ul. Konopnickiej 17, Kraków', lat: 50.04795, lng: 19.93146, price: null, category: 'muzyka', size: 'medium', district: 'Kazimierz', organizer: ORGANIZER_TBD },
+  { id: '01a103a0-2eff-7af1-b24f-0f7fc0514754', event_name: 'Polska Noc Kabaretowa 2026', description: 'Siedem kabaretów i artystów, siedem premierowych skeczów: Nowaki, Skeczów Męczących, Smile, Moralnego Niepokoju, Igor Kwiatkowski, K2 (prowadzący) i Mariusz Kałamaga.', starts_at: '2026-10-16T00:00:00+02:00', address: 'TAURON Arena Kraków, ul. Lema 7, Kraków', lat: 50.06772, lng: 19.99155, price: null, category: 'kultura', size: 'medium', district: 'Grzegórzki', organizer: ORGANIZER_TBD },
+  { id: '01a103a0-2f00-7bc0-83d5-96a2dee9f293', event_name: 'Harlem Globetrotters: 100 Years', description: 'Jubileuszowe, widowiskowe show koszykarskie z okazji 100-lecia słynnej drużyny, założonej w Chicago w 1926 roku.', starts_at: '2026-10-21T00:00:00+02:00', address: 'TAURON Arena Kraków, ul. Lema 7, Kraków', lat: 50.06772, lng: 19.99155, price: null, category: 'sport', size: 'medium', district: 'Grzegórzki', organizer: ORGANIZER_TBD },
+  { id: '01a103a0-2f01-7e62-b37d-3dc73b2041c7', event_name: 'Thunder from Down Under: Girls\' Night Outback', description: 'Pokaz australijskich tancerzy – wieczór pełen energii, przeznaczony m.in. na urodziny i babskie wyjścia.', starts_at: '2026-10-22T00:00:00+02:00', address: 'Klub Studio, ul. Budryka 4, Kraków', lat: 50.06803, lng: 19.90824, price: null, category: 'imprezy', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: ORGANIZER_TBD },
 ]
 export const STARTER_IDS = new Set(STARTER.map((e) => e.id))
 
@@ -166,7 +167,7 @@ const longDayFmt = new Intl.DateTimeFormat('pl-PL', { weekday: 'long', day: 'num
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso))
 export const formatTime = (iso: string) => timeFmt.format(new Date(iso))
 export const formatDay = (ymd: string) => longDayFmt.format(new Date(`${ymd}T12:00:00Z`))
-export const formatPrice = (price: number) => (price === 0 ? 'Za darmo' : `${price} zł`)
+export const formatPrice = (price: number | null) => (price === null ? 'Cena nieznana' : price === 0 ? 'Za darmo' : `${price} zł`)
 export const warsawDay = (iso: string) => dayFmt.format(new Date(iso))
 export const todayYmd = () => warsawDay(new Date().toISOString())
 export const daysFromToday = (iso: string, today = todayYmd()) => Math.round((Date.parse(warsawDay(iso)) - Date.parse(today)) / 86_400_000)

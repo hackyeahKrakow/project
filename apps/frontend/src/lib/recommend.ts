@@ -31,7 +31,7 @@ const hourOf = (iso: string) => Number(new Intl.DateTimeFormat('en-GB', { hour: 
 const weekdayOf = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Europe/Warsaw' })
 
 /** Budget is a hard filter; everything else is a score. */
-export const fitsBudget = (ev: SpottedEvent, p: Profile) => (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price <= 20 : true)
+export const fitsBudget = (ev: SpottedEvent, p: Profile) => (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price !== null && ev.price <= 20 : true)
 
 function timeFit(ev: SpottedEvent, p: Profile) {
   if (!p.times.length) return 1
