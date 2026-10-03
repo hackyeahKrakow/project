@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.card_service import get_next_card
 from app.database import get_session
+from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
+from app.recommender import get_recommendations
 from app.schemas import (
     CardFetchResponse,
     CardResponseOut,
@@ -61,6 +63,29 @@ async def card_new(
     if card is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No more cards")
     return CardFetchResponse.model_validate(card)
+
+
+@router.get(
+    "/card/recommendations/{user_id}",
+    operation_id="card_recommendations",
+    summary="Get up to 10 recommended cards for a user",
+    description=(
+        "Draws up to 50 random cards the user has not answered, evaluates them with the Jev "
+        "model using the user's earlier right (interested) and left (not interested) answers, "
+        "and returns the 10 best matches in ranked order. Returns fewer cards when fewer "
+        "candidates exist and an empty list when none exist. If the AI is unavailable the "
+        "result is up to 10 random candidates."
+    ),
+    response_model=list[CardFetchResponse],
+    responses={422: {"model": ErrorResponse, "description": "Invalid request"}},
+)
+async def card_recommendations(
+    user_id: UserId,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    jev: Annotated[JevClient, Depends(get_jev_client)],
+) -> list[CardFetchResponse]:
+    cards = await get_recommendations(session, jev, user_id)
+    return [CardFetchResponse.model_validate(card) for card in cards]
 
 
 @router.get(

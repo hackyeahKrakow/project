@@ -1,4 +1,5 @@
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -6,7 +7,9 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from app.database import Base, get_session
+from app.jev_client import JevClient, get_jev_client
 from app.main import app
+from app.models import Card
 from app.seed import seed_cards
 
 
@@ -46,3 +49,43 @@ async def db_client(session_factory: async_sessionmaker) -> AsyncGenerator[httpx
     async with make_client(session_factory) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+async def add_cards(factory: async_sessionmaker, n: int) -> list[Card]:
+    """Add n extra cards, alternating "Music event i" and "Sport event i"."""
+    from uuid6 import uuid7
+
+    cards = [
+        Card(
+            id=uuid7(),
+            event_name=f"{'Music' if i % 2 == 0 else 'Sport'} event {i}",
+            color_code="#112233",
+            description=f"Description of event {i}",
+            image_url=None,
+            starts_at=datetime(2026, 12, 1, 18, 0, tzinfo=timezone.utc),
+            ends_at=None,
+            address=f"Street {i}, Krakow",
+            lat=50.06,
+            lng=19.94,
+            price=0,
+        )
+        for i in range(n)
+    ]
+    async with factory() as session:
+        session.add_all(cards)
+        await session.commit()
+    return cards
+
+
+def make_jev_client(handler: Callable[[httpx.Request], httpx.Response]) -> JevClient:
+    return JevClient(
+        api_key="test-key",
+        model="jev-test",
+        url="https://jev.test/systemone",
+        timeout=2.0,
+        transport=httpx.MockTransport(handler),
+    )
+
+
+def jev_override(client: JevClient) -> None:
+    app.dependency_overrides[get_jev_client] = lambda: client

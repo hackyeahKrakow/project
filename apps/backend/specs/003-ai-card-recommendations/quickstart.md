@@ -22,8 +22,9 @@ inserting rows; the six seeded cards cover the small-data cases).
 
 1. **Ten of fifty**: with 60 unanswered cards, `GET /card/recommendations/<user>` returns exactly 10
    distinct cards (SC-001).
-2. **Uses history**: answer right on several cards of one kind and left on others via
-   `POST /card/<user>`, then request again; the list should favour the liked kind (check the
+2. **Uses history**: `POST /card/<user>` is still a skeleton (501), so insert answers directly
+   into the `card_responses` table (`decision` is `RIGHT` or `LEFT`) for several cards of one kind
+   (right) and others (left), then request again; the list should favour the liked kind (check the
    `jev_scored` log line). With a real key this proves Jev is reached.
 3. **Never answered cards**: none of the returned cards were answered by that user (SC-003).
 4. **Small data**: with only the six seeded cards you get all 6; with all answered you get `[]`;
