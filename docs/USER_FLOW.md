@@ -62,6 +62,8 @@ Karta pokazuje:
 
 Na karcie wydarzenia jest przycisk **„Obserwuj”** przy organizatorze. Lista obserwowanych zostaje na urządzeniu i podnosi ich wydarzenia w talii (waga 0,10 we wzorze z ARCHITECTURE.md). Wszystkich organizatorów (koła, kluby, miejsca, studentów) można przeszukać na ekranie **Organizatorzy** (wejście z Moje): wyszukiwarka, filtr „Obserwowani” i najbliższe wydarzenia każdego z nich.
 
+**Jakim typem jesteś?** Z tych samych wag kategorii, z których powstaje talia (zainteresowania z onboardingu i swipe'y), aplikacja nadaje typ jak wynik quizu: najsilniejsza kategoria daje typ, a druga, jeśli jest blisko, dodaje dopisek, np. „Dusza towarzystwa z kostką do gry w kieszeni”. Liczy to zwykły algorytm na telefonie, bez AI. Typ jest w Konto (z przyciskiem „Udostępnij”) i zmienia się razem z polubieniami. Nazwy są rodzajowo neutralne, bo nie pytamy o płeć. Student, który dodaje wydarzenie, może zaznaczyć „Pokaż przy wydarzeniu mój typ” (domyślnie wyłączone). Wtedy przy jego wydarzeniu i na ekranie Organizatorzy widać typ oraz to, co ma wspólnego z typem oglądającego („wspólne z tobą: gry”). Dopasowywanie ludzi do ludzi (matchmaking osób) zostaje w roadmapie: wymaga kont i zgody na pokazywanie profilu innym.
+
 Wydarzenie może trwać kilka dni (np. targi 1–4 października). Karta pokazuje zakres dat, a w Moje wydarzenie jest pod każdym dniem, w którym trwa (kolejne dni oznaczone „trwa”).
 
 W prawo wydarzenie trafia do kalendarza i świeci na mapie. W lewo wydarzenie odpada.

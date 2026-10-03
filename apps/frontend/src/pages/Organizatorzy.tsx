@@ -4,7 +4,7 @@ import { category } from '@/lib/categories'
 import { formatRange, inRange, type Organizer, type SpottedEvent } from '@/lib/events'
 import { photoUrl } from '@/lib/photos'
 import { useStore } from '@/lib/store'
-import { EventCard, FollowButton, OrganizerLine, Screen, Sheet, Thumb, card, chip } from '@/ui'
+import { EventCard, FollowButton, OrganizerLine, PersonaLine, Screen, Sheet, Thumb, card, chip } from '@/ui'
 
 const plural = new Intl.PluralRules('pl-PL')
 const FORMS = { one: 'wydarzenie', few: 'wydarzenia', many: 'wydarzeń', other: 'wydarzenia' } as Record<string, string>
@@ -81,6 +81,7 @@ export default function Organizatorzy({ events, liked }: { events: SpottedEvent[
                     <OrganizerLine ev={{ organizer: org }} className="text-[15px] text-fg" />
                   </h2>
                   <span className="text-[13px] text-muted">{countLabel(upcoming.length)}</span>
+                  <PersonaLine org={org} />
                 </div>
                 <FollowButton orgId={org.id} name={org.name} />
               </div>

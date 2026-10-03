@@ -10,8 +10,10 @@ from app.logger import get_logger
 
 log = get_logger(__name__)
 
-# Kraków and the nearest suburbs: min lon, min lat, max lon, max lat.
+# Box around Kraków (min lon, min lat, max lon, max lat). It also covers nearby towns, so results are filtered by city too.
 KRAKOW_BBOX = "19.79,49.96,20.22,50.13"
+CITY = "Kraków"
+LIMIT = 5
 CACHE_SIZE = 500
 MIN_INTERVAL_S = 1.0  # fair use of the public Photon instance: at most 1 request per second from this server
 
@@ -44,6 +46,8 @@ class Geocoder:
             self._cache.move_to_end(key)
             return self._cache[key]
         async with self._lock:
+            if key in self._cache:  # filled by a request that held the lock before us
+                return self._cache[key]
             wait = self._last + MIN_INTERVAL_S - time.monotonic()
             if wait > 0:
                 await asyncio.sleep(wait)
@@ -51,7 +55,7 @@ class Geocoder:
                 async with httpx.AsyncClient(timeout=self._timeout, transport=self._transport) as client:
                     response = await client.get(
                         self._url,
-                        params={"q": query, "limit": 5, "bbox": KRAKOW_BBOX},
+                        params={"q": query, "limit": LIMIT * 2, "bbox": KRAKOW_BBOX},  # extra room for the city filter
                         headers=self._headers,
                     )
                 response.raise_for_status()
@@ -60,10 +64,10 @@ class Geocoder:
                 raise GeocodeError(type(exc).__name__) from exc
             finally:
                 self._last = time.monotonic()
-        places = [p for p in (_place(f) for f in features) if p]
-        self._cache[key] = places
-        if len(self._cache) > CACHE_SIZE:
-            self._cache.popitem(last=False)
+            places = [p for p in (_place(f) for f in features) if p][:LIMIT]
+            self._cache[key] = places  # written while holding the lock, so a waiting request for the same text finds it
+            if len(self._cache) > CACHE_SIZE:
+                self._cache.popitem(last=False)
         return places
 
 
@@ -72,6 +76,8 @@ def _place(feature: dict) -> Place | None:
         lng, lat = feature["geometry"]["coordinates"][:2]
         p = feature.get("properties", {})
     except (KeyError, TypeError, ValueError):
+        return None
+    if p.get("city") != CITY:  # the frontend assigns a Kraków district, so towns around it are left out
         return None
     street = " ".join(x for x in (p.get("street"), p.get("housenumber")) if x)
     parts = [p.get("name"), street if street != p.get("name") else None, p.get("district"), p.get("city")]

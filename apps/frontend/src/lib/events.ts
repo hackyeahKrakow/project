@@ -1,7 +1,13 @@
 import type { CategoryId } from './categories'
 
 export type Size = 'small' | 'medium' | 'large'
-export type Organizer = { id: string; name: string; verified: boolean; kind: 'org' | 'student' }
+export type Organizer = {
+  id: string
+  name: string
+  verified: boolean
+  kind: 'org' | 'student'
+  persona?: CategoryId[] // a student's type (lib/persona.ts), shown only if they chose to publish it with the event
+}
 
 // Fields event_name…price mirror the backend's CardFetchResponse; the rest has no API yet.
 export type SpottedEvent = {
@@ -49,8 +55,8 @@ const AZS = o('org_azs', 'Sekcja Biegowa AZS (demo)')
 const TEATR = o('org_teatr', 'Teatr Studencki (demo)')
 const EKO = o('org_eko', 'Koło Ekologiczne (demo)')
 const PRZEWODNICY = o('org_przew', 'Koło Przewodników (demo)')
-const KASIA = o('usr_kasia', 'Kasia, studentka AGH', 'student')
-const MIKOLAJ = o('usr_mikolaj', 'Mikołaj, student UJ', 'student')
+const KASIA: Organizer = { ...o('usr_kasia', 'Kasia, studentka AGH', 'student'), persona: ['imprezy', 'gry'] }
+const MIKOLAJ: Organizer = { ...o('usr_mikolaj', 'Mikołaj, student UJ', 'student'), persona: ['gry', 'warsztaty'] }
 
 // Warsaw UTC offset for a given day, e.g. "+02:00" (CEST) or "+01:00" (CET).
 const offsetFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Warsaw', timeZoneName: 'longOffset' })
@@ -182,12 +188,14 @@ export function inRange(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>, when: W
   return to >= 0
 }
 
-/** Every Warsaw calendar day the event runs on (yyyy-mm-dd), capped at 31. */
-export function eventDays(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>) {
-  const first = Date.parse(warsawDay(ev.starts_at))
-  const last = ev.ends_at ? Date.parse(warsawDay(ev.ends_at)) : first
+/** Every Warsaw calendar day the event runs on (yyyy-mm-dd), only from `from` on when given (e.g. today). */
+export function eventDays(ev: Pick<SpottedEvent, 'starts_at' | 'ends_at'>, from = '') {
+  const start = Date.parse(warsawDay(ev.starts_at))
+  const first = from ? Math.max(start, Date.parse(from)) : start
+  const last = ev.ends_at ? Date.parse(warsawDay(ev.ends_at)) : start
   const days: string[] = []
-  for (let t = first; t <= last && days.length < 31; t += 86_400_000) days.push(new Date(t).toISOString().slice(0, 10))
+  // ponytail: a year is a guard against a broken end date, not a product limit
+  for (let t = first; t <= last && days.length < 366; t += 86_400_000) days.push(new Date(t).toISOString().slice(0, 10))
   return days
 }
 

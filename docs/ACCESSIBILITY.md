@@ -102,7 +102,7 @@ Otwarte uwagi:
 
 Nowe rzeczy: ciemny motyw, wysoki kontrast (osobno i razem z ciemnym), ekran Organizatorzy, podpowiedzi adresu w „Dodaj wydarzenie”, legenda mapy, zwijany panel boczny, zdjęcia w kartach i animacje.
 
-Skan axe-core: 11 ekranów × 4 motywy (jasny, ciemny, jasny + kontrast, ciemny + kontrast) × 2 szerokości (390 i 1440 px). Pierwszy przebieg znalazł 4 problemy, wszystkie poprawione; po poprawkach 0 naruszeń.
+Skan axe-core: 11 ekranów × 4 motywy (jasny, ciemny, jasny + kontrast, ciemny + kontrast) × 2 szerokości (390 i 1440 px). Pierwszy przebieg znalazł 4 problemy, a skan po dodaniu typu użytkownika jeszcze jeden (punkt 21). Wszystkie poprawione; po poprawkach 0 naruszeń.
 
 | # | Issue | WCAG Criterion | Severity | Recommendation |
 |---|-------|---------------|----------|----------------|
@@ -110,6 +110,7 @@ Skan axe-core: 11 ekranów × 4 motywy (jasny, ciemny, jasny + kontrast, ciemny 
 | 18 | Wysoki kontrast: tło `track` było ciemne (pod przełącznik), a leży też pod tekstem chipów i przełączników widoku (3,76:1 i 2,64:1) | 1.4.3 Contrast | 🟡 Major | ✅ `track` jasny w jasnym kontraście i ciemny w ciemnym (ok. 11:1 z tekstem); przełącznik ma własny stały kolor toru |
 | 19 | Główny przycisk po najechaniu: biały na `#1D5CFF` z 90% krycia (4,44:1) | 1.4.3 Contrast | 🟢 Minor | ✅ Hover ciemniejszy `#174BD9` (5,9:1) |
 | 20 | Ciemny motyw, karta w talii: tekst w kolorze `brand-50`, który w ciemnym motywie jest ciemny, na granatowym gradiencie | 1.4.3 Contrast | 🟡 Major | ✅ Karta talii ma stałe kolory, niezależne od motywu |
+| 21 | Ciemny motyw: znaczek „od studenta”, fioletowy tekst na ciemnofioletowym tle (2,52:1) | 1.4.3 Contrast | 🟡 Major | ✅ W ciemnym motywie jasny fiolet `#C9BEFF` (ok. 8:1) |
 
 Klawiatura w nowych elementach:
 

@@ -148,7 +148,7 @@ Zamienia tekst posta organizatora w szkic wydarzenia (funkcje AI). Backend wysy�
 
 ### GET /geocode — `geocode`
 
-Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](https://photon.komoot.io) (dane OpenStreetMap) tylko w obrębie Krakowa i okolic, z własnym nagłówkiem User-Agent (`GEOCODE_USER_AGENT`). Jedna instancja na proces trzyma pamięć podręczną ostatnich 500 zapytań i wysyła do Photona najwyżej 1 zapytanie na sekundę. Frontend pyta dopiero po 3 znakach i 350 ms przerwy w pisaniu.
+Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](https://photon.komoot.io) (dane OpenStreetMap) w prostokącie wokół Krakowa i zwraca tylko adresy z miasta Kraków (bez okolicznych miejscowości, bo frontend przypisuje adresowi krakowską dzielnicę), z własnym nagłówkiem User-Agent (`GEOCODE_USER_AGENT`). Jedna instancja na proces trzyma pamięć podręczną ostatnich 500 zapytań i wysyła do Photona najwyżej 1 zapytanie na sekundę. Frontend pyta dopiero po 3 znakach i 350 ms przerwy w pisaniu.
 
 - **Parametry**: `q` — fragment adresu albo nazwy miejsca, 3–120 znaków
 - **200**:

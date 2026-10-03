@@ -25,9 +25,10 @@ import maplibreWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { type Category, category } from '@/lib/categories'
-import { SIZE_LABEL, formatPrice, formatRange, type SpottedEvent } from '@/lib/events'
-import { photoUrl } from '@/lib/photos'
+import { SIZE_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
+import { describe, myPersona } from '@/lib/persona'
+import { photoUrl } from '@/lib/photos'
 import { useStore } from '@/lib/store'
 
 // Preline "Buttons" styled with spootted tokens.
@@ -100,7 +101,28 @@ export function OrganizerLine({ ev, className = 'text-[13px] text-muted' }: { ev
         o.verified && <BadgeCheck size={16} className="flex-none text-link" aria-label="zweryfikowane" />
       )}
       {o.name}
-      {o.kind === 'student' && <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-600">od studenta</span>}
+      {o.kind === 'student' && (
+        <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-600 dark:text-[#C9BEFF]">od studenta</span>
+      )}
+    </span>
+  )
+}
+
+/** A student organizer's published type, and what it has in common with yours. */
+export function PersonaLine({ org }: { org: Organizer }) {
+  const { state } = useStore()
+  if (!org.persona?.length) return null
+  const p = describe(org.persona)
+  const mine = myPersona(state)?.ids ?? []
+  const common = p.ids.filter((id) => mine.includes(id))
+  const c = category(p.ids[0])
+  return (
+    <span className="flex items-start gap-1.5 text-[13px] text-muted">
+      <c.Icon size={16} color={c.color} strokeWidth={2.2} className="mt-px flex-none" aria-hidden />
+      <span>
+        Typ: <span className="font-medium text-fg">{p.title}</span>
+        {common.length > 0 && ` · wspólne z tobą: ${common.map((id) => category(id).short.toLowerCase()).join(', ')}`}
+      </span>
     </span>
   )
 }
@@ -165,6 +187,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
           <OrganizerLine ev={ev} />
           <FollowButton orgId={ev.organizer.id} />
         </div>
+        <PersonaLine org={ev.organizer} />
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
         <div className="flex gap-2">
           <a

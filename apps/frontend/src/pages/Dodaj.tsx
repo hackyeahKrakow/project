@@ -4,8 +4,9 @@ import { parseEvent, searchAddress, type Draft, type Place } from '@/lib/api'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
 import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
+import { myPersona } from '@/lib/persona'
 import { useStore } from '@/lib/store'
-import { CategoryBadge, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
+import { CategoryBadge, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 
 type Form = {
   title: string
@@ -102,6 +103,8 @@ export default function Dodaj() {
   const [flagged, setFlagged] = useState(new Set<Key>())
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState<'' | 'ai' | 'publish'>('')
+  const [showType, setShowType] = useState(false) // publishing the type is the student's choice, off by default
+  const me = myPersona(state)
   const [coords, setCoords] = useState<[number, number] | null>(null) // from a picked address suggestion
 
   if (!account) {
@@ -143,7 +146,10 @@ export default function Dodaj() {
     // The AI gives an address as text: look it up once so the pin and district are right too.
     const [hit] = (draft.address && (await searchAddress(draft.address))) || []
     if (hit) pickPlace(hit, next)
-    else setForm(next)
+    else {
+      if (draft.address) setCoords(null) // a new address we couldn't find: don't keep the pin of the old one
+      setForm(next)
+    }
     setFlagged(new Set(draft.missing_fields.map((f) => FIELD_OF[f]).filter(Boolean)))
     setBusy('')
   }
@@ -174,7 +180,13 @@ export default function Dodaj() {
       organizer:
         org && account.org === LIBRARY.name
           ? LIBRARY
-          : { id: `usr_${account.email}`, name: account.org ?? account.name, verified: false, kind: org ? 'org' : 'student' },
+          : {
+              id: `usr_${account.email}`,
+              name: account.org ?? account.name,
+              verified: false,
+              kind: org ? 'org' : 'student',
+              ...(!org && showType && me && { persona: me.ids }),
+            },
     }
     // ponytail: no create-event endpoint yet, so the event lives on this device only
     update((s) => ({ myEvents: [...s.myEvents, ev], swipes: { ...s.swipes, [ev.id]: 'right' } }))
@@ -303,6 +315,7 @@ export default function Dodaj() {
         {field('description', 'Opis', (cls) => (
           <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />
         ))}
+        {!org && me && <Toggle label="Pokaż przy wydarzeniu mój typ" hint={me.title} on={showType} onChange={setShowType} />}
         {notice && (
           <div role="status" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
             <Info size={18} className="flex-none" aria-hidden />

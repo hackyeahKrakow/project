@@ -1,7 +1,9 @@
-import { BadgeCheck, BarChart3, Flame, LogIn, LogOut, Monitor, Moon, Plus, ShieldCheck, SlidersHorizontal, Sun, Trash2, UserRound } from 'lucide-react'
-import { CATEGORIES } from '@/lib/categories'
+import { BadgeCheck, BarChart3, Flame, LogIn, LogOut, Monitor, Moon, Plus, Share2, ShieldCheck, SlidersHorizontal, Sun, Trash2, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { CATEGORIES, category } from '@/lib/categories'
 import { DEMO_ACCOUNTS, ORG_PLAN, PACKAGES } from '@/lib/demo'
 import { LIBRARY, formatRange, type SpottedEvent } from '@/lib/events'
+import { persona } from '@/lib/persona'
 import { weights } from '@/lib/recommend'
 import { useStore } from '@/lib/store'
 import { Screen, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
@@ -19,6 +21,22 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
   const ownerId = account?.org === LIBRARY.name ? LIBRARY.id : account && `usr_${account.email}`
   const orgEvents = ownerId ? events.filter((e) => e.organizer.id === ownerId) : []
   const plan = PACKAGES.find((p) => p.id === ORG_PLAN.package)!
+  const me = persona(w, state.profile.interests)
+  const MeIcon = me ? category(me.ids[0]).Icon : UserRound
+  const [shared, setShared] = useState('')
+  const share = async () => {
+    if (!me) return
+    const text = `Mój typ w spootted: ${me.title}. A jaki jest twój?`
+    try {
+      if (navigator.share) await navigator.share({ text, url: location.origin })
+      else {
+        await navigator.clipboard.writeText(`${text} ${location.origin}`)
+        setShared('Skopiowano do schowka.')
+      }
+    } catch {
+      /* share sheet closed or clipboard blocked */
+    }
+  }
 
   return (
     <Screen wide title="Konto">
@@ -97,6 +115,36 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
           )}
         </div>
         <div className="flex flex-col gap-4">
+          <section className={`${card} flex flex-col gap-3 p-4`}>
+            <h2 className="font-semibold">Jakim typem jesteś?</h2>
+            {me ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl" style={{ background: category(me.ids[0]).color }}>
+                    <MeIcon size={28} color="#fff" strokeWidth={1.8} aria-hidden />
+                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-lg leading-tight font-semibold">{me.title}</span>
+                    <span className="text-sm text-muted">{me.blurb}</span>
+                  </div>
+                </div>
+                <p className="text-[13px] text-muted">
+                  Liczymy go na tym telefonie z zainteresowań i polubień, więc zmienia się razem z tobą.
+                  {account?.kind === 'student' && ' Możesz go pokazać przy swoich wydarzeniach, żeby inni wiedzieli, czy pasujecie.'}
+                </p>
+                <button type="button" onClick={share} className={`${btnOutline} h-11 self-start px-4`}>
+                  <Share2 size={18} aria-hidden />
+                  Udostępnij
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-muted">Polub kilka wydarzeń w Odkrywaj, a powiemy ci, jakim typem jesteś.</p>
+            )}
+            <p role="status" className="text-[13px] text-muted empty:hidden">
+              {shared}
+            </p>
+          </section>
+
           <section className={`${card} flex flex-col gap-3 p-4`}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Twój profil zainteresowań</h2>

@@ -21,7 +21,7 @@ export default function Moje({ events, liked }: { events: SpottedEvent[]; liked:
 
   const byDay = new Map<string, SpottedEvent[]>()
   // A multi-day event shows up on every day it runs (from today on in the agenda).
-  for (const ev of mine) for (const day of eventDays(ev)) if (day >= today) byDay.set(day, [...(byDay.get(day) ?? []), ev])
+  for (const ev of mine) for (const day of eventDays(ev, today)) byDay.set(day, [...(byDay.get(day) ?? []), ev])
   const days = [...byDay.keys()].sort()
 
   return (
@@ -201,7 +201,7 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
                 onClick={() => setPicked(ymd)}
                 aria-pressed={on}
                 aria-label={`${i + 1}${evs.length ? `, ${evs.length} wydarzeń` : ''}`}
-                className={`flex h-11 flex-col items-center justify-center rounded-xl text-[15px] ${on ? 'bg-brand-600 font-semibold text-white' : ymd === today ? 'bg-brand-50 font-semibold text-fg' : 'text-ink-900'}`}
+                className={`flex h-11 flex-col items-center justify-center rounded-xl text-[15px] ${on ? 'bg-brand-600 font-semibold text-white' : ymd === today ? 'bg-brand-50 font-semibold text-fg' : 'text-fg'}`}
               >
                 {i + 1}
                 <span className="flex h-1.5 gap-0.5">

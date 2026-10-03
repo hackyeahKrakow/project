@@ -17,6 +17,7 @@ Nie scrapujemy. Wydarzenia dodają ich właściciele (koła, samorządy, uczelni
 - [ ] **Grafiki:** własne lub wygenerowane, bez plakatów organizatorów; sprawdzona licencja elementów z Canvy.
 - [ ] **Licencje bibliotek:** spisane w README lub `NOTICE` (MapLibre GL JS, Preline UI, Tailwind CSS, React, Vite, FastAPI, SQLModel/SQLAlchemy) i zgodne z licencją MIT repo.
 - [ ] **Prywatność (RODO):** brak kont i danych osobowych; anonimowy UUID w `localStorage`; lokalizacja użytkownika używana tylko na urządzeniu i w parametrach `/feed`, nigdy nie zapisywana.
+- [ ] **Typ użytkownika („Jakim typem jesteś?”):** liczony tylko na urządzeniu z zainteresowań i swipe'ów, nie trafia na serwer. Przy wydarzeniu pokazujemy go wyłącznie wtedy, gdy student sam zaznaczy to przy publikacji (domyślnie wyłączone, bez wcześniej zaznaczonego pola). To profilowanie w rozumieniu RODO, więc przed wersją z kontami: informacja w polityce prywatności i możliwość usunięcia typu z opublikowanych wydarzeń. Dopasowywanie osób do osób dopiero z kontami i osobną zgodą.
 - [ ] **Klucze API:** tylko w `.env` (ignorowany przez git), nigdy w repo ani we frontendzie.
 - [ ] **Płatne promowanie (roadmapa):** zawsze oznaczone jako „Promowane”. Przepisy wdrażające dyrektywę Omnibus (w Polsce od 1.01.2023) wymagają ujawniania płatnego pozycjonowania.
 - [ ] **Ujawnienie AI w zgłoszeniu:** lista użytych narzędzi AI, modeli i API (sekcja niżej), zgodnie z regulaminem HackYeah.

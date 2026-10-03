@@ -1,3 +1,5 @@
+import asyncio
+
 import httpx
 import pytest
 
@@ -21,7 +23,8 @@ async def test_search_maps_features_sends_user_agent_and_caches(monkeypatch):
 
     def handler(request: httpx.Request) -> httpx.Response:
         calls.append(request)
-        return httpx.Response(200, json={"features": [FEATURE, {"geometry": {}}]})
+        wieliczka = {**FEATURE, "properties": {**FEATURE["properties"], "city": "Wieliczka"}}
+        return httpx.Response(200, json={"features": [FEATURE, {"geometry": {}}, wieliczka]})
 
     g = make(handler)
     places = await g.search("Józefińska 20")
@@ -31,6 +34,20 @@ async def test_search_maps_features_sends_user_agent_and_caches(monkeypatch):
     assert again == places and len(calls) == 1
     assert calls[0].headers["user-agent"] == "spootted-test/1"
     assert calls[0].url.params["bbox"] == geo.KRAKOW_BBOX
+
+
+async def test_concurrent_same_query_calls_photon_once(monkeypatch):
+    monkeypatch.setattr(geo, "MIN_INTERVAL_S", 0)
+    calls = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        await asyncio.sleep(0.01)  # let the second request reach the lock while the first is waiting for Photon
+        return httpx.Response(200, json={"features": [FEATURE]})
+
+    g = make(handler)
+    first, second = await asyncio.gather(g.search("Józefińska 20"), g.search("Józefińska 20"))
+    assert first == second and len(calls) == 1
 
 
 @pytest.mark.parametrize("status_code", [429, 500])
