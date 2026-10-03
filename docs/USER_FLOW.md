@@ -82,7 +82,7 @@ Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
 | Konto | Login | Co pokazuje |
 | --- | --- | --- |
 | Student | `ola@demo` | dodanie wydarzenia ręcznie |
-| Organizacja | `kolo-robotyki@demo` | Jev (AI autofill), statystyki, pakiet sponsora |
+| Organizacja | `kolo-robotyki@demo` | funkcje AI (autouzupełnianie), statystyki, pakiet sponsora |
 
 Logowanie jest atrapą: dwa konta na sztywno, bez prawdziwej autoryzacji. Na slajdzie piszemy to wprost.
 
@@ -92,7 +92,7 @@ Pakiety kosztują od 10 zł w górę, a im wyższy pakiet, tym więcej dostaje o
 
 | | Pakiet 1 (od 10 zł) | Pakiet 2 | Pakiet 3 |
 | --- | --- | --- | --- |
-| Jev (AI autofill) | 1 wydarzenie | kilka | bez limitu |
+| Funkcje AI (autouzupełnianie) | 1 wydarzenie | kilka | bez limitu |
 | Statystyki | wyświetlenia | + prawo / lewo / pominięte | + demografia zainteresowań |
 | Wyróżnienie w talii i na mapie | – | tak | mocniejsze |
 | Opinie po wydarzeniu | – | tak | tak |
@@ -102,7 +102,7 @@ Ustalenia do pakietów:
 - **Statystyki:** „neutralne” liczymy jako wydarzenia, które ktoś zobaczył i zamknął aplikację bez swipe'a.
 - **Opinie:** losowi uczestnicy po wydarzeniu dostają pop-up „oceń w kilku zdaniach”. Pop-up musi mieć „Pomiń”, bo wymuszone opinie to dark pattern, którego zakazuje DSA (art. 25).
 
-**Dlaczego ktoś zapłaci:** plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interesują się tematem. Jev oszczędza organizatorowi czas na każdym wydarzeniu.
+**Dlaczego ktoś zapłaci:** plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interesują się tematem. Funkcje AI oszczędzają organizatorowi czas na każdym wydarzeniu.
 
 **Wejście na rynek:**
 1. Na start sami budujemy bazę wydarzeń.
@@ -116,5 +116,5 @@ Ustalenia do pakietów:
 3. Kilka swipe'ów z widocznym „Bo lubisz…”.
 4. Mapa z polubionymi wydarzeniami.
 5. Kalendarz i eksport `.ics`.
-6. Wylogowanie, logowanie jako `kolo-robotyki@demo`, wklejenie posta: Jev wypełnia formularz i organizator zatwierdza.
+6. Wylogowanie, logowanie jako `kolo-robotyki@demo`, wklejenie posta: funkcje AI wypełniają formularz i organizator zatwierdza.
 7. Statystyki wydarzenia i ekran „Zostań sponsorem”.

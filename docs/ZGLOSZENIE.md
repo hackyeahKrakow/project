@@ -54,20 +54,20 @@ Polubione wydarzenia świecą na czystej mapie, bez sklepów, stacji i reklam. K
 
 Polubione wydarzenia układają się w agendę z widokiem tygodnia i miesiąca. Jednym kliknięciem eksportujesz je do swojego kalendarza (Google, Apple, Outlook) przez plik `.ics`.
 
-### 5. Jev: asystent AI, który tworzy wydarzenie za organizatora
+### 5. Funkcje AI: wydarzenie tworzy się samo
 
-Kto chce tworzyć wydarzenia, zakłada konto: studenta albo organizacji (koło, samorząd, lokal, uczelnia). Student dodaje wydarzenie prostym formularzem. Organizacja dostaje Jeva, bo dodanie wydarzenia nie może być trudniejsze niż wrzucenie posta:
+Kto chce tworzyć wydarzenia, zakłada konto: studenta albo organizacji (koło, samorząd, lokal, uczelnia). Student dodaje wydarzenie prostym formularzem. Organizacja dostaje funkcje AI, bo dodanie wydarzenia nie może być trudniejsze niż wrzucenie posta:
 - **Wklejasz tekst posta albo piszesz jedno zdanie,** np. „Koło Robotyki AGH zaprasza na spotkanie otwarte, czwartek 19:00, D-17 sala 1.38, wstęp wolny”.
-- **Jev wypełnia cały formularz:** tytuł, opis, kategorię, adres i limit miejsc. Rozumie też „w czwartek” czy „jutro wieczorem” i zamienia to na konkretną datę.
-- **Jev mówi, czego brakuje.** Pola, których nie był pewien, są podświetlone do sprawdzenia, zamiast zgadywania.
-- **Człowiek ma ostatnie słowo.** Jev tylko proponuje. Nic nie trafia na mapę bez zatwierdzenia przez organizatora.
+- **AI wypełnia cały formularz:** tytuł, opis, kategorię, adres i limit miejsc. Rozumie też „w czwartek” czy „jutro wieczorem” i zamienia to na konkretną datę.
+- **AI mówi, czego brakuje.** Pola, których nie był pewien, są podświetlone do sprawdzenia, zamiast zgadywania.
+- **Człowiek ma ostatnie słowo.** AI tylko proponuje. Nic nie trafia na mapę bez zatwierdzenia przez organizatora.
 
 Formularz, który zajmował 10 minut, zajmuje 30 sekund. Organizator nie przepisuje tego samego posta do kolejnego narzędzia, więc chętniej dodaje każde wydarzenie. Obok oficjalnych wydarzeń pojawiają się też oddolne mikro-wydarzenia dodane przez samych studentów, a tego nie ma nikt inny.
 
 ### 6. Model biznesowy: pakiety dla organizatorów
 
 Dla studentów aplikacja jest darmowa. Organizacje kupują pakiety od 10 zł w górę, a każdy wyższy pakiet daje więcej:
-- więcej wydarzeń z Jevem;
+- więcej wydarzeń z funkcjami AI;
 - statystyki: wyświetlenia, swipe'y w prawo, w lewo i pominięcia;
 - wyróżnienie w talii i na mapie;
 - krótkie opinie uczestników po wydarzeniu.
@@ -76,7 +76,7 @@ Plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interes
 
 **Korzyści:**
 - **Student:** w minutę wie, co dzieje się dziś blisko niego i pasuje do jego zainteresowań. Łatwiej mu wyjść z pokoju i poznać ludzi.
-- **Organizator:** dociera do dokładnie tych studentów, którzy interesują się jego tematem. Z Jevem dodaje wydarzenie w 30 sekund, a ze statystyk wie, co działa.
+- **Organizator:** dociera do dokładnie tych studentów, którzy interesują się jego tematem. Z funkcjami AI dodaje wydarzenie w 30 sekund, a ze statystyk wie, co działa.
 - **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne. Studenci, którzy się angażują, rzadziej rezygnują ze studiów.
 
 Pilotaż: Kraków (ok. 152 tys. studentów na uczelniach w Małopolsce). Aplikacja jest gotowa do uruchomienia w kolejnych miastach akademickich. Dane dodają ich właściciele, nie scrapujemy cudzych stron.
@@ -108,7 +108,7 @@ Propozycja: zrzut ekranu telefonu z mapą Krakowa i kolorowymi pinami, obok kart
 **Cel na koniec hackathonu:**
 - Przepływ end-to-end: ekran powitalny → onboarding → swipe → mapa → kalendarz z eksportem `.ics`.
 - Rekomendacje z prostą, wyjaśnialną formułą (kategoria, odległość, czas), dociągane w tle partiami po 10 kart.
-- Dwa konta demo (student i organizacja), formularz dodawania wydarzenia i Jev dla organizacji.
+- Dwa konta demo (student i organizacja), formularz dodawania wydarzenia i funkcje AI dla organizacji.
 - Ekran pakietów sponsora i statystyk na danych demo.
 - 30–50 wydarzeń demo w Krakowie.
 
@@ -165,4 +165,4 @@ Klucz do LLM (autofill) podajemy w `apps/backend/.env`. Bez klucza aplikacja dzi
 
 ## Presentation
 
-Maksymalnie 10 slajdów w PDF, według planu z [PITCH.md](PITCH.md). Na ostatnim slajdzie ujawniamy narzędzia AI, API i biblioteki ([LEGAL.md](LEGAL.md)). Regulamin tego wymaga.
+Maksymalnie 10 slajdów w PDF, według planu z [PITCH.md](PITCH.md). Na ostatnim slajdzie ujawniamy narzędzia AI (w tym model językowy Jev), API i biblioteki ([LEGAL.md](LEGAL.md)). Regulamin tego wymaga.
