@@ -107,7 +107,7 @@ Formuła punktowa (waga kategorii, bliskość, czas) zostaje jako zapas rozważa
 
 ## AI autofill
 
-1. Autor (członek organizacji lub użytkownik z kontem) wkleja tekst posta.
+1. Autor (członek organizacji z pakietem sponsorskim) wkleja tekst posta. Studenci z kontem wypełniają formularz ręcznie.
 2. Backend wysyła go do LLM z promptem, który wymaga wyłącznie JSON zgodnego z `draft` z [API.md](API.md#post-eventsparse), listą dozwolonych kategorii i dzisiejszą datą (do rozwiązywania „w czwartek”).
 3. Backend waliduje odpowiedź Pydantic. Niepoprawny JSON = jedna ponowna próba, potem pusty szkic z `missing_fields`.
 4. Organizator poprawia i zatwierdza w formularzu. Nic nie trafia do bazy bez zatwierdzenia.

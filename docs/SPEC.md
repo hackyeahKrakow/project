@@ -61,8 +61,9 @@ Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery 
 
 ### Dodawanie wydarzeń z AI autofill
 
-- Organizator (członek profilu organizacji) albo zarejestrowany użytkownik wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, wielkość, opis).
+- Organizator (członek profilu organizacji z wykupionym pakietem sponsorskim) wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, wielkość, opis).
 - Autor poprawia i zatwierdza. AI tylko proponuje, a człowiek zatwierdza każde wydarzenie.
+- Zarejestrowany student dodaje wydarzenie tym samym formularzem, ale ręcznie, bez AI. Decyzja zespołu z 3.10: AI jest w płatnych pakietach dla organizacji ([USER_FLOW.md](USER_FLOW.md#5-model-biznesowy-pakiety-dla-organizacji)).
 
 ## Konta i organizacje
 
@@ -130,7 +131,7 @@ Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowan
 | Profile organizacji (dane seed, jeden administrator) | Budujemy | Znaczek „zweryfikowane”, obserwujący |
 | Statystyki swipe'ów dla organizatora | Jeśli starczy czasu | Liczniki polubień i odrzuceń |
 | Konto użytkownika (link na e-mail) i przeniesienie lokalnej bazy | Jeśli starczy czasu | Warunek dla tworzenia wydarzeń |
-| Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz, typ „grassroots”, wymaga zgłaszania nadużyć |
+| Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz bez AI, typ „grassroots”, wymaga zgłaszania nadużyć |
 | Zaproszenia członków i role w organizacji | Roadmapa | Tylko slajd |
 | Publiczny profil, obserwujący, polecanie wydarzeń | Roadmapa | Community użytkowników, tylko slajd |
 | Link „Pokaż w Google Maps” | Jeśli starczy czasu | Zwykły URL z lat/lng, bez API i klucza |
