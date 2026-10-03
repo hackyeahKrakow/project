@@ -2,10 +2,11 @@ import { Calendar, Heart, MapPin, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { saveSwipe, starterDeck } from '@/lib/api'
 import { CATEGORIES, category } from '@/lib/categories'
-import { STARTER, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
+import { STARTER, formatDate, formatPrice, formatRange, type SpottedEvent } from '@/lib/events'
+import { photoUrl } from '@/lib/photos'
 import { recommend, weights, type Scored } from '@/lib/recommend'
 import { useStore, type Decision } from '@/lib/store'
-import { CategoryBadge, OrganizerLine, PromotedTag, btnPrimary, card } from '@/ui'
+import { CategoryBadge, OrganizerLine, Photo, PromotedTag, btnPrimary, card } from '@/ui'
 
 const THRESHOLD = 90
 const FLY_MS = 260
@@ -140,7 +141,8 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   })
 
   const style = (pos: number): CSSProperties => {
-    const transition = drag ? 'none' : `transform ${FLY_MS / 1000}s ease`
+    // Fling out with an ease-out, snap back with a slight overshoot, follow the finger with no delay.
+    const transition = drag ? 'none' : dx ? `transform ${FLY_MS / 1000}s cubic-bezier(.2,.8,.2,1)` : 'transform .4s cubic-bezier(.34,1.56,.64,1)'
     if (pos === 0) return { zIndex: 3, transform: `translateX(${dx}px) rotate(${dx / 18}deg)`, transition }
     if (pos === 1) return { zIndex: 2, transform: `scale(${0.95 + Math.min(Math.abs(dx) / 1800, 0.05)}) translateY(12px)`, transition }
     return { zIndex: 1, transform: 'scale(0.9) translateY(24px)' }
@@ -162,13 +164,14 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
               key={x.ev.id}
               item={x}
               style={style(k)}
+              top={k === 0}
               like={k ? 0 : Math.max(0, Math.min(dx / 110, 1))}
               skip={k ? 0 : Math.max(0, Math.min(-dx / 110, 1))}
             />
           ))
           .reverse()}
         {done && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-line bg-surface p-6 text-center">
             <div className="text-2xl font-semibold">To już wszystko na dziś</div>
             <p className="text-muted">Polubione wydarzenia są w zakładce Moje i świecą na mapie. Możesz też poszerzyć preferencje.</p>
             <a href="#/moje" className={`${btnPrimary} h-12`}>
@@ -187,7 +190,7 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
           aria-label="Pomiń wydarzenie"
           onClick={() => fly(-1)}
           disabled={done}
-          className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+          className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface shadow-[0_4px_12px_rgba(10,31,68,.14)] transition-transform hover:scale-105 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
         >
           <X size={28} strokeWidth={2.4} aria-hidden />
         </button>
@@ -196,7 +199,7 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
           aria-label="Interesuje mnie"
           onClick={() => fly(1)}
           disabled={done}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] transition-transform hover:scale-105 active:scale-90 disabled:opacity-50 disabled:hover:scale-100"
         >
           <Heart size={28} color="#fff" aria-hidden />
         </button>
@@ -205,19 +208,20 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   )
 }
 
-function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProperties; like: number; skip: number }) {
+function SwipeCard({ item, style, like, skip, top }: { item: Scored; style: CSSProperties; like: number; skip: number; top: boolean }) {
   const { ev, reason } = item
   const c = category(ev.category)
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
   return (
     <article
-      className="absolute inset-0 flex flex-col justify-end overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)]"
+      className={`absolute inset-0 flex flex-col justify-end overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] ${top ? 'animate-in duration-300 ease-out zoom-in-95' : ''}`}
       style={{ background: c.color, ...style }}
       aria-hidden={style.zIndex !== 3}
     >
       <div className="absolute inset-x-0 top-0 bottom-[48%] flex items-center justify-center">
         <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
       </div>
+      <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-x-0 top-0 h-[70%] w-full object-cover" />
       <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
         WCHODZĘ
       </div>
@@ -230,11 +234,11 @@ function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProper
           {ev.promoted && <PromotedTag />}
         </div>
         <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
-        <div className="flex items-center gap-2 text-[15px] text-brand-50">
+        <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
           <Calendar size={18} aria-hidden />
-          {formatDate(ev.starts_at)}
+          {formatRange(ev)}
         </div>
-        <div className="flex items-center gap-2 text-[15px] text-brand-50">
+        <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
           <MapPin size={18} aria-hidden />
           {ev.address}
         </div>
@@ -242,9 +246,9 @@ function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProper
           <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>
             {formatPrice(ev.price)}
           </span>
-          <OrganizerLine ev={ev} className="text-[13px] text-brand-50" />
+          <OrganizerLine ev={ev} className="text-[13px] text-[#E6EEFF]" />
         </div>
-        <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-ink-900">
+        <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-fg">
           <Sparkles size={18} className="mt-px flex-none text-violet-600" aria-hidden />
           {reason}
         </div>

@@ -146,6 +146,20 @@ Zamienia tekst posta organizatora w szkic wydarzenia (funkcje AI). Backend wysy�
 - **422**: `{ "detail": "..." }` — za krótki albo za długi tekst
 - **503**: `{ "detail": "AI unavailable" }` — brak klucza, limit, błąd sieci albo modelu. Frontend wtedy wypełnia formularz przykładową odpowiedzią i mówi o tym użytkownikowi.
 
+### GET /geocode — `geocode`
+
+Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](https://photon.komoot.io) (dane OpenStreetMap) tylko w obrębie Krakowa i okolic, z własnym nagłówkiem User-Agent (`GEOCODE_USER_AGENT`). Jedna instancja na proces trzyma pamięć podręczną ostatnich 500 zapytań i wysyła do Photona najwyżej 1 zapytanie na sekundę. Frontend pyta dopiero po 3 znakach i 350 ms przerwy w pisaniu.
+
+- **Parametry**: `q` — fragment adresu albo nazwy miejsca, 3–120 znaków
+- **200**:
+
+```json
+[{ "label": "Józefińska 20, Podgórze, Kraków", "lat": 50.0446, "lng": 19.9525 }]
+```
+
+- **422**: za krótkie albo za długie `q`
+- **503**: `{ "detail": "Geocoder unavailable" }` — Photon nie odpowiada albo odrzucił zapytanie. Formularz działa dalej: adres wpisuje się ręcznie, a pin trafia do środka wybranej dzielnicy.
+
 ## Błędy
 
 Wszystkie błędy mają ten sam kształt:

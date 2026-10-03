@@ -7,6 +7,8 @@ import {
   Map as MapIcon,
   MapPin,
   Megaphone,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   UserCheck,
   UserPlus,
@@ -23,28 +25,38 @@ import maplibreWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { type Category, category } from '@/lib/categories'
-import { SIZE_LABEL, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
+import { SIZE_LABEL, formatPrice, formatRange, type SpottedEvent } from '@/lib/events'
+import { photoUrl } from '@/lib/photos'
 import { downloadIcs } from '@/lib/ics'
 import { useStore } from '@/lib/store'
 
 // Preline "Buttons" styled with spootted tokens.
 export const btn =
-  'inline-flex items-center justify-center gap-2 rounded-[14px] px-5 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:opacity-50'
-export const btnPrimary = `${btn} bg-brand-600 text-white hover:bg-brand-600/90`
+  'inline-flex items-center justify-center gap-2 rounded-[14px] px-5 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50'
+export const btnPrimary = `${btn} bg-brand-600 text-white hover:bg-[#174BD9]`
 // Orange (Iskra) is only ever a fill with ink text, never a text color.
 export const btnSpark = `${btn} bg-spark-500 text-ink-900 hover:bg-spark-500/90`
-export const btnOutline = `${btn} border border-line bg-white text-ink-900 hover:bg-canvas`
+export const btnOutline = `${btn} border border-line bg-surface text-fg hover:bg-canvas`
 // Preline "Card".
-export const card = 'rounded-[20px] border border-line bg-white'
+export const card = 'rounded-[20px] border border-line bg-surface'
 // Pill chip for filters and onboarding answers (min. 44 px).
 export const chip = (on: boolean) =>
   `flex min-h-11 flex-none items-center gap-1.5 rounded-full border px-4 text-[15px] font-medium ${
-    on ? 'border-ink-900 bg-ink-900 text-white' : 'border-line bg-white text-ink-900'
+    on ? 'border-fg bg-fg text-surface' : 'border-line bg-surface text-fg'
   }`
 
 /** The Canva export is a square with the wordmark in a band through the middle, so the image is cropped with object-fit. */
 export function Logo({ height = 36, className = '' }: { height?: number; className?: string }) {
-  return <img src={logoUrl} alt="spootted" width={Math.round(height * 3.2)} height={height} className={`object-cover ${className}`} />
+  // The wordmark is dark: on the dark theme it sits on a white plate until design delivers a light version (orange eyes).
+  return (
+    <img
+      src={logoUrl}
+      alt="spootted"
+      width={Math.round(height * 3.2)}
+      height={height}
+      className={`aspect-[16/5] object-cover dark:rounded-xl dark:bg-white dark:px-2 ${className}`}
+    />
+  )
 }
 
 // Preline "Badge": category color at 12% behind a full-color Lucide icon.
@@ -52,7 +64,7 @@ export function CategoryBadge({ cat, onDark = false, className = 'text-xs' }: { 
   // Category = color + icon + name; color is never the only carrier.
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1.5 rounded-full py-1 pr-2.5 pl-2 leading-tight font-medium text-ink-900 ${className}`}
+      className={`inline-flex w-fit items-center gap-1.5 rounded-full py-1 pr-2.5 pl-2 leading-tight font-medium ${onDark ? 'text-ink-900' : 'text-fg'} ${className}`}
       style={{ background: onDark ? '#fff' : `${cat.color}1F` }}
     >
       <cat.Icon size={15} color={cat.color} strokeWidth={2.2} aria-hidden />
@@ -61,20 +73,32 @@ export function CategoryBadge({ cat, onDark = false, className = 'text-xs' }: { 
   )
 }
 
-/** Stand-in for the 16:9 event image: category color with a large icon (docs/DESIGN.md). */
-export function Thumb({ cat, iconSize, className }: { cat: Category; iconSize: number; className: string }) {
+/** Decorative photo that removes itself if it can't load, so whatever is underneath shows instead. */
+export function Photo({ src, className }: { src: string; className: string }) {
+  const [failed, setFailed] = useState('')
+  if (failed === src) return null
+  return <img src={src} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setFailed(src)} className={className} />
+}
+
+/** Event image: the photo over the category color and icon, which stay as the fallback (docs/DESIGN.md). */
+export function Thumb({ cat, iconSize, className, photo }: { cat: Category; iconSize: number; className: string; photo?: string }) {
   return (
-    <div className={`flex flex-none items-center justify-center ${className}`} style={{ background: cat.color }}>
+    <div className={`relative flex flex-none items-center justify-center overflow-hidden ${className}`} style={{ background: cat.color }}>
       <cat.Icon size={iconSize} color="#fff" strokeWidth={iconSize > 40 ? 1.6 : 2} aria-hidden />
+      {photo && <Photo src={photo} className="absolute inset-0 h-full w-full object-cover" />}
     </div>
   )
 }
 
-export function OrganizerLine({ ev, className = 'text-[13px] text-muted' }: { ev: SpottedEvent; className?: string }) {
+export function OrganizerLine({ ev, className = 'text-[13px] text-muted' }: { ev: Pick<SpottedEvent, 'organizer'>; className?: string }) {
   const { organizer: o } = ev
   return (
     <span className={`flex items-center gap-1.5 ${className}`}>
-      {o.kind === 'student' ? <Users size={16} aria-hidden /> : o.verified && <BadgeCheck size={16} className="text-brand-600" aria-label="zweryfikowane" />}
+      {o.kind === 'student' ? (
+        <Users size={16} className="flex-none" aria-hidden />
+      ) : (
+        o.verified && <BadgeCheck size={16} className="flex-none text-link" aria-label="zweryfikowane" />
+      )}
       {o.name}
       {o.kind === 'student' && <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-600">od studenta</span>}
     </span>
@@ -90,16 +114,31 @@ export function PromotedTag() {
   )
 }
 
+export function FollowButton({ orgId, name }: { orgId: string; name?: string }) {
+  const { state, update } = useStore()
+  const following = state.follows.includes(orgId)
+  // Following lives on this device and lifts the organizer's events in the deck (US-10).
+  const toggle = () => update((s) => ({ follows: following ? s.follows.filter((id) => id !== orgId) : [...s.follows, orgId] }))
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={following}
+      className={`flex min-h-11 flex-none items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-colors ${following ? 'bg-brand-50 text-brand-700' : 'border border-line text-fg'}`}
+    >
+      {following ? <UserCheck size={16} aria-hidden /> : <UserPlus size={16} aria-hidden />}
+      {following ? 'Obserwujesz' : 'Obserwuj'}
+      {name && <span className="sr-only"> {name}</span>}
+    </button>
+  )
+}
+
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
-  const { state, update } = useStore()
-  const following = state.follows.includes(ev.organizer.id)
-  // Following lives on this device and lifts the organizer's events in the deck (US-10).
-  const toggleFollow = () => update((s) => ({ follows: following ? s.follows.filter((id) => id !== ev.organizer.id) : [...s.follows, ev.organizer.id] }))
   return (
     <article className="flex flex-col">
-      <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" />
+      <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" photo={photoUrl(ev)} />
       <div className="flex flex-col gap-2.5 p-4">
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-xl leading-tight font-semibold">{ev.event_name}</h2>
@@ -112,7 +151,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         <div className="flex flex-col gap-1.5 text-[15px]">
           <div className="flex items-center gap-2">
             <Calendar size={18} aria-hidden />
-            {formatDate(ev.starts_at)}
+            {formatRange(ev)}
           </div>
           <div className="flex items-center gap-2 text-muted">
             <MapPin size={18} aria-hidden />
@@ -124,15 +163,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         </div>
         <div className="flex items-center justify-between gap-2">
           <OrganizerLine ev={ev} />
-          <button
-            type="button"
-            onClick={toggleFollow}
-            aria-pressed={following}
-            className={`flex min-h-11 flex-none items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${following ? 'bg-brand-50 text-brand-700' : 'border border-line text-ink-900'}`}
-          >
-            {following ? <UserCheck size={16} aria-hidden /> : <UserPlus size={16} aria-hidden />}
-            {following ? 'Obserwujesz' : 'Obserwuj'}
-          </button>
+          <FollowButton orgId={ev.organizer.id} />
         </div>
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
         <div className="flex gap-2">
@@ -183,13 +214,13 @@ export function Sheet({ open, onClose, label, children }: { open: boolean; onClo
     <div
       role="dialog"
       aria-label={label}
-      className="absolute inset-x-0 bottom-0 z-30 max-h-[78%] overflow-y-auto rounded-t-[22px] bg-white shadow-[0_-12px_32px_rgba(10,31,68,.22)] sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-4 sm:max-h-none sm:w-[400px] sm:rounded-[22px] sm:shadow-[0_12px_32px_rgba(10,31,68,.22)]"
+      className="absolute inset-x-0 bottom-0 z-30 max-h-[78%] animate-in overflow-y-auto rounded-t-[22px] bg-surface duration-250 ease-out fade-in slide-in-from-bottom-10 sm:slide-in-from-right-10 sm:slide-in-from-bottom-0 shadow-[0_-12px_32px_rgba(10,31,68,.22)] sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-4 sm:max-h-none sm:w-[400px] sm:rounded-[22px] sm:shadow-[0_12px_32px_rgba(10,31,68,.22)]"
     >
       <button
         ref={close}
         type="button"
         onClick={onClose}
-        className="absolute top-3 right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/90"
+        className="absolute top-3 right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-surface/90"
         aria-label="Zamknij"
       >
         <X size={22} aria-hidden />
@@ -208,7 +239,7 @@ export function Toggle({ label, hint, on, onChange }: { label: string; hint?: st
       </span>
       <input type="checkbox" role="switch" checked={on} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
       {/* Off track is #6B7A99 so the switch state stays visible (3:1 against white, WCAG 1.4.11). */}
-      <span className="relative h-7 w-12 flex-none rounded-full bg-[#6B7A99] transition-colors peer-checked:bg-brand-600 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-600 after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+      <span className="relative h-7 w-12 flex-none rounded-full bg-[#6B7A99] transition-colors peer-checked:bg-brand-600 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
     </label>
   )
 }
@@ -251,7 +282,7 @@ export const NAV = [
 /** Phones: tab bar at the bottom. */
 export function BottomNav({ route }: { route: string }) {
   return (
-    <nav className="flex flex-none border-t border-line bg-white pb-[env(safe-area-inset-bottom)] sm:hidden" aria-label="Główna">
+    <nav className="flex flex-none border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] sm:hidden" aria-label="Główna">
       {NAV.map(({ route: r, label, Icon }) => {
         const on = route === r
         return (
@@ -259,7 +290,7 @@ export function BottomNav({ route }: { route: string }) {
             key={r}
             href={`#/${r}`}
             aria-current={on ? 'page' : undefined}
-            className={`flex h-16 flex-1 flex-col items-center justify-center gap-1 text-xs ${on ? 'font-semibold text-brand-600' : 'font-medium text-muted'}`}
+            className={`flex h-16 flex-1 flex-col items-center justify-center gap-1 text-xs ${on ? 'font-semibold text-link' : 'font-medium text-muted'}`}
           >
             <span className={`flex h-8 w-14 items-center justify-center rounded-full ${on ? 'bg-brand-50' : ''}`}>
               <Icon size={22} fill={on && r === 'moje' ? 'currentColor' : 'none'} aria-hidden />
@@ -272,36 +303,53 @@ export function BottomNav({ route }: { route: string }) {
   )
 }
 
-/** Tablets: icon rail on the left; laptops: sidebar with logo, labels and "Dodaj wydarzenie". */
-export function SideNav({ route, canAdd }: { route: string; canAdd: boolean }) {
+/**
+ * Tablets: icon rail on the left. Laptops: sidebar with a big logo, labels and "Dodaj wydarzenie";
+ * it can be collapsed to the rail (and starts collapsed on the map, so the map gets the space).
+ */
+export function SideNav({ route, canAdd, collapsed, onToggle }: { route: string; canAdd: boolean; collapsed: boolean; onToggle: () => void }) {
+  const wide = collapsed ? '' : 'md:w-72 md:px-4' // only laptops get the wide variant
+  const label = collapsed ? '' : 'md:flex-row md:justify-start md:gap-3 md:px-4 md:text-base'
   return (
-    <nav className="hidden w-24 flex-none flex-col gap-2 border-r border-line bg-white px-2 py-5 sm:flex md:w-64 md:px-4" aria-label="Główna">
-      <a href="#/start" className="mb-4 flex justify-center md:justify-start md:px-2" aria-label="spootted, strona powitalna">
-        <img src={iconUrl} alt="" width={44} height={44} className="md:hidden" />
-        <Logo height={40} className="hidden md:block" />
+    <nav
+      className={`hidden w-24 flex-none flex-col gap-2 border-r border-line bg-surface px-2 py-5 transition-[width] duration-200 sm:flex ${wide}`}
+      aria-label="Główna"
+    >
+      <a href="#/start" className={`mb-4 flex justify-center ${collapsed ? '' : 'md:justify-start md:px-1'}`} aria-label="spootted, strona powitalna">
+        <img src={iconUrl} alt="" width={52} height={52} className={`${collapsed ? '' : 'md:hidden'} dark:rounded-full dark:bg-white`} />
+        {!collapsed && <Logo height={64} className="hidden md:block" />}
       </a>
-      {NAV.map(({ route: r, label, Icon }) => {
+      {NAV.map(({ route: r, label: text, Icon }) => {
         const on = route === r
         return (
           <a
             key={r}
             href={`#/${r}`}
             aria-current={on ? 'page' : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs md:flex-row md:justify-start md:gap-3 md:px-4 md:text-base ${
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-xs ${label} ${
               on ? 'bg-brand-50 font-semibold text-brand-700' : 'font-medium text-muted hover:bg-canvas'
             }`}
           >
             <Icon size={22} fill={on && r === 'moje' ? 'currentColor' : 'none'} aria-hidden />
-            {label}
+            {text}
           </a>
         )
       })}
       {canAdd && (
-        <a href="#/dodaj" className={`${btnSpark} mt-3 h-12 px-0 md:px-5`} aria-label="Dodaj wydarzenie">
+        <a href="#/dodaj" className={`${btnSpark} mt-3 h-12 px-0 ${collapsed ? '' : 'md:px-5'}`} aria-label="Dodaj wydarzenie">
           <Plus size={20} aria-hidden />
-          <span className="hidden md:inline">Dodaj wydarzenie</span>
+          <span className={collapsed ? 'sr-only' : 'hidden md:inline'}>Dodaj wydarzenie</span>
         </a>
       )}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={!collapsed}
+        className={`mt-auto hidden min-h-11 items-center justify-center gap-2 rounded-2xl text-sm font-medium text-muted hover:bg-canvas md:flex ${collapsed ? '' : 'md:justify-start md:px-4'}`}
+      >
+        {collapsed ? <PanelLeftOpen size={20} aria-hidden /> : <PanelLeftClose size={20} aria-hidden />}
+        <span className={collapsed ? 'sr-only' : ''}>{collapsed ? 'Rozwiń panel' : 'Zwiń panel'}</span>
+      </button>
     </nav>
   )
 }

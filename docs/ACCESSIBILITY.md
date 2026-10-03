@@ -98,4 +98,33 @@ Otwarte uwagi:
 2. **„Większy tekst” w Konto** powiększa tylko rozmiary w `rem`, a część tekstów ma rozmiary w `px`. Powiększenie przeglądarki działa (treść zawija się przy 320 px), więc to tylko wygoda. Docelowo zamienić `text-[15px]` itd. na `rem`.
 3. **Obramowanie chipów (1,3:1).** Nie blokuje, bo chip ma tekst. Dla osób słabowidzących warto przyciemnić obramowanie do `#8DA0C2` lub ciemniejszego.
 
+### Druga runda: motywy i uwagi z review zespołu (3.10.2026)
+
+Nowe rzeczy: ciemny motyw, wysoki kontrast (osobno i razem z ciemnym), ekran Organizatorzy, podpowiedzi adresu w „Dodaj wydarzenie”, legenda mapy, zwijany panel boczny, zdjęcia w kartach i animacje.
+
+Skan axe-core: 11 ekranów × 4 motywy (jasny, ciemny, jasny + kontrast, ciemny + kontrast) × 2 szerokości (390 i 1440 px). Pierwszy przebieg znalazł 4 problemy, wszystkie poprawione; po poprawkach 0 naruszeń.
+
+| # | Issue | WCAG Criterion | Severity | Recommendation |
+|---|-------|---------------|----------|----------------|
+| 17 | Ciemny motyw: pola logowania miały białe tło z wtyczki formularzy i jasny tekst (1,16:1) | 1.4.3 Contrast | 🔴 Critical | ✅ Pola biorą tło z motywu (`bg-surface`) |
+| 18 | Wysoki kontrast: tło `track` było ciemne (pod przełącznik), a leży też pod tekstem chipów i przełączników widoku (3,76:1 i 2,64:1) | 1.4.3 Contrast | 🟡 Major | ✅ `track` jasny w jasnym kontraście i ciemny w ciemnym (ok. 11:1 z tekstem); przełącznik ma własny stały kolor toru |
+| 19 | Główny przycisk po najechaniu: biały na `#1D5CFF` z 90% krycia (4,44:1) | 1.4.3 Contrast | 🟢 Minor | ✅ Hover ciemniejszy `#174BD9` (5,9:1) |
+| 20 | Ciemny motyw, karta w talii: tekst w kolorze `brand-50`, który w ciemnym motywie jest ciemny, na granatowym gradiencie | 1.4.3 Contrast | 🟡 Major | ✅ Karta talii ma stałe kolory, niezależne od motywu |
+
+Klawiatura w nowych elementach:
+
+| Element | Tab Order | Enter/Space | Escape | Arrow Keys |
+|---------|-----------|-------------|--------|------------|
+| Adres w „Dodaj wydarzenie” (combobox) | Po dzielnicy | Wybiera podświetlony adres | Zamyka listę | ↓ ↑ po podpowiedziach (`aria-activedescendant`), liczba podpowiedzi ogłaszana w regionie `polite` |
+| Wyszukiwarka organizatorów | Pierwsza na ekranie | – | Czyści pole (natywne `type=search`) | – |
+| Obserwuj | Przy każdym organizatorze | Przełącza, `aria-pressed`, nazwa zawiera organizatora: „Obserwuj Klub Gier Planszowych” | – | – |
+| Legenda mapy | Po filtrach | Rozwija i zwija (`details`) | – | – |
+| Zwiń / Rozwiń panel | Ostatni w panelu | Przełącza, `aria-expanded` | – | – |
+
+Inne:
+- Zdjęcia w kartach mają pusty `alt`, bo są poglądowe (tytuł i kategoria są tekstem obok). Gdy zdjęcie się nie wczyta, zostaje kolor i ikona kategorii.
+- Motyw i kontrast działają razem z „Większym tekstem”. Motyw „Systemowy” śledzi `prefers-color-scheme` na bieżąco.
+- W wysokim kontraście obramowania mają `#4A5B7D` (4,9:1 na białym), więc uwaga 3 (obramowanie chipów) jest tam rozwiązana; w zwykłym motywie zostaje otwarta.
+- Animacje respektują `prefers-reduced-motion` (1 ms).
+
 Jak powtórzyć skan: uruchom aplikację (`npm run dev`), wstrzyknij `axe-core` na każdym ekranie i uruchom `axe.run` z regułami jak wyżej.

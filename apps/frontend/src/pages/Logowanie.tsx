@@ -4,7 +4,7 @@ import { DEMO_PASSWORD, findAccount } from '@/lib/demo'
 import { useStore, type Account, type Profile } from '@/lib/store'
 import { btnOutline, btnPrimary, card } from '@/ui'
 
-const input = 'h-12 w-full rounded-xl border-line px-3.5 text-base focus:border-brand-600 focus:ring-brand-600'
+const input = 'h-12 w-full rounded-xl border-line bg-surface px-3.5 text-base focus:border-link focus:ring-link'
 
 // Login and sign-up are a demo: two hard-coded accounts, then a mocked passkey step. No real auth (docs/USER_FLOW.md).
 export default function Logowanie() {
@@ -51,11 +51,7 @@ export default function Logowanie() {
     return (
       <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center gap-5 px-6 text-center">
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-50">
-          {checking ? (
-            <LoaderCircle size={44} className="animate-spin text-brand-600" aria-hidden />
-          ) : (
-            <Fingerprint size={48} className="text-brand-600" aria-hidden />
-          )}
+          {checking ? <LoaderCircle size={44} className="animate-spin text-link" aria-hidden /> : <Fingerprint size={48} className="text-link" aria-hidden />}
         </div>
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[26px] leading-tight font-semibold">{mode === 'login' ? 'Potwierdź, że to ty' : 'Utwórz klucz dostępu'}</h1>
@@ -78,7 +74,7 @@ export default function Logowanie() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-5 pt-4 pb-8 sm:pt-10">
-      <a href="#/start" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white" aria-label="Wstecz">
+      <a href="#/start" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-surface" aria-label="Wstecz">
         <ArrowLeft size={22} aria-hidden />
       </a>
       <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">{mode === 'login' ? 'Zaloguj się' : 'Załóż konto'}</h1>
@@ -89,7 +85,7 @@ export default function Logowanie() {
             type="button"
             aria-pressed={mode === m}
             onClick={() => (setMode(m), setError(''))}
-            className={`h-10 flex-1 rounded-[11px] text-[15px] ${mode === m ? 'bg-white font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
+            className={`h-10 flex-1 rounded-[11px] text-[15px] ${mode === m ? 'bg-surface font-semibold shadow-[0_1px_3px_rgba(10,31,68,.15)]' : 'font-medium text-muted'}`}
           >
             {m === 'login' ? 'Logowanie' : 'Rejestracja'}
           </button>
@@ -112,9 +108,9 @@ export default function Logowanie() {
                   role="radio"
                   aria-checked={kind === k}
                   onClick={() => setKind(k)}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl p-4 text-[15px] font-medium ${kind === k ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
+                  className={`flex flex-col items-center gap-1.5 rounded-2xl p-4 text-[15px] font-medium ${kind === k ? 'border-2 border-link bg-brand-50' : 'border border-line bg-surface'}`}
                 >
-                  <Icon size={26} className="text-brand-600" aria-hidden />
+                  <Icon size={26} className="text-link" aria-hidden />
                   {label}
                 </button>
               ))}

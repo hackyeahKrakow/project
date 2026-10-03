@@ -9,6 +9,7 @@ import Mapa from '@/pages/Mapa'
 import Moje from '@/pages/Moje'
 import Odkrywaj from '@/pages/Odkrywaj'
 import Onboarding from '@/pages/Onboarding'
+import Organizatorzy from '@/pages/Organizatorzy'
 import Sponsor from '@/pages/Sponsor'
 import Start from '@/pages/Start'
 import Statystyki from '@/pages/Statystyki'
@@ -22,6 +23,7 @@ const TITLES: Record<string, string> = {
   odkrywaj: 'Odkrywaj',
   mapa: 'Mapa',
   moje: 'Moje',
+  organizatorzy: 'Organizatorzy',
   konto: 'Konto',
   logowanie: 'Logowanie',
   dodaj: 'Dodaj wydarzenie',
@@ -32,11 +34,24 @@ const TITLES: Record<string, string> = {
 export default function App() {
   const [state, setState] = useState(load)
   const [route, setRoute] = useState(routeFromHash)
+  const [mapNavOpen, setMapNavOpen] = useState(false)
 
   useEffect(() => save(state), [state])
   useEffect(() => {
     document.documentElement.style.fontSize = state.bigText ? '112.5%' : ''
   }, [state.bigText])
+  // Theme: light, dark or follow the system; high contrast stacks on top of either.
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => {
+      const root = document.documentElement
+      root.classList.toggle('dark', state.theme === 'dark' || (state.theme === 'system' && media.matches))
+      root.classList.toggle('hc', state.highContrast)
+    }
+    apply()
+    media.addEventListener('change', apply)
+    return () => media.removeEventListener('change', apply)
+  }, [state.theme, state.highContrast])
   useEffect(() => {
     const onHash = () => setRoute(routeFromHash())
     window.addEventListener('hashchange', onHash)
@@ -62,6 +77,7 @@ export default function App() {
     odkrywaj: <Odkrywaj events={events} />,
     mapa: <Mapa events={events} liked={liked} />,
     moje: <Moje events={events} liked={liked} />,
+    organizatorzy: <Organizatorzy events={events} liked={liked} />,
     konto: <Konto events={events} />,
     logowanie: <Logowanie />,
     dodaj: <Dodaj />,
@@ -74,6 +90,10 @@ export default function App() {
   }, [r])
 
   const nav = !NO_NAV.has(r)
+  const navRoute = r === 'organizatorzy' ? 'moje' : r // organizers are reached from Moje
+  // The map starts with the sidebar collapsed; elsewhere the person's choice is remembered.
+  const collapsed = r === 'mapa' ? !mapNavOpen : state.navCollapsed
+  const toggleNav = () => (r === 'mapa' ? setMapNavOpen(!mapNavOpen) : update({ navCollapsed: !state.navCollapsed }))
   return (
     <StoreContext.Provider value={store}>
       <a
@@ -85,16 +105,16 @@ export default function App() {
       </a>
       {/* Mobile-first: tab bar at the bottom on phones, rail on tablets, sidebar on laptops. */}
       <div className="flex h-svh flex-col bg-canvas sm:flex-row">
-        {nav && <SideNav route={r} canAdd={!!state.account} />}
+        {nav && <SideNav route={navRoute} canAdd={!!state.account} collapsed={collapsed} onToggle={toggleNav} />}
         <main
           id="tresc"
           tabIndex={-1}
           key={r}
-          className={`relative min-h-0 flex-1 outline-none ${r === 'mapa' || r === 'odkrywaj' ? 'flex flex-col' : 'overflow-y-auto'}`}
+          className={`relative min-h-0 flex-1 animate-in duration-200 ease-out outline-none fade-in ${r === 'mapa' || r === 'odkrywaj' ? 'flex flex-col' : 'overflow-y-auto'}`}
         >
           {page}
         </main>
-        {nav && <BottomNav route={r} />}
+        {nav && <BottomNav route={navRoute} />}
       </div>
     </StoreContext.Provider>
   )

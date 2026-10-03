@@ -5,8 +5,8 @@ import { Logo, btnOutline, btnPrimary } from '@/ui'
 
 // Pins falling onto an illustrated map: "a lot is going on here" (docs/USER_FLOW.md, ekran powitalny).
 export default function Start({ events }: { events: SpottedEvent[] }) {
-  const today = events.filter((e) => inRange(e.starts_at, 'dzis'))
-  const week = events.filter((e) => inRange(e.starts_at, 'tydzien'))
+  const today = events.filter((e) => inRange(e, 'dzis'))
+  const week = events.filter((e) => inRange(e, 'tydzien'))
   const pins = week.slice(0, 18)
 
   return (
@@ -49,7 +49,7 @@ export default function Start({ events }: { events: SpottedEvent[] }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-t-[28px] bg-white px-5 pt-6 pb-7 text-ink-900 md:w-[480px] md:justify-center md:rounded-none md:px-12">
+      <div className="flex flex-col gap-3 rounded-t-[28px] bg-surface px-5 pt-6 pb-7 text-fg md:w-[480px] md:justify-center md:rounded-none md:px-12">
         <Logo height={56} className="mb-4 hidden self-start md:block" />
         <h1 className="text-[30px] leading-[1.05] font-semibold tracking-[-0.03em] md:text-[44px]">Zmatchuj się z eventami</h1>
         <p className="text-[15px] leading-snug text-muted">

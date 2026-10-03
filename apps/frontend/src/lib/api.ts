@@ -65,3 +65,16 @@ export async function parseEvent(text: string): Promise<Draft | 'invalid' | null
     return null
   }
 }
+
+export type Place = { label: string; lat: number; lng: number }
+
+/** GET /geocode: up to 5 Kraków addresses matching the typed text. null when the API is unavailable. */
+export async function searchAddress(q: string): Promise<Place[] | null> {
+  if (!API) return null
+  try {
+    const res = await fetch(`${API}/geocode?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(8_000) })
+    return res.ok ? ((await res.json()) as Place[]) : null
+  } catch {
+    return null
+  }
+}
