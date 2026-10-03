@@ -138,7 +138,7 @@ function Row({ ev, day, onOpen }: { ev: SpottedEvent; day: string; onOpen: () =>
         <span className="leading-tight font-semibold">{ev.event_name}</span>
         <CategoryBadge cat={c} />
         <span className="text-[13px] text-muted">
-          {ev.district} · {formatPrice(ev.price)}
+          {ev.district} · <span className="whitespace-nowrap">{formatPrice(ev.price)}</span>
           {ev.ends_at && warsawDay(ev.ends_at) !== warsawDay(ev.starts_at) && ` · do ${formatDay(warsawDay(ev.ends_at))}`}
         </span>
         <OrganizerLine ev={ev} className="text-[12px] text-muted" />

@@ -279,13 +279,13 @@ export default function Dodaj() {
             </select>
           </div>
         ))}
-        <div className="flex gap-3">
-          {field('date', 'Data', text('date', 'date'), 'flex-[3]')}
-          {field('time', 'Godzina', text('time', 'time'), 'flex-[2]')}
+        <div className="grid grid-cols-2 items-end gap-3">
+          {field('date', 'Data', text('date', 'date'))}
+          {field('time', 'Godzina', text('time', 'time'))}
         </div>
-        <div className="flex gap-3">
-          {field('endDate', 'Koniec: data (opcjonalnie)', text('endDate', 'date'), 'flex-[3]')}
-          {field('endTime', 'Koniec: godzina', text('endTime', 'time'), 'flex-[2]')}
+        <div className="grid grid-cols-2 items-end gap-3">
+          {field('endDate', 'Koniec: data (opcjonalnie)', text('endDate', 'date'))}
+          {field('endTime', 'Koniec: godzina', text('endTime', 'time'))}
         </div>
         {field('place', 'Adres', (cls) => (
           <AddressInput className={cls} value={form.place} onChange={(v) => set('place', v)} onPick={(p) => pickPlace(p)} />

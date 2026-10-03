@@ -68,8 +68,8 @@ export function score(
     followed ? `Obserwujesz: ${ev.organizer.name}` : null,
     parts.length ? `Bo lubisz: ${parts.join(', ')}` : followed ? null : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,
-    whenLabel(ev.starts_at, today),
-    ev.price === 0 || p.budget !== 'any' ? formatPrice(ev.price).toLowerCase() : null,
+    daysFromToday(ev.starts_at, today) < 2 ? whenLabel(ev.starts_at, today) : null, // the card shows the full date already
+    p.budget !== 'any' ? formatPrice(ev.price).toLowerCase() : null,
   ]
     .filter(Boolean)
     .join(' · ')
