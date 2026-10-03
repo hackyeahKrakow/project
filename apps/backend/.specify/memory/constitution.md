@@ -1,50 +1,67 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# HackYeah Krakow Project Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean, Maintainable Code
+Code MUST be readable, consistently formatted, and easy for a new contributor to
+understand and change. Names MUST describe intent. Functions and modules MUST have
+a single clear responsibility. Comments MUST explain why, not what.
+Rationale: the code is read far more often than written, and several people share
+this repository.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Modular Design
+Code MUST be split into small, focused modules with explicit boundaries (for the
+backend: routers, schemas, services, and configuration kept separate rather than
+in a single file). Modules MUST depend on each other through narrow, documented
+interfaces so they can be understood, tested, and replaced independently.
+Rationale: modularity keeps changes local and lets the team work in parallel.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Simplicity First
+The simplest solution that satisfies the requirement MUST be chosen. Features,
+abstractions, and dependencies MUST NOT be added for hypothetical future needs.
+Any added complexity MUST be justified in the spec, plan, or PR description.
+Rationale: complicated code is harder to maintain and slows the team down.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Research Before Implementing
+Before implementing a feature, the relevant best practices (framework
+documentation, community conventions, security guidance) MUST be researched and
+the chosen approach recorded in the plan. Implementation MUST follow the
+researched practices.
+Rationale: deciding up front avoids rework and inconsistent patterns.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Ask When Unsure
+When requirements, scope, or the right approach are unclear, contributors and AI
+agents MUST ask for clarification instead of guessing. Assumptions that must be
+made MUST be stated explicitly.
+Rationale: a short question is cheaper than building the wrong thing.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Security & Secrets
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- API keys, tokens, passwords, and other credentials MUST NOT be committed to the
+  repository, including in history, tests, docs, or examples.
+- Configuration secrets MUST be read from environment variables; only
+  placeholder-valued `.env.example` files MAY be committed, and real `.env` files
+  MUST be git-ignored.
+- A leaked secret MUST be treated as compromised and rotated immediately.
+- Backend stack: Python 3.11+, FastAPI, Uvicorn, managed with `uv`.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Work MUST happen on branches named with a type prefix (e.g. `feature/...`,
+  `fix/...`, `docs/...`, `chore/...`); direct commits to `main` MUST NOT be made.
+- Commit messages MUST use type prefixes (`feat`, `fix`, `chore`, `docs`, etc.).
+- Changes MUST land through pull requests with at least a one-sentence
+  description, squash-merged, with review by another person when possible.
+- Branches SHOULD be committed to at least every ~2 hours and synced often with
+  `main` (`git config --global pull.rebase true`).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes other practices for this project. Amendments MUST be
+made through a pull request that documents the change and its rationale and is
+approved by at least one other contributor. Versioning follows semantic
+versioning: MAJOR for removed or redefined principles, MINOR for added principles
+or materially expanded guidance, PATCH for clarifications. All PRs and reviews
+MUST verify compliance, and unjustified complexity MUST be rejected.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
