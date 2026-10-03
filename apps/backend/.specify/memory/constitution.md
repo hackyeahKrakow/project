@@ -2,6 +2,7 @@
 Sync Impact Report
 - Version: template → 1.0.0 → 1.1.0
 - Removed principle: "Kontrakt API jest źródłem prawdy" (version not bumped); remaining principles renumbered I–IV
+- Rewrote principle IV to allow Jev-based recommendations (version not bumped)
 - Added sections: Ograniczenia technologiczne, Sposób pracy
 - Templates: plan/spec/tasks templates do not require changes
 -->
@@ -23,9 +24,9 @@ Nie scrapujemy stron, Facebooka ani innych serwisów, także „przez AI”. Wyd
 
 Brak kont i danych osobowych. Użytkownik to anonimowy UUID z frontendu (`X-User-Id`). Lokalizacja użytkownika może przyjść w parametrach zapytania, ale nigdy nie jest zapisywana ani logowana. Klucze API tylko w `.env`.
 
-### IV. AI pod kontrolą człowieka
+### IV. AI pod kontrolą człowieka i kodu
 
-LLM jest używany wyłącznie do zamiany tekstu organizatora na szkic wydarzenia (`POST /events/parse`). Wynik jest walidowany schematem, zawiera pewność kategorii i nigdy nie trafia do bazy bez zatwierdzenia przez człowieka. Rekomendacje liczy jawna formuła z `docs/ARCHITECTURE.md`, nie LLM.
+AI jest używane w dwóch miejscach. (1) LLM zamienia tekst organizatora na szkic wydarzenia (`POST /events/parse`): wynik jest walidowany schematem, zawiera pewność kategorii i nigdy nie trafia do bazy bez zatwierdzenia przez człowieka. (2) Model Jev (TypeSafe AI, przez OpenCode) wybiera do 10 kart z puli do 50 losowych kart dla użytkownika. Jev zwraca tylko typowane prawdopodobieństwa, a backend waliduje odpowiedź względem puli kandydatów, nie zapisuje jej w bazie i przy awarii AI zwraca losowy zapas zamiast błędu. Do AI nie wysyłamy identyfikatora użytkownika ani lokalizacji, a klucze API trzymamy wyłącznie w `.env`.
 
 ## Ograniczenia technologiczne
 
