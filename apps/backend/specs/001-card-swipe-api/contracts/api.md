@@ -32,9 +32,13 @@ All ids are UUID7 strings. JSON bodies. Real contract is generated at `/docs` (O
   "event_name": "Krakow Night Market",
   "color_code": "#FF8800",
   "description": "Street food and live music.",
-  "ad_image_url": "https://example.com/ads/night-market.png",
-  "event_date": "2026-11-15",
-  "location_street": "Rynek Glowny 1"
+  "image_url": "/images/night-market.png",
+  "starts_at": "2026-11-15T18:00:00+01:00",
+  "ends_at": null,
+  "address": "Rynek Glowny 1, Krakow",
+  "lat": 50.0617,
+  "lng": 19.9373,
+  "price": 0
 }
 ```
 

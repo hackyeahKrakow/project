@@ -54,7 +54,7 @@ Version numbers are not pinned here; `uv add` resolves current releases.
   (`CardFetchResponse`, `CardResponseRequest`, `CardResponseOut`, `HealthResponse`,
   `ErrorResponse`), `model_config = ConfigDict(from_attributes=True)` for ORM output, `Field(...,
   description=..., examples=[...])` so docs show types, descriptions and example requests.
-  Color code validated as `#RRGGBB` with a regex; `ad_image_url` typed as `AnyHttpUrl`; decision is a
+  Color code validated as `#RRGGBB` with a regex; `image_url` typed as an optional string (relative API path); decision is a
   `str` Enum (`right`, `left`).
 - **Rationale**: FastAPI generates OpenAPI (summary, description, example) directly from these.
 

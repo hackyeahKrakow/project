@@ -31,8 +31,8 @@ other endpoint depends on the service being up.
 ### User Story 2 - Receive one event card to decide on (Priority: P2)
 
 A user opens the app and asks for their next card (`card_fetch`). The service returns exactly one
-event card containing the event name, color code, description, advertisement graphic, date and
-street/place, so the user can decide whether they are interested.
+event card containing the event name, color code, description, image, start and end time, address,
+map coordinates and price, so the user can decide whether they are interested.
 
 **Why this priority**: It is the first half of the core swipe loop; without a card there is
 nothing to respond to.
@@ -43,8 +43,8 @@ one card with all required fields is described in the endpoint documentation and
 **Acceptance Scenarios**:
 
 1. **Given** a user identifier, **When** the user requests a card, **Then** exactly one card with
-   its unique identifier, event name, color code, description, advertisement graphic, date and
-   street/place is returned.
+   its unique identifier, event name, color code, description, image (or none), start and end time,
+   address, coordinates and price is returned.
 2. **Given** the user has already responded to every available card, **When** the user requests a
    card, **Then** a clear "no more cards" outcome is returned instead of a card.
 3. **Given** a user identifier that is not a valid identifier, **When** the user requests a card,
@@ -86,8 +86,8 @@ and the confirmation returned.
 - What happens when no cards exist at all? The fetch returns the same "no more cards" outcome.
 - What happens when a color code is not a valid color? It is rejected when cards are created or
   imported, so served cards always carry a valid color code.
-- What happens when a card has no advertisement graphic? The graphic is a required field of a
-  card; cards without one are not served.
+- What happens when a card has no image? The image is optional (null); the frontend shows a
+  category placeholder.
 
 ## Requirements *(mandatory)*
 
@@ -101,7 +101,8 @@ and the confirmation returned.
   card identifier and a decision, records the user's decision for that card.
 - **FR-004**: A decision MUST be exactly one of two values: swipe right or swipe left.
 - **FR-005**: A card MUST consist of: unique identifier (UUID7), event name, color code,
-  description, advertisement graphic, event date and street/place.
+  description, image (optional), start time, end time (optional), address, latitude, longitude
+  and price.
 - **FR-006**: A recorded response MUST consist of: card identifier, user identifier (both
   UUID7) and the decision.
 - **FR-007**: Every endpoint MUST be documented with its input and output types, a short summary,
@@ -116,7 +117,8 @@ and the confirmation returned.
 ### Key Entities *(include if feature involves data)*
 
 - **Card**: An event shown to users. Attributes: unique identifier (UUID7), event name, color
-  code, description, advertisement graphic, event date, street/place.
+  code, description, image (optional), start time, end time (optional), address, latitude,
+  longitude, price.
 - **Card Response**: A user's decision on a card. Attributes: card identifier, user identifier
   (UUID7), decision (right or left). Relates to exactly one Card; a user has at most one response
   per card.
@@ -142,8 +144,8 @@ and the confirmation returned.
   available; no separate user record is created in this feature.
 - Which card is served next (ordering, personalization) is out of scope; a simple "next card the
   user has not responded to" rule is assumed for later implementation.
-- The advertisement graphic is stored and exchanged as a reference to an image (not the image
-  data itself), and the event date is a calendar date.
+- The image is exchanged as a relative API path (not the image data itself), times are ISO 8601
+  date-times, and price is in PLN (0 = free).
 - Decision values are named `right` and `left`, and the color code is a hex color such as
   `#FF8800`.
 - Data will be stored in SQLite using SQLAlchemy (chosen by the team); this is recorded for the

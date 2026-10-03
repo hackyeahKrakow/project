@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import datetime
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import UUID7
 
 from app.models import Decision
@@ -23,9 +23,16 @@ class CardFetchResponse(BaseModel):
         pattern=r"^#[0-9A-Fa-f]{6}$", description="Card color as hex, e.g. #FF8800"
     )
     description: str = Field(description="Event description")
-    ad_image_url: AnyHttpUrl = Field(description="URL of the advertisement graphic")
-    event_date: date = Field(description="Date of the event")
-    location_street: str = Field(max_length=200, description="Street / place of the event")
+    image_url: str | None = Field(
+        max_length=2048,
+        description="Relative API path to the image, or null (frontend shows a category placeholder)",
+    )
+    starts_at: datetime = Field(description="Start of the event, ISO 8601")
+    ends_at: datetime | None = Field(description="End of the event, ISO 8601, may be null")
+    address: str = Field(max_length=300, description="Address shown to the user")
+    lat: float = Field(ge=-90, le=90, description="Latitude for the map pin")
+    lng: float = Field(ge=-180, le=180, description="Longitude for the map pin")
+    price: float = Field(ge=0, description="Price in PLN, 0 = free")
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -35,9 +42,13 @@ class CardFetchResponse(BaseModel):
                 "event_name": "Krakow Night Market",
                 "color_code": "#FF8800",
                 "description": "Street food and live music.",
-                "ad_image_url": "https://example.com/ads/night-market.png",
-                "event_date": "2026-11-15",
-                "location_street": "Rynek Glowny 1",
+                "image_url": "/images/night-market.png",
+                "starts_at": "2026-11-15T18:00:00+01:00",
+                "ends_at": None,
+                "address": "Rynek Glowny 1, Krakow",
+                "lat": 50.0617,
+                "lng": 19.9373,
+                "price": 0,
             }
         },
     )

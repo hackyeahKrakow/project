@@ -1,8 +1,8 @@
 import enum
 import uuid
-from datetime import date
+from datetime import datetime
 
-from sqlalchemy import Date, Enum, ForeignKey, String, Text, Uuid
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid6 import uuid7
 
@@ -21,9 +21,13 @@ class Card(Base):
     event_name: Mapped[str] = mapped_column(String(200))
     color_code: Mapped[str] = mapped_column(String(7))
     description: Mapped[str] = mapped_column(Text)
-    ad_image_url: Mapped[str] = mapped_column(String(2048))
-    event_date: Mapped[date] = mapped_column(Date)
-    location_street: Mapped[str] = mapped_column(String(200))
+    image_url: Mapped[str | None] = mapped_column(String(2048))
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    address: Mapped[str] = mapped_column(String(300))
+    lat: Mapped[float] = mapped_column(Float)
+    lng: Mapped[float] = mapped_column(Float)
+    price: Mapped[float] = mapped_column(Float, default=0)
 
     responses: Mapped[list["CardResponse"]] = relationship(back_populates="card")
 
