@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { catalog } from '@/lib/events'
 import { StoreContext, fresh, load, save, type Store } from '@/lib/store'
 import { BottomNav, SideNav } from '@/ui'
@@ -116,6 +117,7 @@ export default function App() {
         </main>
         {nav && <BottomNav route={navRoute} />}
       </div>
+      <Analytics />
     </StoreContext.Provider>
   )
 }
