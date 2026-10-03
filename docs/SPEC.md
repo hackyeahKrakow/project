@@ -46,14 +46,9 @@ GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mies
 - Organizator wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, opis).
 - Organizator poprawia i zatwierdza. AI tylko proponuje, a człowiek zatwierdza każde wydarzenie.
 
-## Ścieżka użytkownika (Ola)
+## Ścieżka użytkownika
 
-1. Otwiera aplikację, wybiera uczelnię i 3–5 zainteresowań (onboarding do 30 sekund, bez rejestracji).
-2. Dostaje talię 10 kart i swipe'uje. Po kilku ruchach karty zaczynają się dopasowywać.
-3. Przechodzi do mapy i widzi wyróżnione polubione wydarzenia.
-4. Otwiera kartę quizu w barze planszówkowym i sprawdza adres oraz godzinę.
-5. Obserwuje koło naukowe, więc jego wydarzenia są wyżej w talii.
-6. W piątek sama dodaje mikro-wydarzenie „planszówki w akademiku, 4/6 osób”, a inni mogą dołączyć.
+Aktualna ścieżka, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
 
 ## Zakres MVP (24h)
 

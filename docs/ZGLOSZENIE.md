@@ -1,6 +1,6 @@
 # Zgłoszenie na Challenge Rocket (draft)
 
-Wersja robocza formularza „Add Project”. Pola oznaczone **[DO DECYZJI]** czekają na odpowiedź zespołu. Stan na 3.10.2026, ok. 17:00.
+Wersja robocza formularza „Add Project”. Pola **[PÓŹNIEJ]** uzupełniamy pod koniec. Stan na 3.10.2026, ok. 17:30. Ścieżka użytkownika i demo: [USER_FLOW.md](USER_FLOW.md).
 
 ---
 
@@ -38,11 +38,11 @@ Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo*
 
 ### 2. Profil zainteresowań, który rośnie z każdym ruchem
 
-- **Start w 30 sekund, bez konta.** Wybierasz uczelnię i 3–5 zainteresowań, a to daje profil startowy, więc pierwsze karty już do ciebie pasują.
+- **Start w 30 sekund, bez konta.** „Tylko przeglądam” i kilka szybkich pytań: zainteresowania, czego szukasz (ludzi, rozwoju, kultury), kameralne czy duże wydarzenia, twoja dzielnica i jak daleko dojedziesz. Z tego powstaje profil startowy, więc pierwsze karty już do ciebie pasują.
 - **Profil uczy się z zachowania, nie z ankiet.** Swipe w prawo podnosi wagę kategorii, swipe w lewo lekko ją obniża. Kara jest celowo mniejsza niż nagroda, więc jedno „nie” nie skreśla całej kategorii.
 - **Dopasowanie łączy cztery sygnały:** twoje zainteresowania, odległość od ciebie, termin (dziś przed „za tydzień”) i organizatorów, których obserwujesz.
 - **Żadnej czarnej skrzynki.** Każda karta mówi, dlaczego ją widzisz: „Bo lubisz: planszówki · 600 m od ciebie · dziś 19:00”. Użytkownik rozumie rekomendację i ma nad nią kontrolę, w duchu wymogów przejrzystości systemów rekomendacyjnych z unijnego DSA.
-- **Prywatność od projektu.** Nie ma konta, maila ani numeru telefonu. Profil to wagi kategorii przypisane do anonimowego identyfikatora. Lokalizacja zostaje na urządzeniu i nie zapisujemy jej na serwerze.
+- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Profil i lokalizacja zostają na twoim telefonie: wyczyścisz przeglądarkę, to zaczynasz od zera. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
 
 71% konsumentów oczekuje personalizacji, a 76% irytuje się, gdy jej nie dostaje (McKinsey). Studenci nie są wyjątkiem, tylko dziś nikt tego nie robi dla wydarzeń studenckich.
 
@@ -50,19 +50,33 @@ Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo*
 
 Polubione wydarzenia świecą na czystej mapie, bez sklepów, stacji i reklam. Kategorie mają kolor i ikonę, więc informacja nie opiera się tylko na kolorze. Jednym spojrzeniem widzisz, co masz dziś wieczorem w okolicy, a jednym kliknięciem otwierasz adres, godzinę i opis.
 
-### 4. Jev: asystent AI, który tworzy wydarzenie za ciebie
+### 4. Twój kalendarz
 
-Dodanie wydarzenia nie może być trudniejsze niż wrzucenie posta, inaczej nikt nie będzie tego robił. Dlatego jest Jev:
-- **Wklejasz tekst posta albo piszesz jedno zdanie,** np. „planszówki w akademiku Babilon, pokój 312, czwartek 19, max 6 osób”.
+Polubione wydarzenia układają się w agendę z widokiem tygodnia i miesiąca. Jednym kliknięciem eksportujesz je do swojego kalendarza (Google, Apple, Outlook) przez plik `.ics`.
+
+### 5. Jev: asystent AI, który tworzy wydarzenie za organizatora
+
+Kto chce tworzyć wydarzenia, zakłada konto: studenta albo organizacji (koło, samorząd, lokal, uczelnia). Student dodaje wydarzenie prostym formularzem. Organizacja dostaje Jeva, bo dodanie wydarzenia nie może być trudniejsze niż wrzucenie posta:
+- **Wklejasz tekst posta albo piszesz jedno zdanie,** np. „Koło Robotyki AGH zaprasza na spotkanie otwarte, czwartek 19:00, D-17 sala 1.38, wstęp wolny”.
 - **Jev wypełnia cały formularz:** tytuł, opis, kategorię, adres i limit miejsc. Rozumie też „w czwartek” czy „jutro wieczorem” i zamienia to na konkretną datę.
 - **Jev mówi, czego brakuje.** Pola, których nie był pewien, są podświetlone do sprawdzenia, zamiast zgadywania.
 - **Człowiek ma ostatnie słowo.** Jev tylko proponuje. Nic nie trafia na mapę bez zatwierdzenia przez organizatora.
 
-Formularz, który zajmował 10 minut, zajmuje 30 sekund. Dzięki temu na mapie pojawiają się nie tylko oficjalne wydarzenia uczelni, ale też oddolne mikro-wydarzenia tworzone przez samych studentów, a tego nie ma nikt inny.
+Formularz, który zajmował 10 minut, zajmuje 30 sekund. Organizator nie przepisuje tego samego posta do kolejnego narzędzia, więc chętniej dodaje każde wydarzenie. Obok oficjalnych wydarzeń pojawiają się też oddolne mikro-wydarzenia dodane przez samych studentów, a tego nie ma nikt inny.
+
+### 6. Model biznesowy: pakiety dla organizatorów
+
+Dla studentów aplikacja jest darmowa. Organizacje kupują pakiety od 10 zł w górę, a każdy wyższy pakiet daje więcej:
+- więcej wydarzeń z Jevem;
+- statystyki: wyświetlenia, swipe'y w prawo, w lewo i pominięcia;
+- wyróżnienie w talii i na mapie;
+- krótkie opinie uczestników po wydarzeniu.
+
+Plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interesują się tematem. Na start sami budujemy bazę wydarzeń, a uczelniom i kołom dajemy pakiet za darmo. Ruch organiczny ze społeczności przyciąga płacących organizatorów.
 
 **Korzyści:**
 - **Student:** w minutę wie, co dzieje się dziś blisko niego i pasuje do jego zainteresowań. Łatwiej mu wyjść z pokoju i poznać ludzi.
-- **Organizator:** dostaje darmowy zasięg do dokładnie tych studentów, którzy interesują się jego tematem, a wydarzenie dodaje w 30 sekund.
+- **Organizator:** dociera do dokładnie tych studentów, którzy interesują się jego tematem. Z Jevem dodaje wydarzenie w 30 sekund, a ze statystyk wie, co działa.
 - **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne. Studenci, którzy się angażują, rzadziej rezygnują ze studiów.
 
 Pilotaż: Kraków (ok. 152 tys. studentów na uczelniach w Małopolsce). Aplikacja jest gotowa do uruchomienia w kolejnych miastach akademickich. Dane dodają ich właściciele, nie scrapujemy cudzych stron.
@@ -92,9 +106,10 @@ Propozycja: zrzut ekranu telefonu z mapą Krakowa i kolorowymi pinami, obok kart
 - Gotowy jest koncept UI z logo, kolorami marki i pięcioma ekranami w trzech rozdzielczościach.
 
 **Cel na koniec hackathonu:**
-- Przepływ end-to-end: onboarding → swipe → wyróżnienie polubionych na mapie → karta wydarzenia.
-- Rekomendacje z prostą, wyjaśnialną formułą (kategoria, odległość, czas).
-- Formularz dodawania wydarzenia z autouzupełnianiem przez AI.
+- Przepływ end-to-end: ekran powitalny → onboarding → swipe → mapa → kalendarz z eksportem `.ics`.
+- Rekomendacje z prostą, wyjaśnialną formułą (kategoria, odległość, czas), dociągane w tle partiami po 10 kart.
+- Dwa konta demo (student i organizacja), formularz dodawania wydarzenia i Jev dla organizacji.
+- Ekran pakietów sponsora i statystyk na danych demo.
 - 30–50 wydarzeń demo w Krakowie.
 
 ## Team status
