@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     app_name: str = "Card Swipe API"
     environment: str = "dev"
     log_level: str = "INFO"
-    database_url: str = "sqlite+aiosqlite:///./app.db"
+    database_url: str = "sqlite+aiosqlite:///./app.db"  # or libsql://<db>.turso.io for Turso
+    database_auth_token: SecretStr | None = None  # Turso auth token, only for libsql:// URLs
     api_key: SecretStr | None = None
     cors_origins: str = "http://localhost:5173"
     opencode_api_key: SecretStr | None = None
