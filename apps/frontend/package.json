@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "lucide-react": "^1.51.0",
+    "maplibre-gl": "^6.11.2",
     "preline": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

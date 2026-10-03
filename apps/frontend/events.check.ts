@@ -1,6 +1,9 @@
-// Run: npm run check — asserts the date/price logic the pages rely on.
+// Run: npm run check — asserts the date, recommendation and calendar logic the pages rely on.
 import assert from 'node:assert/strict'
-import { formatDate, formatPrice, inRange, warsawDay } from './src/lib/events.ts'
+import { at, catalog, formatDate, formatPrice, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
+import { ics } from './src/lib/ics.ts'
+import { recommend, weights } from './src/lib/recommend.ts'
+import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
 assert.equal(formatDate('2026-10-08T19:00:00+02:00'), 'czw., 8 paź, 19:00')
 assert.equal(formatPrice(0), 'Za darmo')
@@ -12,4 +15,37 @@ assert.ok(!inRange('2026-10-09T10:00:00+02:00', 'dzis', '2026-10-08'))
 assert.ok(inRange('2026-10-14T23:00:00+02:00', 'tydzien', '2026-10-08'))
 assert.ok(!inRange('2026-10-15T10:00:00+02:00', 'tydzien', '2026-10-08'))
 assert.ok(!inRange('2026-10-07T10:00:00+02:00', 'tydzien', '2026-10-08'))
+assert.ok(inRange('2026-11-20T10:00:00+01:00', 'wszystkie', '2026-10-08'))
+
+// Relative demo dates keep Warsaw summer/winter offsets.
+const oct3 = new Date('2026-10-03T10:00:00Z')
+assert.equal(at(0, '19:00', oct3), '2026-10-03T19:00:00+02:00')
+assert.equal(at(30, '19:00', oct3), '2026-11-02T19:00:00+01:00')
+assert.equal(whenLabel('2026-10-04T17:30:00+02:00', '2026-10-03'), 'jutro 17:30')
+
+// UUIDv7 as the backend expects: version 7, RFC variant, timestamp first.
+const id = uuid7(Date.UTC(2026, 9, 3))
+assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+assert.equal(parseInt(id.replace(/-/g, '').slice(0, 12), 16), Date.UTC(2026, 9, 3))
+
+// Recommendations: interests and swipes move the category weights; budget is a hard filter.
+const events = catalog()
+const profile = { ...EMPTY_PROFILE, interests: ['gry', 'nauka', 'muzyka'] as const, budget: 'free' as const }
+const w0 = weights({ ...profile, interests: [...profile.interests] }, {}, events)
+assert.equal(w0.gry, 0.7)
+assert.equal(w0.sport, 0.3)
+const w1 = weights({ ...profile, interests: [...profile.interests] }, { evt_bieg: 'right', evt_planszowki: 'left' }, events)
+assert.equal(Math.round(w1.sport * 100), 40)
+assert.equal(Math.round(w1.gry * 100), 65)
+const deck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 10)
+assert.equal(deck.length, 10)
+assert.ok(deck.every((x) => x.ev.price === 0))
+assert.ok(deck[0].reason.startsWith('Bo lubisz:'), deck[0].reason)
+assert.ok(!recommend(events, { ...profile, interests: [...profile.interests] }, { [deck[0].ev.id]: 'right' }, new Set(), 50).some((x) => x.ev.id === deck[0].ev.id))
+
+// .ics: one VEVENT per event, escaped text, UTC times.
+const cal = ics([{ ...events[0], event_name: 'A, B; C' }], new Date('2026-10-03T10:00:00Z'))
+assert.ok(cal.includes('SUMMARY:A\\, B\\; C'))
+assert.equal(cal.match(/BEGIN:VEVENT/g)?.length, 1)
+assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
 console.log('events checks ok')

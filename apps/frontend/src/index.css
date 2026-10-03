@@ -154,3 +154,13 @@
     @apply font-sans;
     }
 }
+/* Welcome screen: pins drop onto the map one by one. */
+@keyframes pin-drop {
+  0% { transform: translateY(-120px); opacity: 0; }
+  60% { transform: translateY(6px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.pin-drop { animation: pin-drop .6s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .pin-drop { animation: none; }
+}
