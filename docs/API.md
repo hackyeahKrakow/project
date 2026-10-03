@@ -15,8 +15,8 @@ Dokumentacja generowana automatycznie: `/docs` (OpenAPI).
 | `starts_at` | string | ISO 8601 w UTC (`Z`), np. `2026-11-15T17:00:00Z` |
 | `ends_at` | string \| null | ISO 8601 w UTC (`Z`); może być `null` |
 | `address` | string | Pokazywany użytkownikowi |
-| `lat` | number | Do pinezki; z geokodowania adresu (Nominatim) albo kliknięcia na mapie |
-| `lng` | number | Do pinezki; z geokodowania adresu (Nominatim) albo kliknięcia na mapie |
+| `lat` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
+| `lng` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
 | `price` | number | PLN, `0` = darmowe |
 
 Przykład:
