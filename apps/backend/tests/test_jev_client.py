@@ -30,6 +30,8 @@ async def test_request_shape_and_valid_answers():
     assert seen["body"]["state"] == {"candidates": []}
     assert set(seen["body"]["questions"]) == {"a", "b"}
     assert all(q["type"] == "noul" for q in seen["body"]["questions"].values())
+    for question_id, question in seen["body"]["questions"].items():
+        assert question_id in question["instructions"]
 
 
 async def test_invalid_values_and_unknown_ids_are_dropped():
