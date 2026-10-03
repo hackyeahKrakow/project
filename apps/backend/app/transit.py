@@ -50,7 +50,7 @@ StopRow = tuple[str, str, str, float, float]
 AlertRow = tuple[Alert, set[str], str]
 
 
-def _meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+def meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     dy = (lat2 - lat1) * 111_320
     dx = (lng2 - lng1) * 111_320 * math.cos(math.radians((lat1 + lat2) / 2))
     return math.hypot(dx, dy)
@@ -135,7 +135,7 @@ class Transit:
 
     async def near(self, lat: float, lng: float) -> TransitNear:
         await self._refresh()
-        nearby = sorted(((_meters(lat, lng, s[3], s[4]), s) for s in self._stops), key=lambda x: x[0])
+        nearby = sorted(((meters(lat, lng, s[3], s[4]), s) for s in self._stops), key=lambda x: x[0])
         stops: list[Stop] = []
         for mode in FEEDS.values():
             best = next(((d, s) for d, s in nearby if FEEDS[s[0]] == mode), None)

@@ -19,7 +19,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const [cat, setCat] = useState<CategoryId | ''>('')
   const [free, setFree] = useState(false)
   const [mine, setMine] = useState(false)
-  const [stepFree, setStepFree] = useState(false)
+  const [stepFree, setStepFree] = useState(!!state.profile.stepFree)
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
   const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops

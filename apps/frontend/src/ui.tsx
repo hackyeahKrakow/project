@@ -1,7 +1,6 @@
 import {
   Accessibility,
   BadgeCheck,
-  Bus,
   CalendarPlus,
   Calendar,
   Compass,
@@ -12,8 +11,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
-  TramFront,
-  TriangleAlert,
   UserCheck,
   UserPlus,
   UserRound,
@@ -28,7 +25,8 @@ import logoUrl from '@/assets/logo-full.svg'
 import maplibreWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { transitNear, type TransitNear } from '@/lib/api'
+import { Dojazd } from '@/Dojazd'
+import { locate } from '@/lib/geo'
 import { type Category, category } from '@/lib/categories'
 import { SIZE_LABEL, WHEELCHAIR_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
@@ -163,16 +161,7 @@ export function FollowButton({ orgId, name }: { orgId: string; name?: string }) 
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
-  // Stops and disruptions come from ZTP open data through GET /transit/near; nothing is shown while loading or offline.
-  const [near, setNear] = useState<{ id: string; data: TransitNear | null }>()
-  useEffect(() => {
-    let live = true
-    transitNear(ev.lat, ev.lng).then((data) => live && setNear({ id: ev.id, data }))
-    return () => {
-      live = false
-    }
-  }, [ev.id, ev.lat, ev.lng])
-  const transit = near?.id === ev.id ? near.data : null
+  const { state } = useStore()
   return (
     <article className="flex flex-col">
       <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" photo={photoUrl(ev)} />
@@ -190,6 +179,12 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
               {WHEELCHAIR_LABEL[ev.wheelchair]}
             </span>
           )}
+          {!ev.wheelchair && state.profile.stepFree && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-[13px] font-medium text-muted">
+              <Accessibility size={14} aria-hidden />
+              Dostępność nieznana
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1.5 text-[15px]">
           <div className="flex items-center gap-2">
@@ -200,30 +195,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
             <MapPin size={18} aria-hidden />
             {ev.address}
           </div>
-          {transit?.stops.map((s) => (
-            <div key={s.mode} className="flex items-center gap-2 text-muted">
-              {s.mode === 'tram' ? <TramFront size={18} aria-hidden /> : <Bus size={18} aria-hidden />}
-              <span>
-                <span className="sr-only">{s.mode === 'tram' ? 'Przystanek tramwajowy: ' : 'Przystanek autobusowy: '}</span>
-                {s.name} · {s.distance_m} m
-              </span>
-            </div>
-          ))}
         </div>
-        {!!transit?.alerts.length && (
-          <div className="flex flex-col gap-1.5 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <TriangleAlert size={16} aria-hidden />
-              Utrudnienia w pobliżu (ZTP Kraków)
-            </span>
-            {transit.alerts.slice(0, 3).map((a) => (
-              <p key={a.header + a.description}>
-                <span className="font-medium">{a.header}</span>
-                {a.description && <span className="line-clamp-2 text-muted">{a.description}</span>}
-              </p>
-            ))}
-          </div>
-        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-lg bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-700">{formatPrice(ev.price)}</span>
         </div>
@@ -233,6 +205,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         </div>
         <PersonaLine org={ev.organizer} />
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
+        <Dojazd ev={ev} />
         <div className="flex gap-2">
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${ev.lat},${ev.lng}&travelmode=transit`}
@@ -241,7 +214,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
             className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}
           >
             <MapPin size={18} strokeWidth={2.2} aria-hidden />
-            Dojazd
+            Nawiguj
           </a>
           <button type="button" onClick={() => downloadIcs([ev], `${ev.id}.ics`)} className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}>
             <CalendarPlus size={18} strokeWidth={2.2} aria-hidden />
@@ -308,6 +281,30 @@ export function Toggle({ label, hint, on, onChange }: { label: string; hint?: st
       {/* Off track is #6B7A99 so the switch state stays visible (3:1 against white, WCAG 1.4.11). */}
       <span className="relative h-7 w-12 flex-none rounded-full bg-[#6B7A99] transition-colors peer-checked:bg-brand-600 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
     </label>
+  )
+}
+
+/** Location switch: turning it on asks the browser right away; a refusal switches it back off and says why. */
+export function LocationToggle({ on, onChange, hint }: { on: boolean; onChange: (on: boolean) => void; hint: string }) {
+  const [error, setError] = useState('')
+  const change = (v: boolean) => {
+    setError('')
+    onChange(v)
+    if (v)
+      locate().catch((e: Error) => {
+        onChange(false)
+        setError(e.message)
+      })
+  }
+  return (
+    <div>
+      <Toggle label="Lokalizacja" hint={hint} on={on} onChange={change} />
+      {error && (
+        <p role="alert" className="mb-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -513,7 +510,12 @@ export function EventMap({
     m.once('load', () => {
       for (const layer of m.getStyle().layers) if (/poi|housenumber/.test(layer.id)) m.removeLayer(layer.id)
     })
-    if (locate) m.addControl(new GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false }), 'top-right')
+    if (locate) {
+      // The blue dot shows by itself once location is on; before, the control only added a button nobody pressed.
+      const geo = new GeolocateControl({ positionOptions: { enableHighAccuracy: true, timeout: 10_000, maximumAge: 120_000 }, trackUserLocation: false })
+      m.addControl(geo, 'top-right')
+      m.once('load', () => geo.trigger())
+    }
     map.current = m
     setMapVersion((v) => v + 1)
     const all = markers.current
