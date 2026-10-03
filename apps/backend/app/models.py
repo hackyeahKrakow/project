@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     DateTime,
     Dialect,
-    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -14,7 +14,7 @@ from sqlalchemy import (
     Text,
     Uuid,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
 from uuid6 import uuid7
 
@@ -58,20 +58,6 @@ class Card(Base):
     lng: Mapped[float] = mapped_column(Float)
     price: Mapped[float] = mapped_column(Float, default=0)
 
-    responses: Mapped[list["CardResponse"]] = relationship(back_populates="card")
-
-
-class CardResponse(Base):
-    __tablename__ = "card_responses"
-
-    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
-    card_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("cards.id"), primary_key=True
-    )
-    decision: Mapped[Decision] = mapped_column(Enum(Decision, native_enum=False))
-
-    card: Mapped[Card] = relationship(back_populates="responses")
-
 
 class UserCardProgress(Base):
     __tablename__ = "user_card_progress"
@@ -81,3 +67,14 @@ class UserCardProgress(Base):
 
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
     cards_served: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class CardSwipe(Base):
+    __tablename__ = "card_swipes"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    card_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("cards.id"), primary_key=True)
+    swipe: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(
+        UTCDateTime, default=lambda: datetime.now(timezone.utc)
+    )

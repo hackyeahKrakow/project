@@ -22,7 +22,7 @@ Rozwiązanie poprawia komunikację między instytucjami (uczelnie, koła) a mies
 
 ## Czym różnimy się od konkurencji
 
-GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mieszkańców. My skupiamy się na studentach, wydarzenia dodają sami organizatorzy, a studenci mogą tworzyć oddolne mikro-wydarzenia (np. „planszówki w akademiku, pokój 312”). Szczegóły w [RESEARCH.md](RESEARCH.md).
+GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mieszkańców. My skupiamy się na studentach, wydarzenia dodają sami organizatorzy (profile kół, uczelni i instytucji), a zarejestrowani studenci mogą tworzyć oddolne mikro-wydarzenia (np. „planszówki w akademiku, pokój 312”). Aplikacja uczy się preferencji od pierwszego uruchomienia, w tym czy wolisz małe czy duże wydarzenia. Szczegóły w [RESEARCH.md](RESEARCH.md).
 
 ## Główne funkcje
 
@@ -39,16 +39,82 @@ GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mies
 - Talia kart z wydarzeniami z najbliższych dni, posortowana przez rekomendacje.
 - W prawo = interesuje mnie: wydarzenie trafia na „Moją mapę” i jest wyróżnione na mapie.
 - W lewo = nie interesuje: znika z talii, a algorytm obniża wagę tej kategorii.
-- Każda karta pokazuje, dlaczego ją widzisz, np. „Bo lubisz: planszówki · dziś 19:00”.
+- Każda karta pokazuje, dlaczego ją widzisz, np. „Twój match: małe wydarzenia · planszówki · dziś 19:00”.
+- Decyzje gościa (polubienia, pominięcia, obserwowani) zapisują się lokalnie na urządzeniu i tworzą jego własną bazę wydarzeń. Konto jest potrzebne dopiero do tworzenia treści i community.
+
+### Personalizacja przy pierwszym uruchomieniu
+
+Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery krótkie pytania. Każde to jedno dotknięcie, każde można pominąć, a całość ma zająć ok. 30 s. Pasek postępu „1/4”, przycisk „Pomiń” i „Wstecz” na każdym kroku.
+
+| Krok | Pytanie | Odpowiedzi | Wpływ na rekomendacje |
+| --- | --- | --- | --- |
+| 1. Ulubione rzeczy | „Co lubisz robić?” | 3–5 kategorii z ikonami (nauka, sport, muzyka, gry, imprezy, kultura, warsztaty). Opcjonalnie podtagi, np. gry → planszówki, RPG, e-sport | Startowa waga kategorii: wybrane 0.7, reszta 0.3 |
+| 2. Skala | „Jakie wydarzenia wolisz?” | Kameralne (do ok. 30 osób), średnie (30–100), duże (100+), bez różnicy. Można wybrać kilka | Dopasowanie do wielkości wydarzenia |
+| 3. Czego szukasz | „Czego dziś szukasz?” | Do 3 z: poznać ludzi, nauczyć się czegoś, dobrze się bawić, ruszyć się, kultura i spokój, oszczędzić | Dodatkowa waga kategorii i typów wydarzeń powiązanych z celem |
+| 4. Czego potrzebujesz | „Co jest dla ciebie ważne?” | Budżet (tylko darmowe / do 20 zł / bez limitu), odległość (1 km / 3 km / 5 km / cały Kraków), pora (po zajęciach / wieczory / weekendy) | Twarde filtry domyślne (budżet, pora) i parametr bliskości |
+
+- Odpowiedzi zapisują się wyłącznie na urządzeniu (pamięć przeglądarki), bez konta i bez wysyłania na serwer.
+- Po ostatnim kroku użytkownik od razu dostaje pierwszą talię, a każda karta tłumaczy dopasowanie („Twój match: kameralne · planszówki · za darmo”).
+- Preferencje można zmienić w ekranie „Moje preferencje”, a swipe'y dalej je dostrajają.
+- Brak odpowiedzi nie blokuje aplikacji: bez personalizacji talia jest posortowana po czasie i bliskości.
+- Szczegóły scoringu w [ARCHITECTURE.md](ARCHITECTURE.md#rekomendacje), ekran w [DESIGN.md](DESIGN.md#ekrany-mobile-390-px).
 
 ### Dodawanie wydarzeń z AI autofill
 
-- Organizator wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, opis).
-- Organizator poprawia i zatwierdza. AI tylko proponuje, a człowiek zatwierdza każde wydarzenie.
+- Organizator (członek profilu organizacji) albo zarejestrowany użytkownik wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, wielkość, opis).
+- Autor poprawia i zatwierdza. AI tylko proponuje, a człowiek zatwierdza każde wydarzenie.
+
+## Konta i organizacje
+
+Trzy poziomy dostępu, od najmniej do najbardziej zobowiązującego:
+
+| Poziom | Co może | Gdzie są dane |
+| --- | --- | --- |
+| **Gość** | Przeglądać, swipe'ować, obserwować, filtrować, personalizować, budować własną bazę wydarzeń | Tylko na urządzeniu |
+| **Użytkownik** | Wszystko co gość oraz: tworzyć wydarzenia (typ „community”, oznaczone „od studenta”), mieć publiczny profil, być obserwowanym, budować community, polecać wydarzenia obserwującym, synchronizować dane między urządzeniami | Na serwerze, lokalna baza gościa przenosi się przy zakładaniu konta |
+| **Organizacja** | Publikować wydarzenia „oficjalne” ze znaczkiem zweryfikowanej organizacji, mieć obserwujących, statystyki swipe'ów, promowanie | Profil firmowy na serwerze, w imieniu organizacji działają podpięci użytkownicy |
+
+### Decyzja: profile organizacji
+
+**Rekomendacja: iść w tym kierunku**, ale w MVP w najprostszej postaci. Konto osoby i profil organizacji to dwa osobne byty, a użytkownicy są do organizacji podpinani jako członkowie z rolą.
+
+Dlaczego to ma sens:
+- **Ciągłość.** Koło naukowe zmienia zarząd co roku. Obserwujący, historia wydarzeń i znaczek „zweryfikowane” należą do profilu, a nie do osoby, więc nie znikają razem z przewodniczącym.
+- **Zaufanie.** Weryfikujemy raz organizację (mail uczelniany, dane instytucji), a nie każdego jej członka. Student widzi różnicę między „Koło Naukowe X (zweryfikowane)” a wydarzeniem od innego studenta.
+- **Model biznesowy.** Płacącym klientem jest organizacja (uczelnia, biblioteka, muzeum), a nie pracownik. Statystyki, promowanie i faktury należą do profilu.
+- **Zespoły.** Biblioteka czy biuro promocji uczelni mają kilka osób, które dodają wydarzenia, i potrzebują ról (administrator, redaktor).
+- **Czytelne rozdzielenie treści.** Oficjalne wydarzenia organizacji i oddolne wydarzenia użytkowników mają inne oznaczenia, co ogranicza ryzyko nadużyć.
+
+Ryzyka i jak je ograniczamy:
+- **Złożoność.** Członkostwa, zaproszenia i role to dużo pracy przy 24 h. Na MVP: profile organizacji tylko z danych seed, jeden administrator, weryfikacja jako mock. Zaproszenia i role po hackathonie.
+- **Moderacja treści użytkowników.** Wydarzenia „community” wymagają zgłaszania i ukrywania. Na MVP: przycisk „Zgłoś”, ukrycie do sprawdzenia przez zespół.
+- **Tarcie przy rejestracji.** Dlatego gość korzysta z całego rdzenia bez konta, a konto jest potrzebne dopiero do tworzenia i community.
+
+Alternatywa odrzucona: tylko konta osobiste z etykietą „organizator”. Prostsza, ale organizacja nie przeżywa zmiany osób i nie ma jednego miejsca na weryfikację, obserwujących ani rozliczenia.
+
+Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowanych studentów (mikro-wydarzenia), którą wcześniej ograniczono tylko do organizacji.
 
 ## Ścieżka użytkownika
 
-Aktualna ścieżka, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
+Ścieżka demo, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
+
+**Tydzień 1: gość, bez konta**
+
+1. Otwiera aplikację po raz pierwszy i przechodzi personalizację (cztery krótkie pytania, ok. 30 s): lubi gry i naukę, woli kameralne wydarzenia, szuka ludzi do poznania, potrzebuje darmowych wydarzeń do 3 km od akademika.
+2. Od razu dostaje talię 10 kart dopasowanych do odpowiedzi, z uzasadnieniem „Twój match: kameralne · planszówki · za darmo”, i swipe'uje. Po kilku ruchach karty dopasowują się jeszcze lepiej.
+3. Przechodzi do mapy i widzi wyróżnione polubione wydarzenia, które tworzą jej lokalną bazę na telefonie.
+4. Otwiera kartę quizu w barze planszówkowym i sprawdza adres oraz godzinę.
+5. Obserwuje koło naukowe, więc jego wydarzenia są wyżej w talii.
+
+**Tydzień 2: użytkownik z kontem**
+
+6. Zakłada konto (link na e-mail), a jej baza, preferencje i obserwowani przenoszą się na konto.
+7. W piątek dodaje wydarzenie „planszówki w akademiku, 4/6 osób”, a inni mogą dołączyć.
+8. Obserwują ją osoby, które były na planszówkach. Poleca im quiz w barze planszówkowym, który zapisała w swojej bazie.
+
+**Druga strona rynku (Kuba)**
+
+9. Kuba jako administrator profilu koła wkleja tekst posta, sprawdza propozycję AI i publikuje wydarzenie. Później widzi, ile osób je polubiło, a ile odrzuciło.
 
 ## Zakres MVP (24h)
 
@@ -57,9 +123,16 @@ Aktualna ścieżka, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
 | Mapa z kolorowymi znacznikami kategorii i filtrami | Budujemy | Rdzeń |
 | Karta wydarzenia: grafika, opis, data, adres | Budujemy | Rdzeń |
 | Swipe + wyróżnienie polubionych na mapie | Budujemy | Rdzeń |
-| Rekomendacje (scoring) | Budujemy | Prosta, wyjaśnialna formuła |
-| Formularz dodawania z AI autofill | Budujemy | Główna rola AI |
-| Mikro-wydarzenia z limitem miejsc | Jeśli starczy czasu | Ten sam formularz, typ „grassroots” |
+| Personalizacja przy pierwszym uruchomieniu (4 pytania) | Budujemy | Rdzeń, zapis lokalny |
+| Lokalna baza wydarzeń gościa (polubienia, obserwowani) | Budujemy | Pamięć przeglądarki, bez konta |
+| Rekomendacje (scoring) | Budujemy | Prosta, wyjaśnialna formuła, uwzględnia odpowiedzi z personalizacji |
+| Formularz dodawania z AI autofill | Budujemy | Główna rola AI, na demo w imieniu profilu organizacji |
+| Profile organizacji (dane seed, jeden administrator) | Budujemy | Znaczek „zweryfikowane”, obserwujący |
+| Statystyki swipe'ów dla organizatora | Jeśli starczy czasu | Liczniki polubień i odrzuceń |
+| Konto użytkownika (link na e-mail) i przeniesienie lokalnej bazy | Jeśli starczy czasu | Warunek dla tworzenia wydarzeń |
+| Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz, typ „grassroots”, wymaga zgłaszania nadużyć |
+| Zaproszenia członków i role w organizacji | Roadmapa | Tylko slajd |
+| Publiczny profil, obserwujący, polecanie wydarzeń | Roadmapa | Community użytkowników, tylko slajd |
 | Link „Pokaż w Google Maps” | Jeśli starczy czasu | Zwykły URL z lat/lng, bez API i klucza |
 | Lokalizacja użytkownika (niebieska kropka) | Jeśli starczy czasu | GeolocateControl w MapLibre, bez backendu |
 | „Dodaj do kalendarza” | Jeśli starczy czasu | URL szablonu Google Calendar lub plik .ics |
@@ -81,12 +154,16 @@ Wydarzenia dodają ich właściciele, a my bierzemy tylko dane otwarte. Nie scra
 - Mobile-first, działa w przeglądarce telefonu (szerokość 390 px) i na desktopie.
 - Interfejs po polsku, daty w strefie Europe/Warsaw.
 - Lokalizacja użytkownika nie jest zapisywana na serwerze.
+- Dane gościa (preferencje, polubienia, obserwowani) zostają na jego urządzeniu do czasu założenia konta.
+- Personalizacja jest opcjonalna i do pominięcia, a aplikacja działa także bez żadnej odpowiedzi.
 - Kolor nigdy nie jest jedynym nośnikiem informacji (kategorie mają też ikony).
 
 ## Roadmapa po hackathonie
 
 - Powiadomienia opt-in dla wybranych kategorii i organizacji, z limitem dziennym i godzinami ciszy.
 - Znajomi, zaproszenia, grupy.
+- Community użytkowników: publiczne profile, obserwujący, polecanie wydarzeń obserwującym.
+- Członkowie i role w organizacjach (administrator, redaktor), przekazywanie profilu następnemu zarządowi.
 - Warstwa „miejsca dla studenta”: biblioteki i czytelnie otwarte teraz, miejsca do nauki (Otwarte Dane Krakowa, OSM).
 - Studenckie oceny miejsc (zniżki, ceny, gniazdka, Wi-Fi).
 - Rekomendacje na podstawie podobnych użytkowników.

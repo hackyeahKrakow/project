@@ -1,6 +1,6 @@
 # Ścieżka użytkownika i demo
 
-Ustalenia zespołu z 3.10.2026, ok. 17:30. Ten plik jest źródłem prawdy dla demo i nagrania. Starsza ścieżka „Ola” w [SPEC.md](SPEC.md) jest nieaktualna.
+Ustalenia zespołu z 3.10.2026, ok. 17:30. Ten plik jest źródłem prawdy dla demo i nagrania. Persony i docelowy model kont są w [SPEC.md](SPEC.md).
 
 ## Na czym robimy demo
 
@@ -72,7 +72,7 @@ Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
 
 ## 4. Zalogowany: organizacja (koło, instytucja, lokal)
 
-- Osobne konto i osobne logowanie. Na hackathonie nie podpinamy profili firmowych pod konta prywatne, jak robi to Facebook.
+- Osobne konto i osobne logowanie. Na hackathonie nie podpinamy profili firmowych pod konta prywatne, jak robi to Facebook (docelowo tak, zob. „Decyzja: profile organizacji” w [SPEC.md](SPEC.md)).
 - Profil organizacji zawiera nazwę, logo, opis i listę wydarzeń.
 - Rejestracja ma wybór „jako student” albo „jako organizacja”.
 - W ustawieniach jest ekran **„Zostań sponsorem”**, opisany w punkcie 5.

@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.types import UUID7
 
-from app.models import Decision
+from app.models import CardSwipe, Decision
 
 
 class ErrorResponse(BaseModel):
@@ -72,14 +72,24 @@ class CardResponseOut(BaseModel):
     card_id: UUID7 = Field(description="Identifier of the answered card")
     user_id: UUID7 = Field(description="Identifier of the user who answered")
     decision: Decision = Field(description="The recorded decision")
+    created_at: datetime = Field(description="Time the answer was saved, ISO 8601 in UTC")
 
     model_config = ConfigDict(
-        from_attributes=True,
         json_schema_extra={
             "example": {
                 "card_id": "018f3b5e-8a10-7c3d-b1f2-5d4e6a7b8c9d",
                 "user_id": "018f3b5e-7c1a-7d2b-9a4e-3f6c2b1d5e90",
                 "decision": "right",
+                "created_at": "2026-10-03T15:42:10.123456Z",
             }
         },
     )
+
+    @classmethod
+    def from_swipe(cls, swipe: CardSwipe) -> "CardResponseOut":
+        return cls(
+            card_id=swipe.card_id,
+            user_id=swipe.user_id,
+            decision=Decision.RIGHT if swipe.swipe else Decision.LEFT,
+            created_at=swipe.created_at,
+        )

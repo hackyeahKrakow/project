@@ -1,6 +1,6 @@
 # Architektura
 
-Jeden backend (FastAPI), jedna baza SQLite i trzy usługi zewnętrzne, bez kluczy Google i bez scrapingu. Frontend rozmawia tylko z naszym API, a LLM jest wołany wyłącznie przy dodawaniu wydarzenia.
+Jeden backend (FastAPI), jedna baza SQLite i trzy usługi zewnętrzne, bez kluczy Google i bez scrapingu. Frontend rozmawia tylko z naszym API. LLM jest wołany przy dodawaniu wydarzenia, a rekomendacje kart wybiera model Jev (TypeSafe AI) przez OpenCode.
 
 ```mermaid
 flowchart LR
@@ -9,11 +9,13 @@ flowchart LR
   API["Backend API<br/>Python FastAPI"]
   DB[("SQLite")]
   LLM["LLM API<br/>autofill + kategoria"]
+  JEV["Jev (TypeSafe) przez OpenCode<br/>wybór 10 kart"]
   GEO["Nominatim (OSM)<br/>adres → współrzędne"]
   FE -- kafelki --> TILES
   FE -- "HTTP / JSON" --> API
   API -- SQL --> DB
   API -- "tylko przy dodawaniu" --> LLM
+  API -- "rekomendacje" --> JEV
   API -- geokodowanie --> GEO
 ```
 
@@ -25,7 +27,7 @@ flowchart LR
 | Mapa | MapLibre GL JS + kafelki OSM (np. styl „liberty” z OpenFreeMap) | Ukryte warstwy POI, widoczny podpis © OpenStreetMap |
 | Backend | Python 3.11+, FastAPI, uv | CORS dla `localhost:5173`, grafiki jako pliki statyczne |
 | Baza | SQLite (SQLModel lub SQLAlchemy) | Odległość liczona w Pythonie (haversine), przy kilkuset wydarzeniach wystarczy |
-| AI | Dowolne LLM API z wyjściem JSON | Tylko autofill i kategoria |
+| AI | Autofill: dowolne LLM API z wyjściem JSON. Rekomendacje: Jev 1.13 (TypeSafe AI) przez OpenCode | Autofill i kategoria oraz wybór 10 kart; klucz `OPENCODE_API_KEY` tylko w `.env` |
 | Design | Claude Design, Figma, Canva | Makiety w Figmie, grafiki wydarzeń w Canvie |
 | Organizacja | GitHub Issues + Projects, Discord | Kanał #decyzje jako dziennik ustaleń |
 
@@ -56,35 +58,56 @@ To propozycja zgodna z plikami, które już są w `apps/backend/app/`. Zmiany st
 | Tabela | Kolumny |
 | --- | --- |
 | `categories` | `id` TEXT PK, `name`, `color`, `icon` |
-| `organizers` | `id` TEXT PK, `name`, `type` (kolo / samorzad / uczelnia / lokal / student), `university`, `verified` BOOL |
-| `events` | `id` TEXT PK, `title`, `description`, `category` FK, `image_url`, `starts_at`, `ends_at`, `address`, `lat` REAL, `lng` REAL, `price` REAL, `type` (official / grassroots), `capacity`, `organizer_id` FK, `created_at` |
-| `users` | `id` TEXT PK (UUID z frontendu), `university`, `created_at` |
-| `category_weights` | `user_id`, `category`, `weight` REAL; PK (`user_id`, `category`) |
+| `organizers` | `id` TEXT PK, `name`, `type` (kolo / samorzad / uczelnia / instytucja / lokal / uzytkownik), `university`, `verified` BOOL. Wydawca wydarzeń: profil organizacji albo konto użytkownika (`uzytkownik`) |
+| `organization_members` | `organizer_id`, `user_id`, `role` (admin / editor); PK (`organizer_id`, `user_id`). Na MVP jeden admin z danych seed |
+| `events` | `id` TEXT PK, `title`, `description`, `category` FK, `image_url`, `starts_at`, `ends_at`, `address`, `lat` REAL, `lng` REAL, `price` REAL, `type` (official = organizacja / grassroots = użytkownik), `capacity`, `size` (small <30 / medium 30–100 / large >100, liczone z `capacity`, brak = medium), `organizer_id` FK, `created_at` |
+| `users` | `id` TEXT PK (UUID z frontendu), `email` (tylko konta), `display_name`, `created_at`. Gość nie musi mieć wiersza (patrz „Konta i dane lokalne”) |
 | `swipes` | `user_id`, `event_id`, `direction` (like / skip), `created_at`; PK (`user_id`, `event_id`) |
-| `follows` | `user_id`, `organizer_id`; PK oba |
+| `follows` | `user_id`, `organizer_id`; PK oba. Obserwować można organizację albo użytkownika |
+| `recommendations` | `from_user_id`, `event_id`, `to_user_id`, `created_at`; polecenia wydarzeń obserwującym (roadmapa) |
+| `reports` | `event_id`, `reporter_id`, `reason`, `created_at`; zgłoszenia nadużyć |
 | `attendees` | `event_id`, `user_id`; PK oba |
 
 Wydarzenia „wygasają” przez filtr w zapytaniu (`ends_at` lub `starts_at` w przeszłości), bez usuwania z bazy.
 
 ## Rekomendacje
 
-Wynik wydarzenia dla użytkownika (0–1):
+Rekomendacje wybiera model Jev 1.13 (System One, TypeSafe AI) wołany przez OpenCode (`POST https://opencode.ai/zen/v1/systemone`, model `jev-1.13` albo `jev-1.13-free`, nagłówek `Authorization: Bearer $OPENCODE_API_KEY`).
 
-```
-score = 0.45 · w_kategoria + 0.25 · bliskość + 0.20 · czas + 0.10 · obserwowany_organizator
-```
+Rekomendacje wybiera model Jev 1.13 (System One, TypeSafe AI) wołany przez OpenCode (`POST https://opencode.ai/zen/v1/systemone`, model `jev-1.13` albo `jev-1.13-free`, nagłówek `Authorization: Bearer $OPENCODE_API_KEY`).
 
-- `w_kategoria`: waga kategorii użytkownika. Start z onboardingu: wybrane = 0.7, reszta = 0.3. Swipe w prawo +0.1, w lewo −0.05, zawsze w przedziale 0–1.
-- `bliskość`: 1 przy 0 km, liniowo do 0 przy 5 km (haversine). Bez lokalizacji użytkownika: 0.5 dla wszystkich.
-- `czas`: 1 dla wydarzeń dziś, 0.5 w tym tygodniu, 0.2 później.
-- `obserwowany_organizator`: 1 albo 0.
-- `reasons`: dwa składniki o największym wkładzie, po polsku („Bo lubisz: gry”, „600 m od ciebie”, „Dziś 19:00”).
+1. Backend losuje z bazy do 50 kart, na które użytkownik jeszcze nie odpowiedział (mniej niż 50 to nie błąd).
+2. Pobiera wszystkie odpowiedzi użytkownika: prawo = interesuje go wydarzenie, lewo = nie interesuje.
+3. Wysyła do Jev jedno zapytanie: stan (karty polubione, karty odrzucone, kandydaci) i po jednym pytaniu typu `noul` na kandydata („czy to wydarzenie zainteresuje użytkownika?”). Wszystkie pytania są liczone równolegle w jednym wywołaniu.
+4. Backend sortuje kandydatów po prawdopodobieństwie `tak`, odrzuca niepoprawne odpowiedzi i zwraca 10 najlepszych (mniej, gdy kandydatów jest mniej).
+5. Gdy Jev jest niedostępny, za wolny albo zwróci niepoprawną odpowiedź, backend zwraca do 10 losowych kandydatów zamiast błędu.
 
-Formuła jest celowo prosta i wyjaśnialna. Collaborative filtering jest na roadmapie.
+Do Jev trafiają tylko dane kart i decyzje, bez identyfikatora użytkownika. Wyniki nie są zapisywane w bazie.
+
+### Personalizacja w rekomendacjach
+
+Odpowiedzi z personalizacji przy pierwszym uruchomieniu ([SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu)) wchodzą do rekomendacji na dwa sposoby:
+
+- **Twarde filtry przy losowaniu kandydatów (krok 1 powyżej):** budżet (tylko darmowe / do 20 zł), promień odległości (gdy znana lokalizacja) i pora (po zajęciach / wieczory / weekendy). Użytkownik może je zdjąć w filtrach.
+- **Kontekst dla Jev (krok 3):** do stanu dochodzi krótki opis preferencji użytkownika: wybrane kategorie, preferowana skala wydarzeń, cele („poznać ludzi”, „nauczyć się czegoś” itd.). Dzięki temu pierwsza talia jest trafna, zanim użytkownik zrobi pierwszy swipe.
+- **Skala wydarzenia:** karta ma pole `size` (small <30 / medium 30–100 / large >100, liczone z `capacity`, brak = medium), żeby model mógł dopasować wielkość.
+- **Uzasadnienie na karcie:** backend składa je z odpowiedzi użytkownika i danych wydarzenia, np. „Twój match: kameralne · planszówki · za darmo”.
+- **Brak odpowiedzi** nie blokuje działania: kandydaci losowani są bez filtrów, a Jev dostaje tylko decyzje ze swipe'ów.
+
+Wysyłanie preferencji do Jev wymaga zgody z punktu widzenia prywatności (patrz „Konta i dane lokalne” i [LEGAL.md](LEGAL.md)): preferencje nie zawierają identyfikatora użytkownika, tak samo jak karty i decyzje.
+
+Formuła punktowa (waga kategorii, bliskość, czas) zostaje jako zapas rozważany do wersji bez zewnętrznego modelu.
+
+## Konta i dane lokalne
+
+- **Gość:** preferencje z personalizacji, polubienia, pominięcia i obserwowani są w pamięci przeglądarki (localStorage / IndexedDB). Aplikacja działa bez rejestracji.
+- **Konto:** przy rejestracji (link na e-mail, bez haseł) frontend wysyła lokalną bazę do backendu, który zapisuje ją na koncie. Dopiero konto może tworzyć wydarzenia, mieć profil, być obserwowane i polecać.
+- **Organizacja:** osobny wiersz w `organizers` z członkami w `organization_members`. Wydarzenie publikuje się w imieniu organizacji (`organizer_id`), a nie osoby.
+- **Do rozstrzygnięcia:** obecne endpointy `GET/POST /card/{user_id}` zakładają `user_id` generowany we frontendzie i przechowywany na serwerze. Skoro dane gościa mają zostać na urządzeniu, są dwie drogi: (a) backend bezstanowy, frontend wysyła preferencje i listę widzianych kart w żądaniu (lepsza prywatność, wymaga zmiany API), (b) anonimowy UUID z personalizacją przechowywaną na serwerze (zgodne z obecnym API, słabsza obietnica „dane tylko na urządzeniu”). Rekomendacja: (b) na hackathon, (a) docelowo, i uczciwy opis w [LEGAL.md](LEGAL.md).
 
 ## AI autofill
 
-1. Organizator wkleja tekst posta.
+1. Autor (członek organizacji lub użytkownik z kontem) wkleja tekst posta.
 2. Backend wysyła go do LLM z promptem, który wymaga wyłącznie JSON zgodnego z `draft` z [API.md](API.md#post-eventsparse), listą dozwolonych kategorii i dzisiejszą datą (do rozwiązywania „w czwartek”).
 3. Backend waliduje odpowiedź Pydantic. Niepoprawny JSON = jedna ponowna próba, potem pusty szkic z `missing_fields`.
 4. Organizator poprawia i zatwierdza w formularzu. Nic nie trafia do bazy bez zatwierdzenia.
@@ -100,5 +123,5 @@ Klucz API tylko w `apps/backend/.env`, nigdy we frontendzie.
 | OSM + MapLibre | Darmowe, własny styl bez POI, brak klucza | Google Maps (warunki EOG zabraniają treści Places na mapie) |
 | Brak scrapingu | Uwaga mentorów, ryzyko prawne | Agregacja stron i Facebooka |
 | Brak push | Wymaga serwera wysyłającego, niska zgoda użytkowników | Web Push |
-| Scoring zamiast ML | Wyjaśnialny, gotowy w kilka godzin | Model rekomendacyjny |
+| Jev do rekomendacji | Szybki (setki ms), tani, zwraca typowane prawdopodobieństwa, nie halucynuje; losowy zapas przy awarii | Własna formuła scoringu, klasyczny LLM z generowanym tekstem |
 | Lokalizacja tylko na urządzeniu | Prywatność (RODO), brak potrzeby zapisu | Zapis pozycji na serwerze |
