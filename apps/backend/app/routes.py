@@ -6,6 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.card_service import AlreadyAnsweredError, CardNotFoundError, get_next_card, record_swipe
 from app.database import get_session
+from app.event_parser import (
+    EventDraft,
+    EventParser,
+    ParseRequest,
+    ParserError,
+    get_event_parser,
+    warsaw_today,
+)
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
 from app.recommender import get_recommendations
@@ -133,3 +141,30 @@ async def card_response(
     except AlreadyAnsweredError:
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Card already answered") from None
     return CardResponseOut.from_swipe(swipe)
+
+
+@router.post(
+    "/events/parse",
+    operation_id="events_parse",
+    summary="Fill an event form from a post (AI)",
+    description=(
+        "Sends the organizer's post to a chat model and returns a draft event. Fields the model "
+        "could not find or was unsure about are listed in `missing_fields`. Nothing is saved: a "
+        "person checks and approves the draft. Returns 503 when the AI is unavailable."
+    ),
+    response_model=EventDraft,
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "AI unavailable"},
+    },
+)
+async def events_parse(
+    body: ParseRequest, parser: Annotated[EventParser, Depends(get_event_parser)]
+) -> EventDraft:
+    try:
+        draft = await parser.parse(body.text, warsaw_today())
+    except ParserError as exc:
+        log.warning("parse_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI unavailable") from None
+    log.info("parse_done", missing=len(draft.missing_fields))
+    return draft

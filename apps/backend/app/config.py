@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     jev_model: str = "jev-1.13-free"
     jev_url: str = "https://opencode.ai/zen/v1/systemone"
     jev_timeout_seconds: float = 8.0
+    # POST /events/parse: OpenAI-compatible chat model on OpenCode Zen, same OPENCODE_API_KEY
+    parse_model: str = "minimax-m2.5-free"
+    parse_url: str = "https://opencode.ai/zen/v1/chat/completions"
+    parse_timeout_seconds: float = 20.0
 
     @property
     def cors_origin_list(self) -> list[str]:
