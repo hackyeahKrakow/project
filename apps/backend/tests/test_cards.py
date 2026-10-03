@@ -34,3 +34,9 @@ async def test_card_response_rejects_unknown_decision(client):
 async def test_card_response_rejects_non_uuid7_card_id(client):
     body = {"card_id": "123", "decision": "left"}
     assert (await client.post(f"/card/{uuid7()}", json=body)).status_code == 422
+
+
+async def test_validation_errors_use_error_response_shape(client):
+    response = await client.get("/card/not-a-uuid")
+    assert response.status_code == 422
+    assert isinstance(response.json()["detail"], str)
