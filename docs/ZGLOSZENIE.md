@@ -18,27 +18,56 @@ Do pilnowania:
 
 ## Problem
 
-Na uczelniach z siedzibą w Małopolsce studiuje ok. 152 tys. osób (GUS, stan na 31.12.2024), a większość z nich w Krakowie. Informacje o tym, co się dzieje na uczelni i w mieście, są rozproszone po stronach wydziałów, grupach na Facebooku i Instagramach kół naukowych. Nie ma jednego miejsca, które zbiera wydarzenia ze wszystkich krakowskich uczelni.
+W Polsce studiuje **1,28 mln osób na 352 uczelniach** (GUS, rok akademicki 2024/25). Co roku setki tysięcy z nich zaczynają życie w nowym mieście, bez znajomych i bez mapy tego, co się wokół dzieje.
 
-Skutki widać po obu stronach:
-- **Studenci, zwłaszcza pierwszego roku, nie wiedzą, gdzie i kiedy coś się dzieje.** 17% uczniów i studentów bardzo często lub zawsze odczuwa samotność, a wśród wszystkich dorosłych ten odsetek wynosi 8% (CBOS 2024).
-- **Organizatorzy (koła, samorządy, lokale) nie docierają do odbiorców.** Uczelnie płacą nawet za reklamy w tramwajach.
-- **Duże agregatory nie pokazują tego, co studenckie.** GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mieszkańców. Nie ma u nich ani spotkań kół, ani oddolnych „planszówek w akademiku”.
+**Samotność to realny problem, nie hasło.** Studenci najczęściej ze wszystkich grup zawodowych odczuwają samotność: 17% bardzo często albo zawsze, wobec 8% wszystkich dorosłych (CBOS 2024). W całym pokoleniu Z samotność regularnie odczuwa 65% osób w wieku 13–28 lat. Badania z uczelni pokazują, że udział w aktywnościach poza zajęciami wzmacnia poczucie przynależności, a to przekłada się na lepsze wyniki i mniejsze ryzyko rzucenia studiów po pierwszym roku.
+
+**Wydarzeń nie brakuje. Brakuje sposobu, żeby do nich dotrzeć.**
+- Informacje są rozproszone po stronach wydziałów, grupach i fanpage'ach „Spotted”, Instagramach kół naukowych i plakatach na korytarzach. Nie ma jednego miejsca, w którym student zobaczy, co dzieje się dziś wokół niego.
+- Grupy z wydarzeniami żyją głównie na Facebooku, a pokolenie Z z niego odchodzi do TikToka, Instagrama i YouTube'a. 41% osób z pokolenia Z szuka informacji najpierw w mediach społecznościowych, a nie w wyszukiwarce (Sprout Social 2025). Algorytmy tych platform nie wiedzą jednak, że dziś o 19:00 koło robotyki ma spotkanie otwarte 300 metrów od akademika.
+- Organizatorzy (koła, samorządy, lokale, uczelnie) nie docierają do odbiorców. Uczelnie płacą za reklamy w komunikacji miejskiej, a koło naukowe ma tylko własny fanpage.
+- Agregatory wydarzeń, takie jak GoJammin czy miejskie kalendarze kultury, pokazują duże wydarzenia dla wszystkich mieszkańców. Nie ma w nich spotkania otwartego koła ani „planszówek w akademiku, pokój 312”.
 
 ## Solution
 
-*Zmatchuj się z eventami.* spotted student to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
+***Zmatchuj się z eventami.*** spotted student działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Trzy swipe'y wystarczą, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
 
-1. **Czysta mapa miasta.** Bez sklepów, stacji i reklam, tylko wydarzenia studenckie i miejsca, w których się odbywają. Każda kategoria ma kolor i ikonę.
-2. **Swipe jak w Tinderze.** W prawo znaczy „interesuje mnie”: wydarzenie trafia na „Moją mapę”. W lewo znaczy „pomiń”. Rekomendacje uczą się z każdego ruchu, a każda karta mówi, dlaczego ją widzisz, np. „Bo lubisz: planszówki · dziś 19:00”. Nie ma czarnej skrzynki.
-3. **Dodawanie wydarzeń z AI.** Organizator wkleja tekst swojego posta, a model językowy wypełnia formularz: tytuł, datę, miejsce, cenę i kategorię. Organizator sprawdza i zatwierdza. Nic nie trafia na mapę bez akceptacji człowieka.
+### 1. Swipe: decyzja w sekundę
+
+Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo** znaczy „wchodzę”, i wydarzenie trafia na twoją mapę. **W lewo** znaczy „nie dla mnie”. Zamiast przewijać listę stu wydarzeń, podejmujesz jedną decyzję naraz. Ten gest zna każdy, więc aplikacji nie trzeba tłumaczyć. Każdy ruch to też sygnał, z którego aplikacja się uczy.
+
+### 2. Profil zainteresowań, który rośnie z każdym ruchem
+
+- **Start w 30 sekund, bez konta.** Wybierasz uczelnię i 3–5 zainteresowań, a to daje profil startowy, więc pierwsze karty już do ciebie pasują.
+- **Profil uczy się z zachowania, nie z ankiet.** Swipe w prawo podnosi wagę kategorii, swipe w lewo lekko ją obniża. Kara jest celowo mniejsza niż nagroda, więc jedno „nie” nie skreśla całej kategorii.
+- **Dopasowanie łączy cztery sygnały:** twoje zainteresowania, odległość od ciebie, termin (dziś przed „za tydzień”) i organizatorów, których obserwujesz.
+- **Żadnej czarnej skrzynki.** Każda karta mówi, dlaczego ją widzisz: „Bo lubisz: planszówki · 600 m od ciebie · dziś 19:00”. Użytkownik rozumie rekomendację i ma nad nią kontrolę, w duchu wymogów przejrzystości systemów rekomendacyjnych z unijnego DSA.
+- **Prywatność od projektu.** Nie ma konta, maila ani numeru telefonu. Profil to wagi kategorii przypisane do anonimowego identyfikatora. Lokalizacja zostaje na urządzeniu i nie zapisujemy jej na serwerze.
+
+71% konsumentów oczekuje personalizacji, a 76% irytuje się, gdy jej nie dostaje (McKinsey). Studenci nie są wyjątkiem, tylko dziś nikt tego nie robi dla wydarzeń studenckich.
+
+### 3. Twoja mapa miasta
+
+Polubione wydarzenia świecą na czystej mapie, bez sklepów, stacji i reklam. Kategorie mają kolor i ikonę, więc informacja nie opiera się tylko na kolorze. Jednym spojrzeniem widzisz, co masz dziś wieczorem w okolicy, a jednym kliknięciem otwierasz adres, godzinę i opis.
+
+### 4. Jev: asystent AI, który tworzy wydarzenie za ciebie
+
+Dodanie wydarzenia nie może być trudniejsze niż wrzucenie posta, inaczej nikt nie będzie tego robił. Dlatego jest Jev:
+- **Wklejasz tekst posta albo piszesz jedno zdanie,** np. „planszówki w akademiku Babilon, pokój 312, czwartek 19, max 6 osób”.
+- **Jev wypełnia cały formularz:** tytuł, opis, kategorię, adres i limit miejsc. Rozumie też „w czwartek” czy „jutro wieczorem” i zamienia to na konkretną datę.
+- **Jev mówi, czego brakuje.** Pola, których nie był pewien, są podświetlone do sprawdzenia, zamiast zgadywania.
+- **Człowiek ma ostatnie słowo.** Jev tylko proponuje. Nic nie trafia na mapę bez zatwierdzenia przez organizatora.
+
+Formularz, który zajmował 10 minut, zajmuje 30 sekund. Dzięki temu na mapie pojawiają się nie tylko oficjalne wydarzenia uczelni, ale też oddolne mikro-wydarzenia tworzone przez samych studentów, a tego nie ma nikt inny.
 
 **Korzyści:**
-- **Student:** w 30 sekund widzi, co dzieje się dziś w jego okolicy i pasuje do jego zainteresowań.
-- **Organizator:** dostaje darmowy zasięg do studentów, a dodanie wydarzenia zajmuje minutę.
-- **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne.
+- **Student:** w minutę wie, co dzieje się dziś blisko niego i pasuje do jego zainteresowań. Łatwiej mu wyjść z pokoju i poznać ludzi.
+- **Organizator:** dostaje darmowy zasięg do dokładnie tych studentów, którzy interesują się jego tematem, a wydarzenie dodaje w 30 sekund.
+- **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne. Studenci, którzy się angażują, rzadziej rezygnują ze studiów.
 
-Dane dodają ich właściciele. Nie scrapujemy cudzych stron.
+Pilotaż: Kraków (ok. 152 tys. studentów na uczelniach w Małopolsce). Aplikacja jest gotowa do uruchomienia w kolejnych miastach akademickich. Dane dodają ich właściciele, nie scrapujemy cudzych stron.
+
+**Źródła:** GUS „Szkolnictwo wyższe w roku akademickim 2024/2025”; CBOS „Kto jest najbardziej narażony na samotność?” (2024); PAP Nauka w Polsce, badanie samotności pokolenia Z; Sprout Social Q2 2025 Pulse Survey; McKinsey „The value of getting personalization right—or wrong—is multiplying”; Kulp i in. 2021, „Types of Extracurricular Campus Activities and First-Year Students' Academic Success”.
 
 ## Challenges
 
