@@ -69,7 +69,7 @@ export function score(
     parts.length ? `Bo lubisz: ${parts.join(', ')}` : followed ? null : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,
     daysFromToday(ev.starts_at, today) < 2 ? whenLabel(ev.starts_at, today) : null, // the card shows the full date already
-    p.budget !== 'any' ? formatPrice(ev.price).toLowerCase() : null,
+    p.budget !== 'any' && ev.price !== null ? formatPrice(ev.price).toLowerCase() : null,
   ]
     .filter(Boolean)
     .join(' · ')
