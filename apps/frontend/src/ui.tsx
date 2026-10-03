@@ -1,5 +1,7 @@
 import {
+  Accessibility,
   BadgeCheck,
+  Bus,
   CalendarPlus,
   Calendar,
   Compass,
@@ -10,6 +12,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  TramFront,
+  TriangleAlert,
   UserCheck,
   UserPlus,
   UserRound,
@@ -24,8 +28,9 @@ import logoUrl from '@/assets/logo-full.svg'
 import maplibreWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { transitNear, type TransitNear } from '@/lib/api'
 import { type Category, category } from '@/lib/categories'
-import { SIZE_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
+import { SIZE_LABEL, WHEELCHAIR_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
 import { describe, myPersona } from '@/lib/persona'
 import { photoUrl } from '@/lib/photos'
@@ -158,6 +163,16 @@ export function FollowButton({ orgId, name }: { orgId: string; name?: string }) 
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
+  // Stops and disruptions come from ZTP open data through GET /transit/near; nothing is shown while loading or offline.
+  const [near, setNear] = useState<{ id: string; data: TransitNear | null }>()
+  useEffect(() => {
+    let live = true
+    transitNear(ev.lat, ev.lng).then((data) => live && setNear({ id: ev.id, data }))
+    return () => {
+      live = false
+    }
+  }, [ev.id, ev.lat, ev.lng])
+  const transit = near?.id === ev.id ? near.data : null
   return (
     <article className="flex flex-col">
       <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" photo={photoUrl(ev)} />
@@ -169,6 +184,12 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         <div className="flex flex-wrap gap-1.5">
           <CategoryBadge cat={c} className="text-[13px]" />
           <span className="rounded-full bg-track px-2.5 py-1 text-[13px] font-medium">{SIZE_LABEL[ev.size]}</span>
+          {ev.wheelchair && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-track px-2.5 py-1 text-[13px] font-medium">
+              <Accessibility size={14} aria-hidden />
+              {WHEELCHAIR_LABEL[ev.wheelchair]}
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1.5 text-[15px]">
           <div className="flex items-center gap-2">
@@ -179,7 +200,30 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
             <MapPin size={18} aria-hidden />
             {ev.address}
           </div>
+          {transit?.stops.map((s) => (
+            <div key={s.mode} className="flex items-center gap-2 text-muted">
+              {s.mode === 'tram' ? <TramFront size={18} aria-hidden /> : <Bus size={18} aria-hidden />}
+              <span>
+                <span className="sr-only">{s.mode === 'tram' ? 'Przystanek tramwajowy: ' : 'Przystanek autobusowy: '}</span>
+                {s.name} · {s.distance_m} m
+              </span>
+            </div>
+          ))}
         </div>
+        {!!transit?.alerts.length && (
+          <div className="flex flex-col gap-1.5 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <TriangleAlert size={16} aria-hidden />
+              Utrudnienia w pobliżu (ZTP Kraków)
+            </span>
+            {transit.alerts.slice(0, 3).map((a) => (
+              <p key={a.header + a.description}>
+                <span className="font-medium">{a.header}</span>
+                {a.description && <span className="line-clamp-2 text-muted">{a.description}</span>}
+              </p>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-lg bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-700">{formatPrice(ev.price)}</span>
         </div>

@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode 
 import { parseEvent, searchAddress, type Draft, type Place } from '@/lib/api'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
-import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
+import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent, type Wheelchair } from '@/lib/events'
 import { myPersona } from '@/lib/persona'
 import { useStore } from '@/lib/store'
 import { CategoryBadge, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
@@ -19,6 +19,7 @@ type Form = {
   place: string
   district: string
   size: Size
+  wheelchair: Wheelchair | ''
   description: string
 }
 type Key = keyof Form
@@ -34,6 +35,7 @@ const EMPTY: Form = {
   place: '',
   district: 'Stare Miasto',
   size: 'small',
+  wheelchair: '',
   description: '',
 }
 const input = 'h-12 w-full rounded-xl px-3.5 text-base focus:border-link focus:ring-link'
@@ -89,6 +91,7 @@ function fromDraft(d: Draft, prev: Form): Form {
     place: d.address ?? prev.place,
     district: prev.district,
     size: d.size ?? prev.size,
+    wheelchair: prev.wheelchair, // the AI doesn't guess accessibility, the organizer declares it
     description: d.description ?? prev.description,
   }
 }
@@ -176,6 +179,7 @@ export default function Dodaj() {
       price: Number(form.price.replace(',', '.')),
       category: form.category,
       size: form.size,
+      ...(form.wheelchair && { wheelchair: form.wheelchair }),
       district,
       organizer:
         org && account.org === LIBRARY.name
@@ -312,6 +316,14 @@ export default function Dodaj() {
             'flex-1',
           )}
         </div>
+        {field('wheelchair', 'Dostępność dla osób na wózku', (cls) => (
+          <select className={cls} value={form.wheelchair} onChange={(e) => set('wheelchair', e.target.value)}>
+            <option value="">Nie wiem</option>
+            <option value="yes">Bez barier (wejście bez schodów)</option>
+            <option value="limited">Częściowo (np. próg, pomoc przy wejściu)</option>
+            <option value="no">Z barierami (schody, brak windy)</option>
+          </select>
+        ))}
         {field('description', 'Opis', (cls) => (
           <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />
         ))}

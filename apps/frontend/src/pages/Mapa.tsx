@@ -1,4 +1,4 @@
-import { ChevronDown, Heart, Info, List, Megaphone } from 'lucide-react'
+import { Accessibility, ChevronDown, Heart, Info, List, Megaphone } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { formatTime, inRange, whenLabel, type SpottedEvent, type When } from '@/lib/events'
@@ -19,6 +19,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const [cat, setCat] = useState<CategoryId | ''>('')
   const [free, setFree] = useState(false)
   const [mine, setMine] = useState(false)
+  const [stepFree, setStepFree] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
   const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
@@ -26,9 +27,9 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const shown = useMemo(
     () =>
       events
-        .filter((e) => inRange(e, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)))
+        .filter((e) => inRange(e, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)) && (!stepFree || e.wheelchair === 'yes'))
         .sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
-    [events, when, cat, free, mine, liked],
+    [events, when, cat, free, mine, liked, stepFree],
   )
   const selected = events.find((e) => e.id === selectedId)
   const close = useCallback(() => setSelectedId(undefined), [])
@@ -111,6 +112,10 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
           </button>
           <button type="button" aria-pressed={mine} className={`${chip(mine)} shadow-sm`} onClick={() => setMine(!mine)}>
             Polubione
+          </button>
+          <button type="button" aria-pressed={stepFree} className={`${chip(stepFree)} shadow-sm`} onClick={() => setStepFree(!stepFree)}>
+            <Accessibility size={16} aria-hidden />
+            Bez barier
           </button>
         </div>
 
