@@ -1,6 +1,6 @@
 // Run: npm run check — asserts the date, recommendation and calendar logic the pages rely on.
 import assert from 'node:assert/strict'
-import { at, catalog, eventDays, formatDate, formatPrice, formatRange, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
+import { at, catalog, demoCatalog, eventDays, formatDate, formatPrice, formatRange, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
 import { fold, ics } from './src/lib/ics.ts'
 import { describe, persona } from './src/lib/persona.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
@@ -42,7 +42,7 @@ assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 assert.equal(parseInt(id.replace(/-/g, '').slice(0, 12), 16), Date.UTC(2026, 9, 3))
 
 // Recommendations: interests and swipes move the category weights; budget is a hard filter.
-const events = catalog()
+const events = demoCatalog() // the ranking checks use the demo events, which the app itself no longer shows
 const profile = { ...EMPTY_PROFILE, interests: ['gry', 'nauka', 'muzyka'] as const, budget: 'free' as const }
 const w0 = weights({ ...profile, interests: [...profile.interests] }, {}, events)
 assert.equal(w0.gry, 0.7)
@@ -52,7 +52,7 @@ assert.equal(Math.round(w1.sport * 100), 40)
 assert.equal(Math.round(w1.gry * 100), 65)
 const deck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 10)
 assert.equal(deck.length, 10)
-assert.ok(deck.every((x) => x.ev.price === 0))
+assert.ok(deck.every((x) => x.ev.price === 0 || x.ev.price === null)) // known prices must be free
 assert.ok(deck[0].reason.startsWith('Bo lubisz:'), deck[0].reason)
 assert.ok(!recommend(events, { ...profile, interests: [...profile.interests] }, { [deck[0].ev.id]: 'right' }, new Set(), 50).some((x) => x.ev.id === deck[0].ev.id))
 
@@ -93,5 +93,17 @@ assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_o
 const { CARDS, STARTER } = await import('./src/lib/events.ts')
 assert.equal(CARDS.length, 20)
 assert.deepEqual(STARTER, CARDS.slice(0, 6))
+// The app shows only the 20 backend cards; the demo events stay in demoCatalog().
+assert.deepEqual(catalog(), CARDS)
+assert.ok(demoCatalog().length > CARDS.length)
+// The real catalog, on a fixed day so the check outlives the events: budget users still get a deck (prices are unknown, not paid),
+// a known paid price is still filtered out, and interests rank a matching category first.
+const real = (budget: 'free' | 'upto20', evs = catalog()) =>
+  recommend(evs, { ...EMPTY_PROFILE, interests: ['kultura'], budget }, {}, new Set(STARTER.map((e) => e.id)), 50, undefined, new Set(), '2026-10-03')
+assert.equal(real('free').length, CARDS.length - STARTER.length)
+assert.equal(real('upto20').length, CARDS.length - STARTER.length)
+const paid = catalog().map((e) => ({ ...e, price: 30 }))
+assert.equal(real('free', paid).length, 0)
+assert.equal(real('free')[0].ev.category, 'kultura')
 assert.ok(CARDS.every((e) => e.district && !('ends_at' in e && e.ends_at === null)))
 console.log('catalog checks ok')
