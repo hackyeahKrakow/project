@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
@@ -19,6 +20,9 @@ from app.info_service import MAX_INFO_CHARS, InfoTooLargeError, save_info
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
 from app.recommender import get_recommendations
+from app.parking import ParkingError, ParkingFinder, ParkingNear, get_parking_finder
+from app.route import Planner, RouteError, RoutePlan, get_planner
+from app.transit import Transit, TransitError, TransitNear, get_transit
 from app.schemas import (
     CardFetchResponse,
     CardResponseOut,
@@ -236,3 +240,91 @@ async def info_save(
         ) from None
     log.info("info_saved")
     return InfoOut(user_id=user_id, updated_at=updated_at)
+
+
+@router.get(
+    "/transit/near",
+    operation_id="transit_near",
+    summary="Public transport near an event",
+    description=(
+        "Nearest tram and bus stop (within 1.5 km) and current disruptions at stops within 400 m. "
+        "Data comes from ZTP Kraków open data: GTFS timetables (cached for a day) and GTFS-Realtime "
+        "ServiceAlerts (cached for 2 minutes). Returns 503 when the stop list can't be loaded."
+    ),
+    response_model=TransitNear,
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "ZTP data unavailable"},
+    },
+)
+async def transit_near(
+    transit: Annotated[Transit, Depends(get_transit)],
+    lat: Annotated[float, Query(ge=49.9, le=50.2, description="Event latitude (Kraków area)")],
+    lng: Annotated[float, Query(ge=19.7, le=20.3, description="Event longitude (Kraków area)")],
+) -> TransitNear:
+    try:
+        return await transit.near(lat, lng)
+    except TransitError as exc:
+        log.warning("transit_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="ZTP data unavailable") from None
+
+
+@router.get(
+    "/route",
+    operation_id="route",
+    summary="Public transport journey to an event",
+    description=(
+        "Up to 3 public transport options from the user's position to the event, arriving by `time` "
+        "(or leaving at `time` with `arrive_by=false`), plus how long walking the whole way takes. "
+        "Journeys come from Transitous (MOTIS over the ZTP Kraków GTFS with live delays). With "
+        "`wheelchair=true` walking parts are step-free and options with a known high-floor vehicle go last. "
+        "The position is passed on to Transitous for this one request and is neither stored nor logged."
+    ),
+    response_model=RoutePlan,
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "Journey planner unavailable"},
+    },
+)
+async def route(
+    planner: Annotated[Planner, Depends(get_planner)],
+    from_lat: Annotated[float, Query(ge=49.9, le=50.2, description="Start latitude (Kraków area)")],
+    from_lng: Annotated[float, Query(ge=19.7, le=20.3, description="Start longitude (Kraków area)")],
+    to_lat: Annotated[float, Query(ge=49.9, le=50.2, description="Event latitude")],
+    to_lng: Annotated[float, Query(ge=19.7, le=20.3, description="Event longitude")],
+    time: Annotated[datetime, Query(description="Arrival time (or departure time with arrive_by=false), ISO 8601 with offset")],
+    arrive_by: bool = True,
+    wheelchair: bool = False,
+) -> RoutePlan:
+    try:
+        return await planner.plan((from_lat, from_lng), (to_lat, to_lng), time, arrive_by, wheelchair)
+    except RouteError as exc:
+        log.warning("route_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Journey planner unavailable") from None
+
+
+@router.get(
+    "/parking/near",
+    operation_id="parking_near",
+    summary="Car parks and spaces for people with disabilities near an event",
+    description=(
+        "Public car parks within 800 m (name, distance, spaces, spaces for people with disabilities, fee, P+R) "
+        "and the number of mapped on-street spaces for people with disabilities within 400 m. Data comes from "
+        "OpenStreetMap through Overpass, cached for a day per place. Returns 503 when Overpass is unavailable."
+    ),
+    response_model=ParkingNear,
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "Overpass unavailable"},
+    },
+)
+async def parking_near(
+    finder: Annotated[ParkingFinder, Depends(get_parking_finder)],
+    lat: Annotated[float, Query(ge=49.9, le=50.2, description="Event latitude (Kraków area)")],
+    lng: Annotated[float, Query(ge=19.7, le=20.3, description="Event longitude (Kraków area)")],
+) -> ParkingNear:
+    try:
+        return await finder.near(lat, lng)
+    except ParkingError as exc:
+        log.warning("parking_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Overpass unavailable") from None

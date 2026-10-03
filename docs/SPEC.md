@@ -143,6 +143,8 @@ Wydarzenia dodają ich właściciele, a my bierzemy tylko dane otwarte. Nie scra
 
 ## Roadmapa po hackathonie
 
+**Bramka przed pierwszym płatnym pakietem:** własna instancja planera MOTIS na danych GTFS ZTP zamiast publicznego Transitous, który jest darmowy tylko do użytku niekomercyjnego ([LEGAL.md](LEGAL.md)). Dopóki jej nie ma, nie włączamy płatności dla organizacji.
+
 - Powiadomienia opt-in dla wybranych kategorii i organizacji, z limitem dziennym i godzinami ciszy.
 - Znajomi, zaproszenia, grupy.
 - Community użytkowników: publiczne profile, obserwujący, polecanie wydarzeń obserwującym.

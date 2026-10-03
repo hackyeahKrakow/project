@@ -22,7 +22,7 @@ Jury ocenia kompletność (10%), więc każdy ekran z filmu musi dać się klikn
 - „Moje wydarzenia” i kalendarz to jeden ekran: agenda, widok miesiąca i eksport `.ics`. Synchronizacja z Google i Apple trafia do roadmapy, bo plik `.ics` obsługuje każdy kalendarz.
 - Mapa jest osobnym ekranem, bo pokazuje też wydarzenia, których jeszcze nie było w talii. Polubione są na niej wyróżnione, a na tej samej mapie są też promowane piny (monetyzacja). Legenda w rogu mapy tłumaczy kolory kategorii, serce (polubione) i megafon (promowane).
 - Na laptopie nawigacja jest bocznym panelem z dużym logo. Panel można zwinąć do paska ikon; na mapie startuje zwinięty, żeby mapa miała więcej miejsca.
-- Konto → Dostępność: motyw (systemowy, jasny, ciemny), wysoki kontrast i większy tekst. Wybór zostaje na urządzeniu.
+- Konto → Dostępność: motyw (systemowy, jasny, ciemny), wysoki kontrast, większy tekst i „Miejsca i dojazd bez barier”. Wybór zostaje na urządzeniu. Te same przełączniki są pod „Ułatwienia dostępu” na ekranie powitalnym (ścieżka w punkcie 6).
 
 ## 1. Ekran powitalny
 
@@ -117,6 +117,31 @@ Ustalenia do pakietów:
 1. Na start sami budujemy bazę wydarzeń.
 2. Uczelniom i kołom dajemy pakiet za darmo.
 3. Ruch organiczny ze społeczności przyciąga płacących organizatorów.
+
+## 6. Ścieżka: osoba z niepełnosprawnością ruchową
+
+**Persona: Kuba**, 2. rok UJ, porusza się na wózku elektrycznym i mieszka w Bronowicach. Do miasta jeździ tramwajem, czasem podwozi go tata. Jego trzy pytania przed każdym wyjściem: czy wjadę do środka, czy pojedzie tramwaj niskopodłogowy i gdzie zaparkować z kartą parkingową, gdy jedzie autem. Dziś odpowiada na nie sam, dzwoniąc do organizatora albo szukając na trzech stronach.
+
+Zasada: potrzebę dostępności ustawia się raz, najwcześniej jak się da, a potem każdy ekran z niej korzysta. Nie trzeba za każdym razem włączać filtra.
+
+| Krok | Co robi Kuba | Co robi aplikacja |
+| --- | --- | --- |
+| 1. Ekran powitalny | Otwiera „Ułatwienia dostępu” pod przyciskami i włącza „Miejsca i dojazd bez barier” (tu też: większy tekst, wysoki kontrast). | Ustawienie działa od razu, jeszcze przed onboardingiem. Osoba słabowidząca robi onboarding już w dużym, kontrastowym tekście. |
+| 2. Onboarding, krok 4 | Widzi zaznaczony chip „Potrzebuję miejsc i dojazdu bez barier” (może go zmienić). | To samo ustawienie co na ekranie powitalnym, zapisane w profilu na telefonie. |
+| 3. Zgody | Włącza lokalizację. | Przeglądarka od razu pyta o zgodę. Przy odmowie przełącznik sam się wyłącza i pokazuje, jak to naprawić. |
+| 4. Odkrywaj | Swipe'uje. | Wydarzenia w miejscach z barierami nie trafiają do talii. Miejsca bez barier są wyżej i mają w uzasadnieniu „Bez barier”. Miejsca o nieznanej dostępności zostają, bo inaczej talia byłaby prawie pusta. |
+| 5. Mapa | Otwiera mapę. | Ta sama zasada co w talii: miejsc z barierami nie ma, miejsca o nieznanej dostępności są. Chip „Potwierdzone bez barier” zawęża mapę do miejsc z potwierdzoną dostępnością. Niebieska kropka pokazuje się sama. |
+| 6. Karta wydarzenia | Otwiera koncert w TAURON Arenie. | Znaczek „Bez barier” (z deklaracji dostępności miejsca) albo „Dostępność nieznana”, żeby wiedział, że trzeba dopytać. |
+| 7. Dojazd | Ustawia „Na miejscu o” i klika „Zaplanuj dojazd”. | Trasa z jego lokalizacji (`GET /route`, Transitous na rozkładach ZTP) z zapasem 15 min zamiast 10. Odcinki piesze bez schodów (profil wózka). Przy każdym tramwaju: „Tramwaj niskopodłogowy” albo „Tramwaj wysokopodłogowy, stopnie przy wejściu”. Kursy z wysoką podłogą idą na koniec listy. Opóźnienia na żywo są oznaczone. |
+| 8. Utrudnienia | — | Jeśli przystanek przy wydarzeniu jest nieczynny, karta pokazuje komunikat ZTP, zanim Kuba wyjdzie z domu. |
+| 9. Autem | Rozwija „Autem: parkingi i miejsca dla osób z niepełnosprawnością” (u niego rozwinięte od razu). | Najpierw miejsca dla osób z niepełnosprawnością przy ulicy (liczba w 400 m i najbliższe), potem parkingi z takimi miejscami (OpenStreetMap). Link do miejskiej mapy ZDMK i nawigacja do wybranego parkingu. |
+| 10. Konto | Może wszystko zmienić w jednym miejscu. | Przełączniki: lokalizacja, miejsca i dojazd bez barier, większy tekst, wysoki kontrast, motyw. |
+
+Co jeszcze nie działa i trafia do roadmapy:
+- Konkretny pojazd na żywo (numer taborowy z `VehiclePositions` ZTP), a nie tylko planowany kurs niskopodłogowy z rozkładu.
+- Pełniejsze dane o miejscach: winda, toaleta dla osób z niepełnosprawnością, pętla indukcyjna, tłumacz PJM, audiodeskrypcja. Organizator wypełniałby je w formularzu, a uczestnicy potwierdzali po wydarzeniu („Czy wejście było bez barier?”).
+- Miejskie dane ZDMK o miejscach dla osób z niepełnosprawnością bezpośrednio w aplikacji (dziś link do mapy), wolne miejsca na P+R.
+- Zgłoszenie bariery organizatorowi jednym przyciskiem.
 
 ## Scenariusz filmu (60–90 s)
 

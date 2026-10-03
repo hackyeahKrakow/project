@@ -64,7 +64,15 @@ Kto chce tworzyć wydarzenia, zakłada konto: studenta albo organizacji (koło, 
 
 Formularz, który zajmował 10 minut, zajmuje 30 sekund. Organizator nie przepisuje tego samego posta do kolejnego narzędzia, więc chętniej dodaje każde wydarzenie. Obok oficjalnych wydarzeń pojawiają się też oddolne mikro-wydarzenia dodane przez samych studentów, a tego nie ma nikt inny.
 
-### 6. Model biznesowy: pakiety dla organizatorów
+### 6. Miasto pod ręką: dojazd, utrudnienia, dostępność
+
+- **Jak dojechać.** Karta wydarzenia pokazuje najbliższy przystanek tramwajowy i autobusowy z otwartych danych ZTP Kraków (GTFS). „Zaplanuj dojazd” liczy trasę z twojej lokalizacji tak, żebyś był na miejscu 10 minut przed startem i wyszedł jak najpóźniej, i mówi wprost, czym dziś najlepiej jechać („Najlepiej: tramwaj 4”). Przy każdym tramwaju widać, czy jest niskopodłogowy. Trasy liczy Transitous na rozkładach ZTP z opóźnieniami na żywo.
+- **Autem.** Parkingi w promieniu 800 m z liczbą miejsc, w tym dla osób z niepełnosprawnością, i miejsca dla osób z niepełnosprawnością przy ulicy (OpenStreetMap), plus link do miejskiej mapy ZDMK.
+- **Utrudnienia na żywo.** Jeśli przy wydarzeniu jest nieczynny przystanek albo objazd, karta pokazuje komunikat ZTP (GTFS-Realtime, odświeżany co 2 minuty), zanim wyjdziesz z domu.
+- **Bez barier.** Potrzebę dostępności ustawiasz raz, już na ekranie powitalnym. Potem talia pomija miejsca z barierami, mapa pomija miejsca z barierami (chip „Potwierdzone bez barier” zawęża ją do miejsc z potwierdzoną dostępnością), trasy omijają schody i stawiają na tramwaje niskopodłogowe, a parkingi z miejscami dla osób z niepełnosprawnością są na górze. Dla wydarzeń z Krakowa dostępność bierzemy z deklaracji dostępności miejsc (TAURON Arena, ICE Kraków, Nowohuckie Centrum Kultury), a przy nowym wydarzeniu zaznacza ją organizator (tak / częściowo / nie). Wartości są takie same jak w OpenStreetMap i Wheelmap.
+- **Dane dla instytucji.** Miejska biblioteka widzi zbiorcze, anonimowe statystyki i opinie po wydarzeniach, więc wie, czego studenci potrzebują (np. czytelni otwartej wieczorem).
+
+### 7. Model biznesowy: pakiety dla organizatorów
 
 Dla studentów aplikacja jest darmowa. Organizacje kupują pakiety od 10 zł w górę, a każdy wyższy pakiet daje więcej:
 - więcej wydarzeń z funkcjami AI;
@@ -77,11 +85,11 @@ Plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interes
 **Korzyści:**
 - **Student:** w minutę wie, co dzieje się dziś blisko niego i pasuje do jego zainteresowań. Łatwiej mu wyjść z pokoju i poznać ludzi.
 - **Organizator:** dociera do dokładnie tych studentów, którzy interesują się jego tematem. Z funkcjami AI dodaje wydarzenie w 30 sekund, a ze statystyk wie, co działa.
-- **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne. Studenci, którzy się angażują, rzadziej rezygnują ze studiów.
+- **Miasto i uczelnie:** instytucje miejskie (biblioteki, domy kultury) docierają do studentów bez reklam w tramwajach i z anonimowych statystyk wiedzą, czego studenci chcą. Studenci łatwiej korzystają z komunikacji miejskiej i miejsc bez barier. Ci, którzy się angażują, rzadziej rezygnują ze studiów. To wpisuje się w Strategię Rozwoju Krakowa 2030, opartą na koncepcji smart city.
 
 Pilotaż: Kraków (ok. 152 tys. studentów na uczelniach w Małopolsce). Aplikacja jest gotowa do uruchomienia w kolejnych miastach akademickich. Dane dodają ich właściciele, nie scrapujemy cudzych stron.
 
-**Źródła:** GUS „Szkolnictwo wyższe w roku akademickim 2024/2025”; CBOS „Kto jest najbardziej narażony na samotność?” (2024); PAP Nauka w Polsce, badanie samotności pokolenia Z; Sprout Social Q2 2025 Pulse Survey; McKinsey „The value of getting personalization right—or wrong—is multiplying”; Kulp i in. 2021, „Types of Extracurricular Campus Activities and First-Year Students' Academic Success”.
+**Źródła:** ZTP Kraków, otwarte dane GTFS i GTFS-Realtime (gtfs.ztp.krakow.pl); Strategia Rozwoju Krakowa „Tu chcę żyć. Kraków 2030” (strategia.krakow.pl); GUS „Szkolnictwo wyższe w roku akademickim 2024/2025”; CBOS „Kto jest najbardziej narażony na samotność?” (2024); PAP Nauka w Polsce, badanie samotności pokolenia Z; Sprout Social Q2 2025 Pulse Survey; McKinsey „The value of getting personalization right—or wrong—is multiplying”; Kulp i in. 2021, „Types of Extracurricular Campus Activities and First-Year Students' Academic Success”.
 
 ## Challenges
 

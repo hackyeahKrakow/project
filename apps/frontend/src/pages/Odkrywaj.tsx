@@ -2,6 +2,7 @@ import { Calendar, Heart, MapPin, RotateCcw, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { saveSwipe, starterDeck } from '@/lib/api'
 import { CATEGORIES, category } from '@/lib/categories'
+import { inKrakow, locate } from '@/lib/geo'
 import { STARTER, formatDate, formatPrice, formatRange, type SpottedEvent } from '@/lib/events'
 import { photoUrl } from '@/lib/photos'
 import { recommend, weights, type Scored } from '@/lib/recommend'
@@ -30,10 +31,9 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
   }, [userId])
   useEffect(() => {
     if (state.location)
-      navigator.geolocation?.getCurrentPosition(
-        (p) => setHere([p.coords.latitude, p.coords.longitude]),
-        () => {},
-      )
+      locate()
+        .then((at) => inKrakow(at) && setHere(at))
+        .catch(() => {}) // the switch in Konto says why; cards then measure from the profile district
   }, [state.location])
 
   const starterLeft = starter.filter((e) => !swipes[e.id])

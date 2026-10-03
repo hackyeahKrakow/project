@@ -62,7 +62,8 @@ export function score(
   const soon = Math.max(0, 1 - Math.max(0, daysFromToday(ev.starts_at, today)) / 14)
   const followed = follows.has(ev.organizer.id)
   const sizeFit = !p.sizes.length || p.sizes.includes(ev.size) ? 1 : 0.85
-  const s = (0.45 * w[ev.category] + 0.25 * proximity + 0.2 * soon * timeFit(ev, p) + 0.1 * (followed ? 1 : 0)) * sizeFit
+  const stepFree = p.stepFree && ev.wheelchair === 'yes'
+  const s = (0.45 * w[ev.category] + 0.25 * proximity + 0.2 * soon * timeFit(ev, p) + 0.1 * (followed ? 1 : 0) + (stepFree ? 0.1 : 0)) * sizeFit
 
   // "Bo lubisz…" lists only what really drove the match (docs/SPEC.md, DSA transparency).
   const parts = [w[ev.category] >= 0.6 ? category(ev.category).short.toLowerCase() : null, p.sizes.includes(ev.size) ? SIZE_LABEL[ev.size] : null].filter(
@@ -70,6 +71,7 @@ export function score(
   )
   const reason = [
     followed ? `Obserwujesz: ${ev.organizer.name}` : null,
+    stepFree ? 'Bez barier' : null,
     parts.length ? `Bo lubisz: ${parts.join(', ')}` : followed ? null : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,
     daysFromToday(ev.starts_at, today) < 2 ? whenLabel(ev.starts_at, today) : null, // the card shows the full date already
@@ -80,7 +82,7 @@ export function score(
   return { ev, score: s, reason, distance }
 }
 
-/** Next cards: upcoming, not swiped, within budget and reach, best first. */
+/** Next cards: upcoming, not swiped, within budget and reach, not at a venue with barriers for step-free users, best first. */
 export function recommend(
   events: SpottedEvent[],
   p: Profile,
@@ -93,7 +95,7 @@ export function recommend(
 ) {
   const w = weights(p, swipes, events)
   return events
-    .filter((e) => !swipes[e.id] && !exclude.has(e.id) && inRange(e, 'wszystkie', today) && fitsBudget(e, p))
+    .filter((e) => !swipes[e.id] && !exclude.has(e.id) && inRange(e, 'wszystkie', today) && fitsBudget(e, p) && !(p.stepFree && e.wheelchair === 'no'))
     .map((e) => score(e, p, w, here, today, follows))
     .filter((x) => !p.distanceKm || x.distance <= p.distanceKm + 1)
     .sort((a, b) => b.score - a.score)

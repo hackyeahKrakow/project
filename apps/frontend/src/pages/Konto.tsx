@@ -6,7 +6,7 @@ import { LIBRARY, formatRange, type SpottedEvent } from '@/lib/events'
 import { persona } from '@/lib/persona'
 import { weights } from '@/lib/recommend'
 import { useStore } from '@/lib/store'
-import { Screen, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
+import { LocationToggle, Screen, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 
 // Account tab: guest privacy and settings, or the student / organization profile (docs/USER_FLOW.md).
 export default function Konto({ events }: { events: SpottedEvent[] }) {
@@ -167,11 +167,16 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
           </section>
 
           <section className={`${card} flex flex-col divide-y divide-line px-4`}>
-            <Toggle
-              label="Lokalizacja"
-              hint="Odległość na kartach i kropka na mapie, tylko na tym telefonie"
+            <LocationToggle
+              hint="Odległość na kartach, kropka na mapie i start trasy dojazdu. Nie zapisujemy jej na serwerze."
               on={state.location}
               onChange={(location) => update({ location })}
+            />
+            <Toggle
+              label="Miejsca i dojazd bez barier"
+              hint="Wózek, kule, wózek dziecięcy: ukrywamy miejsca z barierami, trasy bez schodów, tramwaje niskopodłogowe"
+              on={!!state.profile.stepFree}
+              onChange={(stepFree) => update((s) => ({ profile: { ...s.profile, stepFree } }))}
             />
             <Toggle label="Powiadomienia" hint="Wkrótce" on={state.notifications} onChange={(notifications) => update({ notifications })} />
             <Toggle label="Większy tekst" hint="Dostępność" on={state.bigText} onChange={(bigText) => update({ bigText })} />
