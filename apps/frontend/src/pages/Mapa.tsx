@@ -1,9 +1,10 @@
-import { ChevronDown, Heart, Info, List, Megaphone } from 'lucide-react'
+import { ChevronDown, Heart, Info, LayoutGrid, List, Megaphone } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { formatTime, inRange, whenLabel, type SpottedEvent, type When } from '@/lib/events'
 import { photoUrl } from '@/lib/photos'
 import { useStore } from '@/lib/store'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CategoryBadge, EventCard, EventMap, Sheet, Thumb, chip } from '@/ui'
 
 const WHEN: [When, string][] = [
@@ -89,23 +90,23 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
               {label}
             </button>
           ))}
-          <label className={`${chip(!!cat)} relative shadow-sm has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link`}>
-            {cat ? category(cat).short : 'Kategoria'}
-            <ChevronDown size={16} aria-hidden />
-            <select
-              aria-label="Kategoria"
-              value={cat}
-              onChange={(e) => setCat(e.target.value as CategoryId | '')}
-              className="absolute inset-0 cursor-pointer opacity-0"
-            >
-              <option value="">Wszystkie kategorie</option>
+          <Select value={cat} onValueChange={(v) => setCat((v ?? '') as CategoryId | '')}>
+            <SelectTrigger aria-label="Kategoria" className={`${chip(!!cat)} shadow-sm`}>
+              <SelectValue>{(v: string) => (v ? category(v as CategoryId).short : 'Kategoria')}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">
+                <LayoutGrid size={18} strokeWidth={2.2} aria-hidden />
+                Wszystkie kategorie
+              </SelectItem>
               {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>
+                <SelectItem key={c.id} value={c.id}>
+                  <c.Icon size={18} color={c.color} strokeWidth={2.2} aria-hidden />
                   {c.name}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-          </label>
+            </SelectContent>
+          </Select>
           <button type="button" aria-pressed={free} className={`${chip(free)} shadow-sm`} onClick={() => setFree(!free)}>
             Darmowe
           </button>
