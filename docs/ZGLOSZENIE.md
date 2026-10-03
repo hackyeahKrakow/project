@@ -42,7 +42,7 @@ Wydarzenia są kartami: grafika, tytuł, godzina, odległość, cena. **W prawo*
 - **Profil uczy się z zachowania, nie z ankiet.** Swipe w prawo podnosi wagę kategorii, swipe w lewo lekko ją obniża. Kara jest celowo mniejsza niż nagroda, więc jedno „nie” nie skreśla całej kategorii.
 - **Dopasowanie łączy cztery sygnały:** twoje zainteresowania, odległość od ciebie, termin (dziś przed „za tydzień”) i organizatorów, których obserwujesz.
 - **Żadnej czarnej skrzynki.** Każda karta mówi, dlaczego ją widzisz: „Bo lubisz: planszówki · 600 m od ciebie · dziś 19:00”. Użytkownik rozumie rekomendację i ma nad nią kontrolę, w duchu wymogów przejrzystości systemów rekomendacyjnych z unijnego DSA.
-- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Profil i historia swipe'ów są zapisane pod losowym, anonimowym identyfikatorem, bez danych osobowych. Lokalizacja zostaje na telefonie. Docelowo cały profil gościa ma zostawać tylko na urządzeniu. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
+- **Prywatność od projektu.** Przeglądanie nie wymaga konta, maila ani numeru telefonu. Odpowiedzi z pierwszych pytań i lokalizacja zostają na telefonie, a historię swipe'ów zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych. Docelowo cały profil gościa ma zostawać tylko na urządzeniu. Mówimy to wprost przed pierwszym swipe'em, a zgoda to wyraźny przycisk, nie domyślny gest.
 
 71% konsumentów oczekuje personalizacji, a 76% irytuje się, gdy jej nie dostaje (McKinsey). Studenci nie są wyjątkiem, tylko dziś nikt tego nie robi dla wydarzeń studenckich.
 

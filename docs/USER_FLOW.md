@@ -16,7 +16,7 @@ Jury ocenia kompletność (10%), więc każdy ekran z filmu musi dać się klikn
 
 | Lewo | Środek | Prawo | Ostatni |
 | --- | --- | --- | --- |
-| **Mapa** | **Swipe** (ekran startowy) | **Kalendarz** (moje wydarzenia) | **Konto** (ustawienia, dostępność, zgody) |
+| **Mapa** | **Odkrywaj** (swipe, ekran startowy) | **Moje** (kalendarz polubionych) | **Konto** (ustawienia, dostępność, zgody) |
 
 - Środkowa ikona to talia kart lub płomień, a nie „+”. Znak „+” zostawiamy dla „Dodaj wydarzenie” u zalogowanych, żeby dwie różne akcje nie miały tej samej ikony.
 - „Moje wydarzenia” i kalendarz to jeden ekran: agenda, przełącznik tydzień/miesiąc i eksport `.ics`. Synchronizacja z Google i Apple trafia do roadmapy, bo plik `.ics` obsługuje każdy kalendarz.
@@ -34,14 +34,15 @@ Jury ocenia kompletność (10%), więc każdy ekran z filmu musi dać się klikn
 
 ### Onboarding (profilowanie)
 
-Kilka szybkich ekranów, każdy z jednym pytaniem:
-1. Zainteresowania (3–5 kategorii).
-2. Jakich wydarzeń szukam: poznać ludzi, rozwój, kultura, impreza.
-3. Wielkość grupy: kameralne / duże / bez znaczenia.
-4. Okolica: moja dzielnica plus to, jak daleko mogę dojechać (np. mieszkam na Hucie, ale dojadę na Ruczaj).
-5. Zgody opcjonalne: lokalizacja i powiadomienia. Można je pominąć.
+Cztery pytania z [SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu):
+1. Ulubione rzeczy.
+2. Skala wydarzeń.
+3. Czego szukasz.
+4. Czego potrzebujesz: budżet, odległość i pora. Od zespołu dochodzi tu dzielnica i zasięg dojazdu, np. mieszkam na Hucie, ale dojadę na Ruczaj.
 
-Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Twoje odpowiedzi i swipe'y zapisujemy pod losowym, anonimowym identyfikatorem, a lokalizacja zostaje na telefonie. Wyczyścisz przeglądarkę albo zmienisz telefon, to zaczynasz od nowa.” Docelowo cały profil gościa ma zostawać na urządzeniu (zob. „Konta i dane lokalne” w [ARCHITECTURE.md](ARCHITECTURE.md)). Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
+Po pytaniach są zgody opcjonalne na lokalizację i powiadomienia. Można je pominąć.
+
+Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Twoje odpowiedzi i lokalizacja zostają na telefonie, a swipe'y zapisujemy pod losowym, anonimowym identyfikatorem. Wyczyścisz przeglądarkę albo zmienisz telefon, to zaczynasz od nowa.” Docelowo cały profil gościa ma zostawać na urządzeniu (zob. „Konta i dane lokalne” w [ARCHITECTURE.md](ARCHITECTURE.md)). Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
 
 Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgodzie jednoznacznego działania. Przycisk kosztuje jeden ekran i zamyka temat, zanim jury o niego zapyta.
 
@@ -49,8 +50,8 @@ Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgo
 
 Pobieranie kart (backend):
 1. Start: 6 kart startowych na sztywno (`GET /card/new/{user_id}`, ten endpoint już działa).
-2. Po onboardingu i 6 swipe'ach frontend wysyła odpowiedzi, a backend odsyła 15 kart dobranych pod profil.
-3. Gdy w talii zostaje 5 kart, frontend w tle pobiera 10 kolejnych, więc talia wraca do 15.
+2. Po 6 kartach startowych frontend pobiera polecone karty (`GET /card/recommendations/{user_id}`, do 10 naraz, ranking na podstawie swipe'ów).
+3. Gdy w talii zostaje 5 kart, frontend w tle pobiera kolejne 10, więc w talii jest do 15 kart.
 
 Karta pokazuje:
 - grafikę, tytuł, godzinę i cenę;
