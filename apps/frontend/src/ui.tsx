@@ -191,7 +191,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
         <div className="flex gap-2">
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${ev.lat},${ev.lng}`}
+            href={`https://www.google.com/maps/dir/?api=1&destination=${ev.lat},${ev.lng}&travelmode=transit`}
             target="_blank"
             rel="noreferrer"
             className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}
