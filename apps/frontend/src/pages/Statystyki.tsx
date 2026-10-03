@@ -1,6 +1,6 @@
 import { ArrowLeft, Eye, Heart, MessageSquareQuote, Star, ThumbsDown, TimerOff } from 'lucide-react'
 import { LIBRARY_AUDIENCE, LIBRARY_FEEDBACK, LIBRARY_STATS } from '@/lib/demo'
-import { catalog } from '@/lib/events'
+import { demoCatalog } from '@/lib/events'
 import { useStore } from '@/lib/store'
 import { btnPrimary, card } from '@/ui'
 
@@ -21,7 +21,7 @@ export default function Statystyki() {
     )
   }
 
-  const names = new Map(catalog().map((e) => [e.id, e.event_name]))
+  const names = new Map(demoCatalog().map((e) => [e.id, e.event_name]))
   const rows = Object.entries(LIBRARY_STATS).sort((a, b) => b[1].views - a[1].views)
   const total = rows.reduce((t, [, s]) => ({ views: t.views + s.views, right: t.right + s.right, left: t.left + s.left, neutral: t.neutral + s.neutral }), {
     views: 0,
