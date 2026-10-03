@@ -9,7 +9,7 @@ CREATE TABLE cards (
 	address VARCHAR(300) NOT NULL, 
 	lat FLOAT, 
 	lng FLOAT, 
-	price FLOAT NOT NULL, 
+	price FLOAT, 
 	PRIMARY KEY (id)
 );
 

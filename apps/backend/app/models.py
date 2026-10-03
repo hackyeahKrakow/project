@@ -56,7 +56,7 @@ class Card(Base):
     address: Mapped[str] = mapped_column(String(300))
     lat: Mapped[float | None] = mapped_column(Float)
     lng: Mapped[float | None] = mapped_column(Float)
-    price: Mapped[float] = mapped_column(Float, default=0)
+    price: Mapped[float | None] = mapped_column(Float)  # 0 = free, NULL = unknown
 
 
 class UserCardProgress(Base):

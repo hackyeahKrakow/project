@@ -36,7 +36,7 @@ class CardFetchResponse(BaseModel):
     lng: float | None = Field(
         ge=-180, le=180, description="Longitude for the map pin, null when the place is not geocoded yet"
     )
-    price: float = Field(ge=0, description="Price in PLN, 0 = free")
+    price: float | None = Field(ge=0, description="Price in PLN, 0 = free, null when unknown")
 
     model_config = ConfigDict(
         from_attributes=True,
