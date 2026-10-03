@@ -18,7 +18,7 @@ Każda funkcja musi dać się zbudować i pokazać w ramach planu z `docs/PLAN.m
 
 ### II. Legalność danych (NON-NEGOTIABLE)
 
-Nie scrapujemy stron, Facebooka ani innych serwisów, także „przez AI”. Wydarzenia dodają ich właściciele albo pochodzą z danych demo pisanych własnymi słowami. Nie używamy treści z Google Places API. Mapa zawsze pokazuje podpis © OpenStreetMap contributors. Geokodowanie Nominatim: maks. 1 zapytanie na sekundę, wyniki zapisywane w bazie.
+Nie scrapujemy stron, Facebooka ani innych serwisów, także „przez AI”. Wydarzenia dodają ich właściciele albo pochodzą z danych demo pisanych własnymi słowami. Nie używamy treści z Google Places API. Mapa zawsze pokazuje podpis © OpenStreetMap contributors. Podpowiedzi adresu z Photon (dane OSM) tylko przez backend (`GET /geocode`): maks. 1 zapytanie na sekundę, własny User-Agent, pamięć podręczna. Nominatim nie pozwala na autouzupełnianie przy pisaniu.
 
 ### III. Prywatność
 

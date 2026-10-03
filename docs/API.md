@@ -15,8 +15,8 @@ Dokumentacja generowana automatycznie: `/docs` (OpenAPI).
 | `starts_at` | string | ISO 8601 w UTC (`Z`), np. `2026-11-15T17:00:00Z` |
 | `ends_at` | string \| null | ISO 8601 w UTC (`Z`); może być `null` |
 | `address` | string | Pokazywany użytkownikowi |
-| `lat` | number | Do pinezki; z geokodowania adresu (Nominatim) albo kliknięcia na mapie |
-| `lng` | number | Do pinezki; z geokodowania adresu (Nominatim) albo kliknięcia na mapie |
+| `lat` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
+| `lng` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
 | `price` | number | PLN, `0` = darmowe |
 
 Przykład:
@@ -119,6 +119,46 @@ Zapisuje decyzję użytkownika (swipe w prawo lub w lewo) dla karty razem z czas
 - **422**: `{ "detail": "..." }` — niepoprawne identyfikatory lub `decision` inne niż `right`/`left`, nic nie zapisano
 
 Pole `created_at` wysłane w ciele żądania jest ignorowane.
+
+### POST /events/parse — `events_parse`
+
+Zamienia tekst posta organizatora w szkic wydarzenia (funkcje AI). Backend wysyła tekst do modelu czatu z OpenCode Zen (`PARSE_MODEL`, domyślnie `minimax-m2.5-free`, klucz `OPENCODE_API_KEY`) razem z dzisiejszą datą, żeby „w czwartek” zamienić na datę. Nic nie jest zapisywane: szkic sprawdza i zatwierdza człowiek. Gdy model zwróci niepoprawny JSON, backend próbuje jeszcze raz, a potem zwraca pusty szkic.
+
+- **Ciało**: `{ "text": "treść posta (10–4000 znaków)" }`
+- **200**:
+
+```json
+{
+  "title": "Noc bibliotek w filii na Józefińskiej",
+  "description": "Escape room, quiz o Krakowie i ciche czytanie do świtu.",
+  "category": "kultura",
+  "starts_at": "2026-10-09T20:00:00+02:00",
+  "ends_at": null,
+  "address": "ul. Józefińska 20, Kraków",
+  "price": 0,
+  "size": "large",
+  "missing_fields": ["ends_at", "size"]
+}
+```
+
+`missing_fields` to pola puste albo takie, których model nie był pewien. Frontend podświetla je jako „Sprawdź”. `category` to jedno z id z [data/categories.json](../data/categories.json), `size`: `small` / `medium` / `large`.
+
+- **422**: `{ "detail": "..." }` — za krótki albo za długi tekst
+- **503**: `{ "detail": "AI unavailable" }` — brak klucza, limit, błąd sieci albo modelu. Frontend wtedy wypełnia formularz przykładową odpowiedzią i mówi o tym użytkownikowi.
+
+### GET /geocode — `geocode`
+
+Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](https://photon.komoot.io) (dane OpenStreetMap) w prostokącie wokół Krakowa i zwraca tylko adresy z miasta Kraków (bez okolicznych miejscowości, bo frontend przypisuje adresowi krakowską dzielnicę), z własnym nagłówkiem User-Agent (`GEOCODE_USER_AGENT`). Jedna instancja na proces trzyma pamięć podręczną ostatnich 500 zapytań i wysyła do Photona najwyżej 1 zapytanie na sekundę. Frontend pyta dopiero po 3 znakach i 350 ms przerwy w pisaniu.
+
+- **Parametry**: `q` — fragment adresu albo nazwy miejsca, 3–120 znaków
+- **200**:
+
+```json
+[{ "label": "Józefińska 20, Podgórze, Kraków", "lat": 50.0446, "lng": 19.9525 }]
+```
+
+- **422**: za krótkie albo za długie `q`
+- **503**: `{ "detail": "Geocoder unavailable" }` — Photon nie odpowiada albo odrzucił zapytanie. Formularz działa dalej: adres wpisuje się ręcznie, a pin trafia do środka wybranej dzielnicy.
 
 ## Błędy
 

@@ -7,4 +7,5 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': path.resolve(import.meta.dirname, './src') } },
+  worker: { format: 'es' }, // MapLibre's worker is an ES module
 })

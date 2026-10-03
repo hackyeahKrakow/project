@@ -53,30 +53,51 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* spotted tokens from docs/DESIGN.md, plus a few tints used by the design.
+/* spootted tokens from docs/DESIGN.md, plus a few tints used by the design.
    Declared after shadcn's @theme inline so --color-muted (text #4A5B7D) wins over shadcn's muted background. */
 @theme {
+    /* Fixed brand colors (the same in every theme). */
     --color-ink-900: #0A1F44;
     --color-brand-600: #1D5CFF;
     --color-sky-300: #7DB8FF;
     --color-violet-600: #6B4EE6;
     --color-spark-500: #FF8A3D;
-    --color-canvas: #F3F7FF;
-    --color-line: #D9E2F2;
-    --color-muted: #4A5B7D;
-    --color-brand-50: #E6EEFF;
-    --color-violet-50: #EEEBFF;
-    --color-spark-50: #FFF6EE;
-    --color-track: #E1EAFB;
-    --color-map: #E8EEF8;
     /* DESIGN.md breakpoints: <=600px phone, <=900px tablet */
     --breakpoint-sm: 37.5rem;
     --breakpoint-md: 56.25rem;
 }
 
+/* Theme colors: light / dark / high contrast set the --c-* variables below. */
+@theme inline {
+    --color-surface: var(--c-surface);
+    --color-fg: var(--c-fg);
+    --color-link: var(--c-link);
+    --color-canvas: var(--c-canvas);
+    --color-line: var(--c-line);
+    --color-muted: var(--c-muted);
+    --color-brand-50: var(--c-brand-50);
+    --color-brand-700: var(--c-brand-700);
+    --color-violet-50: var(--c-violet-50);
+    --color-spark-50: var(--c-spark-50);
+    --color-track: var(--c-track);
+    --color-map: var(--c-map);
+}
+
 :root {
     --background: #F3F7FF;
     --foreground: #0A1F44;
+    --c-surface: #FFFFFF;
+    --c-fg: #0A1F44;
+    --c-link: #1D5CFF;
+    --c-canvas: #F3F7FF;
+    --c-line: #D9E2F2;
+    --c-muted: #4A5B7D;
+    --c-brand-50: #E6EEFF;
+    --c-brand-700: #174BD9; /* text on brand-50: 5.9:1 (brand-600 would be 4.48:1) */
+    --c-violet-50: #EEEBFF;
+    --c-spark-50: #FFF6EE;
+    --c-track: #E1EAFB;
+    --c-map: #E8EEF8;
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
@@ -110,8 +131,21 @@
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
+    --background: #0A1A38;
+    --foreground: #E8EEFA;
+    --c-surface: #12264B;
+    --c-fg: #E8EEFA;
+    --c-link: #8AB4FF;
+    --c-canvas: #0A1A38;
+    --c-line: #2E4470;
+    --c-muted: #A9B8D4;
+    --c-brand-50: #1B315F;
+    --c-brand-700: #A9C6FF;
+    --c-violet-50: #2B2756;
+    --c-spark-50: #3A2817;
+    --c-track: #2A3E66;
+    --c-map: #0F2142;
+    color-scheme: dark;
     --card: oklch(0.205 0 0);
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.205 0 0);
@@ -154,3 +188,48 @@
     @apply font-sans;
     }
 }
+/* Welcome screen: pins drop onto the map one by one. */
+@keyframes pin-drop {
+  0% { transform: translateY(-120px); opacity: 0; }
+  60% { transform: translateY(6px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.pin-drop { animation: pin-drop .6s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .pin-drop { animation: none; }
+}
+
+/* WCAG 2.4.7: one clearly visible focus ring for every control (shadcn's base sets a faint 50% gray outline). */
+:focus-visible {
+  outline: 3px solid var(--c-link);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+
+/* High contrast (Konto → "Wysoki kontrast"): stronger text, borders and focus, on top of light or dark. */
+.hc {
+    --c-canvas: #FFFFFF;
+    --c-muted: #1F2E4D;
+    --c-line: #4A5B7D;
+    --c-track: #C9D4E8; /* text sits on it (size chip, segmented controls): 11:1 with --c-fg */
+    --c-link: #0F3FC2;
+}
+.dark.hc {
+    --c-surface: #000000;
+    --c-canvas: #000000;
+    --background: #000000;
+    --c-fg: #FFFFFF;
+    --foreground: #FFFFFF;
+    --c-muted: #E1E8F5;
+    --c-line: #C8D3E8;
+    --c-brand-50: #0B2A6B;
+    --c-brand-700: #D3E2FF;
+    --c-link: #BFD5FF;
+    --c-track: #2A3A5C;
+}
+.hc :focus-visible { outline-width: 4px; }
+
+/* Dark map: invert the light vector tiles; our pins are DOM markers and keep their colors. */
+.dark .maplibregl-canvas { filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(0.9); }

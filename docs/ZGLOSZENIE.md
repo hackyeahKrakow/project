@@ -6,15 +6,15 @@ Wersja robocza formularza „Add Project”. Pola **[PÓŹNIEJ]** uzupełniamy p
 
 ## Project Name
 
-**spotted student — zmatchuj się z eventami**
+**spootted — zmatchuj się z eventami**
 
-W polu nazwy wpisujemy „spotted student”, a motto dajemy jako pierwsze zdanie w Solution i na okładce.
+W polu nazwy wpisujemy „spootted”, a motto dajemy jako pierwsze zdanie w Solution i na okładce.
 
-Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]”, więc nazwa od razu brzmi swojsko. Zamiast anonimowych wpisów pokazujemy wydarzenia na mapie, a motto mówi wprost, jak to działa: swipe i dopasowanie.
+Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]”, więc nazwa brzmi swojsko. Podwójne „oo” to dwoje oczu w logo: aplikacja „wypatruje” dla ciebie wydarzeń. Zamiast anonimowych wpisów pokazujemy wydarzenia na mapie, a motto mówi wprost, jak to działa: swipe i dopasowanie.
 
 Do pilnowania:
-- **Domeny:** `spottedstudent.app` (14 USD) i `spottedstudent.com` (ok. 11 USD) są wolne, a `spottedstudent.pl` jest zajęta. Kupujemy `.app` albo `.com` od razu.
-- **Kolizje:** „spotted” to słowo pospolite, a Spotted.de to aplikacja randkowa w UE. Dlatego zawsze piszemy pełną nazwę „spotted student”, nigdy samo „spotted”. Po hackathonie sprawdzamy znak w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
+- **Domeny (3.10.2026):** `spootted.com` (ok. 11 USD) i `spootted.app` (14 USD) są wolne, a `spootted.pl` i `spootted.eu` są zajęte. Kupujemy `.app` albo `.com` od razu.
+- **Kolizje:** pisownia „spootted” odróżnia nas od pospolitego „spotted” i od Spotted.de (aplikacja randkowa w UE). Zawsze piszemy przez dwa „o”. Nazwę zmieniliśmy z „spotted student” na „spootted” (decyzja zespołu z 3.10), więc wcześniejsze ustalenia dotyczące znaku nie obowiązują. Przed komercjalizacją trzeba osobno sprawdzić znak „spootted” w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
 
 ## Problem
 
@@ -30,7 +30,7 @@ W Polsce studiuje **1,28 mln osób na 352 uczelniach** (GUS, rok akademicki 2024
 
 ## Solution
 
-***Zmatchuj się z eventami.*** spotted student działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Kilka pytań i kilka swipe'ów wystarczy, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
+***Zmatchuj się z eventami.*** spootted działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Kilka pytań i kilka swipe'ów wystarczy, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
 
 ### 1. Swipe: decyzja w sekundę
 
@@ -162,7 +162,7 @@ npm run dev
 # Aplikacja: http://localhost:5173
 ```
 
-Klucze do modeli AI (`OPENCODE_API_KEY`, `LLM_API_KEY`) podajemy w `apps/backend/.env`. Bez kluczy aplikacja działa, ale bez funkcji AI.
+Klucz do modeli AI (`OPENCODE_API_KEY`) podajemy w `apps/backend/.env`. Bez klucza aplikacja działa, a funkcje AI pokazują przykładową odpowiedź.
 
 ## Presentation
 

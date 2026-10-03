@@ -19,8 +19,10 @@ Jury ocenia kompletność (10%), więc każdy ekran z filmu musi dać się klikn
 | **Mapa** | **Odkrywaj** (swipe, ekran startowy) | **Moje** (kalendarz polubionych) | **Konto** (ustawienia, dostępność, zgody) |
 
 - Środkowa ikona to talia kart lub płomień, a nie „+”. Znak „+” zostawiamy dla „Dodaj wydarzenie” u zalogowanych, żeby dwie różne akcje nie miały tej samej ikony.
-- „Moje wydarzenia” i kalendarz to jeden ekran: agenda, przełącznik tydzień/miesiąc i eksport `.ics`. Synchronizacja z Google i Apple trafia do roadmapy, bo plik `.ics` obsługuje każdy kalendarz.
-- Mapa jest osobnym ekranem, bo pokazuje też wydarzenia, których jeszcze nie było w talii. Polubione są na niej wyróżnione, a na tej samej mapie są też promowane piny (monetyzacja).
+- „Moje wydarzenia” i kalendarz to jeden ekran: agenda, widok miesiąca i eksport `.ics`. Synchronizacja z Google i Apple trafia do roadmapy, bo plik `.ics` obsługuje każdy kalendarz.
+- Mapa jest osobnym ekranem, bo pokazuje też wydarzenia, których jeszcze nie było w talii. Polubione są na niej wyróżnione, a na tej samej mapie są też promowane piny (monetyzacja). Legenda w rogu mapy tłumaczy kolory kategorii, serce (polubione) i megafon (promowane).
+- Na laptopie nawigacja jest bocznym panelem z dużym logo. Panel można zwinąć do paska ikon; na mapie startuje zwinięty, żeby mapa miała więcej miejsca.
+- Konto → Dostępność: motyw (systemowy, jasny, ciemny), wysoki kontrast i większy tekst. Wybór zostaje na urządzeniu.
 
 ## 1. Ekran powitalny
 
@@ -42,7 +44,7 @@ Cztery pytania z [SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu):
 
 Po pytaniach są zgody opcjonalne na lokalizację i powiadomienia. Można je pominąć.
 
-Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Lokalizacja zostaje na telefonie, a dane do personalizacji i swipe'y działają pod losowym identyfikatorem, bez danych osobowych.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
+Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Odpowiedzi z pytań i lokalizacja zostają na tym telefonie. Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
 
 Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgodzie jednoznacznego działania. Przycisk kosztuje jeden ekran i zamyka temat, zanim jury o niego zapyta.
 
@@ -50,13 +52,19 @@ Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgo
 
 Pobieranie kart (backend):
 1. Start: 6 kart startowych na sztywno (`GET /card/new/{user_id}`, ten endpoint już działa).
-2. Po 6 kartach startowych frontend pobiera polecone karty (`GET /card/recommendations/{user_id}`, do 10 naraz, ranking na podstawie swipe'ów).
+2. Po 6 kartach startowych frontend dobiera 10 kart z katalogu demo (~40 wydarzeń w `apps/frontend/src/lib/events.ts`) według wag profilu: zainteresowania, odległość, termin, wielkość. Każdy swipe zmienia wagi. Backend ma tylko 6 kart, więc `GET /card/recommendations` z Jevem zostaje na wersję z pełną bazą wydarzeń.
 3. Gdy w talii zostaje 5 kart, frontend w tle pobiera kolejne 10, więc w talii jest do 15 kart (API nie gwarantuje unikalności kart, które są już w buforze i nie dostały jeszcze swipe'a).
 
 Karta pokazuje:
 - grafikę, tytuł, godzinę i cenę;
 - odległość w km, jeśli użytkownik udostępnił lokalizację, a inaczej nazwę dzielnicy;
-- powód rekomendacji „Bo lubisz…”.
+- powód rekomendacji „Bo lubisz…” albo „Obserwujesz: [organizator]”.
+
+Na karcie wydarzenia jest przycisk **„Obserwuj”** przy organizatorze. Lista obserwowanych zostaje na urządzeniu i podnosi ich wydarzenia w talii (waga 0,10 we wzorze z ARCHITECTURE.md). Wszystkich organizatorów (koła, kluby, miejsca, studentów) można przeszukać na ekranie **Organizatorzy** (wejście z Moje): wyszukiwarka, filtr „Obserwowani” i najbliższe wydarzenia każdego z nich.
+
+**Jakim typem jesteś?** Z tych samych wag kategorii, z których powstaje talia (zainteresowania z onboardingu i swipe'y), aplikacja nadaje typ jak wynik quizu: najsilniejsza kategoria daje typ, a druga, jeśli jest blisko, dodaje dopisek, np. „Dusza towarzystwa z kostką do gry w kieszeni”. Liczy to zwykły algorytm na telefonie, bez AI. Typ jest w Konto (z przyciskiem „Udostępnij”) i zmienia się razem z polubieniami. Nazwy są rodzajowo neutralne, bo nie pytamy o płeć. Student, który dodaje wydarzenie, może zaznaczyć „Pokaż przy wydarzeniu mój typ” (domyślnie wyłączone). Wtedy przy jego wydarzeniu i na ekranie Organizatorzy widać typ oraz to, co ma wspólnego z typem oglądającego („wspólne z tobą: gry”). Dopasowywanie ludzi do ludzi (matchmaking osób) zostaje w roadmapie: wymaga kont i zgody na pokazywanie profilu innym.
+
+Wydarzenie może trwać kilka dni (np. targi 1–4 października). Karta pokazuje zakres dat, a w Moje wydarzenie jest pod każdym dniem, w którym trwa (kolejne dni oznaczone „trwa”).
 
 W prawo wydarzenie trafia do kalendarza i świeci na mapie. W lewo wydarzenie odpada.
 
@@ -67,7 +75,7 @@ Zgodnie z sekcją „Nawigacja”.
 ## 3. Zalogowany: osoba prywatna (student)
 
 Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
-- Ręczny formularz: tytuł, data, miejsce, opis, kategorie, wielkość grupy, dla kogo.
+- Ręczny formularz: tytuł, kategoria, data, godzina, opcjonalny koniec (data i godzina, dla wydarzeń kilkudniowych), adres z podpowiedziami (po 3 znakach backend podsuwa adresy z OpenStreetMap; wybór ustawia pin i dzielnicę, zob. LEGAL.md), dzielnica (bez podpowiedzi pin stawiamy w jej środku), cena, wielkość, opis. Formularz sprawdza puste i błędne pola przed publikacją.
 - Pola kategorii i wielkości grupy są te same co w onboardingu, żeby dane wydarzenia pasowały do profili.
 - Bez AI. Autouzupełnianie jest w pakiecie dla organizacji.
 
@@ -82,10 +90,10 @@ Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
 
 | Konto | Login | Co pokazuje |
 | --- | --- | --- |
-| Student | `ola@demo` | dodanie wydarzenia ręcznie |
-| Organizacja | `kolo-robotyki@demo` | funkcje AI (autouzupełnianie), statystyki, pakiet sponsora |
+| Student | `ola@demo` | Ola Nowak, 1. rok AGH: jej profil zainteresowań, dodanie wydarzenia ręcznie |
+| Organizacja | `biblioteka@demo` | Biblioteka Miejska „Pod Kopcem” (demo), dyrektor Marek Wiśniewski: funkcje AI, statystyki, pakiet Płomień |
 
-Logowanie jest atrapą: dwa konta na sztywno, bez prawdziwej autoryzacji. Na slajdzie piszemy to wprost.
+Hasło obu kont: `demo1234`. Po haśle jest drugi krok, klucz dostępu (passkey), który w demo jest atrapą bez WebAuthn. Logowanie jest atrapą: dwa konta na sztywno, bez prawdziwej autoryzacji. Na slajdzie piszemy to wprost. Rejestracja tworzy konto tylko na tym urządzeniu. Samo zalogowanie to nie zgoda: jeśli ktoś wszedł przez „Chcę tworzyć wydarzenia” i nie widział jeszcze ekranu prywatności, po kluczu dostępu dostaje ekran „Twoje dane, twoje zasady” z przyciskiem „Rozumiem, zaczynam”.
 
 ## 5. Model biznesowy: pakiety dla organizacji
 
@@ -117,5 +125,5 @@ Ustalenia do pakietów:
 3. Kilka swipe'ów z widocznym „Bo lubisz…”.
 4. Mapa z polubionymi wydarzeniami.
 5. Kalendarz i eksport `.ics`.
-6. Wylogowanie, logowanie jako `kolo-robotyki@demo`, wklejenie posta: funkcje AI wypełniają formularz i organizator zatwierdza.
+6. Wylogowanie, logowanie jako `biblioteka@demo` z kluczem dostępu, wklejenie posta o Nocy bibliotek: funkcje AI wypełniają formularz i organizator zatwierdza.
 7. Statystyki wydarzenia i ekran „Zostań sponsorem”.
