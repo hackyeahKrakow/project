@@ -1,13 +1,18 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@source "../node_modules/preline/dist/*.js";
+/* preline 4.2 does not list variants.css in package "exports", so `preline/variants.css` fails to resolve */
+@import "../node_modules/preline/variants.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/outfit";
 
 @custom-variant dark (&:is(.dark *));
 
+
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-sans: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,25 +53,46 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* spotted tokens from docs/DESIGN.md, plus a few tints used by the design.
+   Declared after shadcn's @theme inline so --color-muted (text #4A5B7D) wins over shadcn's muted background. */
+@theme {
+    --color-ink-900: #0A1F44;
+    --color-brand-600: #1D5CFF;
+    --color-sky-300: #7DB8FF;
+    --color-violet-600: #6B4EE6;
+    --color-spark-500: #FF8A3D;
+    --color-canvas: #F3F7FF;
+    --color-line: #D9E2F2;
+    --color-muted: #4A5B7D;
+    --color-brand-50: #E6EEFF;
+    --color-violet-50: #EEEBFF;
+    --color-spark-50: #FFF6EE;
+    --color-track: #E1EAFB;
+    --color-map: #E8EEF8;
+    /* DESIGN.md breakpoints: <=600px phone, <=900px tablet */
+    --breakpoint-sm: 37.5rem;
+    --breakpoint-md: 56.25rem;
+}
+
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --background: #F3F7FF;
+    --foreground: #0A1F44;
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
+    --primary: #1D5CFF;
+    --primary-foreground: #FFFFFF;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: #4A5B7D;
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: #D9E2F2;
+    --input: #D9E2F2;
+    --ring: #1D5CFF;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
