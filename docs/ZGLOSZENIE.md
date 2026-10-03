@@ -25,8 +25,6 @@ Skutki widać po obu stronach:
 - **Organizatorzy (koła, samorządy, lokale) nie docierają do odbiorców.** Uczelnie płacą nawet za reklamy w tramwajach.
 - **Duże agregatory nie pokazują tego, co studenckie.** GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mieszkańców. Nie ma u nich ani spotkań kół, ani oddolnych „planszówek w akademiku”.
 
-**[DO DECYZJI]** Wyniki ankiety wśród studentów na HackYeah (zadanie P5): liczba odpowiedzi i 1–2 cytaty. Twarda liczba z własnej ankiety jest najmocniejszym argumentem w tym polu.
-
 ## Solution
 
 *Zmatchuj się z eventami.* spotted student to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
