@@ -15,7 +15,7 @@ uv run fastapi dev apps/backend/app/main.py
 
 API działa na `http://localhost:8000`, dokumentacja Swagger na `http://localhost:8000/docs`. Szczegóły w [docs/start-backend.md](docs/start-backend.md).
 
-**Frontend** (Vite + React + TypeScript + Tailwind + shadcn/ui), po zadaniu F1:
+**Frontend** (Vite + React + TypeScript + Tailwind + Preline UI), po zadaniu F1:
 
 ```bash
 cd apps/frontend
@@ -47,7 +47,7 @@ Zadania są w GitHub Issues. Skrypt [scripts/create_github_issues.sh](scripts/cr
 ```
 apps/
   backend/     FastAPI + SQLite (uv), spec-kit w .specify/
-  frontend/    Vite + React + TypeScript + Tailwind + shadcn/ui
+  frontend/    Vite + React + TypeScript + Tailwind + Preline UI
 data/          dane demo (events.json) i kategorie
 docs/          dokumentacja projektu
 scripts/       skrypty pomocnicze (np. tworzenie issues)

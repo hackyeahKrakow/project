@@ -14,7 +14,7 @@ Nie scrapujemy. Wydarzenia dodają ich właściciele (koła, samorządy, uczelni
 - [ ] **Google Maps:** nie używamy Places API. [Warunki dla EOG](https://cloud.google.com/terms/maps-platform/eea/maps-service-terms) zabraniają używania treści z Places z jakąkolwiek mapą (poza współrzędnymi i place_id) i zapisywania opinii. Opcjonalny przycisk „Pokaż w Google Maps” to zwykły link, bez API.
 - [ ] **Dane demo:** opisy pisane własnymi słowami, organizatorzy fikcyjni z dopiskiem „(demo)”, żeby nie sugerować współpracy z prawdziwymi kołami. Na pitchu mówimy, że to dane demonstracyjne.
 - [ ] **Grafiki:** własne lub wygenerowane, bez plakatów organizatorów; sprawdzona licencja elementów z Canvy.
-- [ ] **Licencje bibliotek:** spisane w README lub `NOTICE` (MapLibre GL JS, shadcn/ui, Tailwind CSS, React, Vite, FastAPI, SQLModel/SQLAlchemy) i zgodne z licencją MIT repo.
+- [ ] **Licencje bibliotek:** spisane w README lub `NOTICE` (MapLibre GL JS, Preline UI, Tailwind CSS, React, Vite, FastAPI, SQLModel/SQLAlchemy) i zgodne z licencją MIT repo.
 - [ ] **Prywatność (RODO):** brak kont i danych osobowych; anonimowy UUID w `localStorage`; lokalizacja użytkownika używana tylko na urządzeniu i w parametrach `/feed`, nigdy nie zapisywana.
 - [ ] **Klucze API:** tylko w `.env` (ignorowany przez git), nigdy w repo ani we frontendzie.
 - [ ] **Płatne promowanie (roadmapa):** zawsze oznaczone jako „Promowane”. Przepisy wdrażające dyrektywę Omnibus (w Polsce od 1.01.2023) wymagają ujawniania płatnego pozycjonowania.
