@@ -97,3 +97,17 @@ class CardResponseOut(BaseModel):
             decision=Decision.RIGHT if swipe.swipe else Decision.LEFT,
             created_at=swipe.created_at,
         )
+
+
+class InfoOut(BaseModel):
+    user_id: UUID7 = Field(description="Identifier of the user the JSON was saved for")
+    updated_at: datetime = Field(description="Time the JSON was saved, ISO 8601 in UTC")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "user_id": "018f3b5e-7c1a-7d2b-9a4e-3f6c2b1d5e90",
+                "updated_at": "2026-10-03T15:42:10.123456Z",
+            }
+        }
+    )

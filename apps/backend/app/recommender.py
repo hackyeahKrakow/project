@@ -1,10 +1,12 @@
 import json
 import random
 import uuid
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.info_service import load_info
 from app.jev_client import INSTRUCTIONS, JevClient, JevError
 from app.logger import get_logger
 from app.models import Card, CardSwipe
@@ -28,11 +30,12 @@ async def get_recommendations(
         return []
 
     history = await _history(session, user_id)
-    if not history:
+    choices = await load_info(session, user_id)
+    if not history and choices is None:
         log.info("recommendations_cold_start", candidates=len(candidates))
         return candidates[:MAX_RECOMMENDED]
 
-    state = _build_state(candidates, history)
+    state = _build_state(candidates, history, choices)
     try:
         scores = await jev.score_interest(state, [str(card.id) for card in candidates])
     except JevError as exc:
@@ -43,6 +46,7 @@ async def get_recommendations(
         candidates=len(candidates),
         liked=len(state["liked"]),
         disliked=len(state["disliked"]),
+        has_choices="choices" in state,
         scored=len(scores),
     )
     return _rank(candidates, scores)
@@ -78,10 +82,14 @@ def _compact(card: Card) -> dict:
     }
 
 
-def _build_state(candidates: list[Card], history: list[tuple[Card, bool]]) -> dict:
+def _build_state(
+    candidates: list[Card], history: list[tuple[Card, bool]], choices: Any | None = None
+) -> dict:
     candidate_items = [_compact(card) for card in candidates]
     budget = MAX_STATE_TOKENS * CHARS_PER_TOKEN
     budget -= len(json.dumps(candidate_items)) + len(candidates) * QUESTION_OVERHEAD_CHARS
+    if choices is not None:
+        budget -= len(json.dumps(choices))
 
     shuffled = list(history)
     random.shuffle(shuffled)
@@ -93,7 +101,10 @@ def _build_state(candidates: list[Card], history: list[tuple[Card, bool]]) -> di
         if budget < 0:
             break
         (liked if swipe else disliked).append(item)
-    return {"liked": liked, "disliked": disliked, "candidates": candidate_items}
+    state = {"liked": liked, "disliked": disliked, "candidates": candidate_items}
+    if choices is not None:
+        state["choices"] = choices
+    return state
 
 
 def _rank(candidates: list[Card], scores: dict[str, float]) -> list[Card]:
