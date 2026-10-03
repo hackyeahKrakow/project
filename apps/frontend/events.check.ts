@@ -52,7 +52,7 @@ assert.equal(Math.round(w1.sport * 100), 40)
 assert.equal(Math.round(w1.gry * 100), 65)
 const deck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 10)
 assert.equal(deck.length, 10)
-assert.ok(deck.every((x) => x.ev.price === 0))
+assert.ok(deck.every((x) => x.ev.price === 0 || x.ev.price === null)) // known prices must be free
 assert.ok(deck[0].reason.startsWith('Bo lubisz:'), deck[0].reason)
 assert.ok(!recommend(events, { ...profile, interests: [...profile.interests] }, { [deck[0].ev.id]: 'right' }, new Set(), 50).some((x) => x.ev.id === deck[0].ev.id))
 
@@ -96,5 +96,14 @@ assert.deepEqual(STARTER, CARDS.slice(0, 6))
 // The app shows only the 20 backend cards; the demo events stay in demoCatalog().
 assert.deepEqual(catalog(), CARDS)
 assert.ok(demoCatalog().length > CARDS.length)
+// The real catalog, on a fixed day so the check outlives the events: budget users still get a deck (prices are unknown, not paid),
+// a known paid price is still filtered out, and interests rank a matching category first.
+const real = (budget: 'free' | 'upto20', evs = catalog()) =>
+  recommend(evs, { ...EMPTY_PROFILE, interests: ['kultura'], budget }, {}, new Set(STARTER.map((e) => e.id)), 50, undefined, new Set(), '2026-10-03')
+assert.equal(real('free').length, CARDS.length - STARTER.length)
+assert.equal(real('upto20').length, CARDS.length - STARTER.length)
+const paid = catalog().map((e) => ({ ...e, price: 30 }))
+assert.equal(real('free', paid).length, 0)
+assert.equal(real('free')[0].ev.category, 'kultura')
 assert.ok(CARDS.every((e) => e.district && !('ends_at' in e && e.ends_at === null)))
 console.log('catalog checks ok')
