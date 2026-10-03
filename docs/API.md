@@ -13,7 +13,7 @@ Katalog to 20 wydarzeń z [data/events_oneoff.json](../data/events_oneoff.json);
 | `event_name` | string | Nazwa wydarzenia |
 | `color_code` | string | Kolor karty w formacie hex, np. `#FF8800` |
 | `description` | string | Opis wydarzenia |
-| `image_url` | string \| null | Adres zdjęcia lub `null`; frontend na razie pokazuje zdjęcie z Unsplash według kategorii (licencje zdjęć krakow.travel niewyjaśnione) |
+| `image_url` | string \| null | Ścieżka względna do API lub `null` (frontend pokazuje zdjęcie z Unsplash według kategorii, zob. [LEGAL.md](LEGAL.md)) |
 | `starts_at` | string | ISO 8601 w UTC (`Z`), np. `2026-11-15T17:00:00Z` |
 | `ends_at` | string \| null | ISO 8601 w UTC (`Z`); może być `null` |
 | `address` | string | Pokazywany użytkownikowi |

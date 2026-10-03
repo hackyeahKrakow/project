@@ -55,7 +55,7 @@ const KARIER = o('org_karier', 'Biuro Karier (demo)')
 const AZS = o('org_azs', 'Sekcja Biegowa AZS (demo)')
 const TEATR = o('org_teatr', 'Teatr Studencki (demo)')
 const EKO = o('org_eko', 'Koło Ekologiczne (demo)')
-const ORGANIZER_TBD = o('org_tbd', 'Organizator wydarzenia', 'org', false)
+const ORGANIZER_TBD = o('org_tbd', 'Organizator nieznany (demo)', 'org', false)
 const KASIA: Organizer = { ...o('usr_kasia', 'Kasia, studentka AGH', 'student'), persona: ['imprezy', 'gry'] }
 const MIKOLAJ: Organizer = { ...o('usr_mikolaj', 'Mikołaj, student UJ', 'student'), persona: ['gry', 'warsztaty'] }
 
