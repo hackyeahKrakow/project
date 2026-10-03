@@ -35,12 +35,12 @@ Każdy punkt to jedno issue (skrypt [scripts/create_github_issues.sh](../scripts
 - [ ] **B3 · Seed** (2:00): `seed.py` wczytuje `data/events.json` i `data/categories.json`, można go uruchamiać wielokrotnie bez duplikatów. Gotowe: po uruchomieniu w bazie są wszystkie wydarzenia z pliku.
 - [ ] **B4 · Endpointy odczytu** (3:00): `GET /categories`, `GET /events` z filtrami, `GET /events/{id}`. Gotowe: frontend przełącza się z pliku na API jedną zmienną `VITE_API_URL`.
 
-### Frontend (Vite + React + Tailwind + shadcn/ui)
+### Frontend (Vite + React + Tailwind + Preline UI)
 
-- [ ] **F1 · Setup** (0:45): Vite + React + TypeScript w `apps/frontend`, Tailwind, `shadcn init`, komponenty Card, Badge, Button, Sheet. Układ mobile-first z dolną nawigacją: Mapa / Odkrywaj / Moje. Gotowe: aplikacja startuje, nawigacja przełącza puste widoki.
+- [ ] **F1 · Setup** (0:45): Vite + React + TypeScript w `apps/frontend`, Tailwind, `preline` i `@tailwindcss/forms` (tokeny z [docs/design](design/spotted-koncept-ui.html), plansza Handoff), komponenty Card, Badge, Button, Offcanvas. Układ responsywny (desktop, tablet, telefon) z nawigacją Mapa / Odkrywaj / Moje. Gotowe: aplikacja startuje, nawigacja przełącza puste widoki.
 - [ ] **F2 · Mapa** (1:30): MapLibre GL z kafelkami OSM, środek na Kraków, ukryte warstwy POI, widoczny podpis © OpenStreetMap. Gotowe: czysta mapa Krakowa bez POI.
 - [ ] **F3 · Piny** (2:15): piny z `src/mock/events.json`, kolor i ikona według `src/lib/categories.ts`. Gotowe: wszystkie wydarzenia z pliku w kolorach kategorii.
-- [ ] **F4 · Karta wydarzenia** (3:00): shadcn Card w Sheet po kliknięciu pinu, układ z [DESIGN.md](DESIGN.md#karta-wydarzenia). Klient `src/lib/api.ts` z `VITE_API_URL` i zapasowym plikiem mock. Gotowe: kliknięcie pinu otwiera kartę.
+- [ ] **F4 · Karta wydarzenia** (3:00): Preline Card w Offcanvas po kliknięciu pinu, układ z [DESIGN.md](DESIGN.md#karta-wydarzenia). Klient `src/lib/api.ts` z `VITE_API_URL` i zapasowym plikiem mock. Gotowe: kliknięcie pinu otwiera kartę.
 
 ### Design (Claude Design, Figma, Canva)
 

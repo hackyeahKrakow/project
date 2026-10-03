@@ -4,7 +4,7 @@ Jeden backend (FastAPI), jedna baza SQLite i trzy usługi zewnętrzne, bez klucz
 
 ```mermaid
 flowchart LR
-  FE["Web app (PWA)<br/>Vite + React + shadcn/ui<br/>MapLibre GL"]
+  FE["Web app (PWA)<br/>Vite + React + Preline UI<br/>MapLibre GL"]
   TILES["Podkład mapy OSM<br/>styl bez POI"]
   API["Backend API<br/>Python FastAPI"]
   DB[("SQLite")]
@@ -21,7 +21,7 @@ flowchart LR
 
 | Warstwa | Wybór | Uwagi |
 | --- | --- | --- |
-| Frontend | Vite + React + TypeScript, Tailwind CSS, shadcn/ui | Mobile-first, ikony z `lucide-react` |
+| Frontend | Vite + React + TypeScript, Tailwind CSS, Preline UI | Mobile-first, strona responsywna (desktop, tablet, telefon), ikony z `lucide-react` |
 | Mapa | MapLibre GL JS + kafelki OSM (np. styl „liberty” z OpenFreeMap) | Ukryte warstwy POI, widoczny podpis © OpenStreetMap |
 | Backend | Python 3.11+, FastAPI, uv | CORS dla `localhost:5173`, grafiki jako pliki statyczne |
 | Baza | SQLite (SQLModel lub SQLAlchemy) | Odległość liczona w Pythonie (haversine), przy kilkuset wydarzeniach wystarczy |
