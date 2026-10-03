@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.jev_client import INSTRUCTIONS, JevClient, JevError
 from app.logger import get_logger
-from app.models import Card, CardResponse, Decision
+from app.models import Card, CardSwipe
 
 log = get_logger(__name__)
 
@@ -49,7 +49,7 @@ async def get_recommendations(
 
 
 async def _candidates(session: AsyncSession, user_id: uuid.UUID) -> list[Card]:
-    answered = select(CardResponse.card_id).where(CardResponse.user_id == user_id)
+    answered = select(CardSwipe.card_id).where(CardSwipe.user_id == user_id)
     stmt = (
         select(Card)
         .where(Card.id.not_in(answered))
@@ -59,13 +59,13 @@ async def _candidates(session: AsyncSession, user_id: uuid.UUID) -> list[Card]:
     return list((await session.scalars(stmt)).all())
 
 
-async def _history(session: AsyncSession, user_id: uuid.UUID) -> list[tuple[Card, Decision]]:
+async def _history(session: AsyncSession, user_id: uuid.UUID) -> list[tuple[Card, bool]]:
     stmt = (
-        select(Card, CardResponse.decision)
-        .join(CardResponse, CardResponse.card_id == Card.id)
-        .where(CardResponse.user_id == user_id)
+        select(Card, CardSwipe.swipe)
+        .join(CardSwipe, CardSwipe.card_id == Card.id)
+        .where(CardSwipe.user_id == user_id)
     )
-    return [(card, decision) for card, decision in (await session.execute(stmt)).all()]
+    return [(card, swipe) for card, swipe in (await session.execute(stmt)).all()]
 
 
 def _compact(card: Card) -> dict:
@@ -78,7 +78,7 @@ def _compact(card: Card) -> dict:
     }
 
 
-def _build_state(candidates: list[Card], history: list[tuple[Card, Decision]]) -> dict:
+def _build_state(candidates: list[Card], history: list[tuple[Card, bool]]) -> dict:
     candidate_items = [_compact(card) for card in candidates]
     budget = MAX_STATE_TOKENS * CHARS_PER_TOKEN
     budget -= len(json.dumps(candidate_items)) + len(candidates) * QUESTION_OVERHEAD_CHARS
@@ -87,12 +87,12 @@ def _build_state(candidates: list[Card], history: list[tuple[Card, Decision]]) -
     random.shuffle(shuffled)
     liked: list[dict] = []
     disliked: list[dict] = []
-    for card, decision in shuffled:
+    for card, swipe in shuffled:
         item = _compact(card)
         budget -= len(json.dumps(item))
         if budget < 0:
             break
-        (liked if decision == Decision.RIGHT else disliked).append(item)
+        (liked if swipe else disliked).append(item)
     return {"liked": liked, "disliked": disliked, "candidates": candidate_items}
 
 

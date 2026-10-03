@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status
 from pydantic.types import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.card_service import get_next_card
+from app.card_service import AlreadyAnsweredError, CardNotFoundError, get_next_card, record_swipe
 from app.database import get_session
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
@@ -110,18 +110,26 @@ async def card_fetch(user_id: UserId) -> CardFetchResponse:
     operation_id="card_response",
     summary="Respond to a card",
     description=(
-        "Records the user's swipe decision "
-        "(`right` = interested, `left` = not interested) for a card."
+        "Saves the user's swipe for a card (`right` stored as true, `left` as false) with the "
+        "time of saving. A user can answer a card only once."
     ),
     status_code=status.HTTP_201_CREATED,
     response_model=CardResponseOut,
     responses={
         404: {"model": ErrorResponse, "description": "Card not found"},
-        409: {"model": ErrorResponse, "description": "User already responded to this card"},
+        409: {"model": ErrorResponse, "description": "User already answered this card"},
         422: {"model": ErrorResponse, "description": "Invalid request"},
-        501: {"model": ErrorResponse, "description": "Not implemented yet"},
     },
 )
-async def card_response(user_id: UserId, body: CardResponseRequest) -> CardResponseOut:
-    log.info("card_response_called", user_id=str(user_id), card_id=str(body.card_id))
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+async def card_response(
+    user_id: UserId,
+    body: CardResponseRequest,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> CardResponseOut:
+    try:
+        swipe = await record_swipe(session, user_id, body.card_id, body.decision)
+    except CardNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Card not found") from None
+    except AlreadyAnsweredError:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="Card already answered") from None
+    return CardResponseOut.from_swipe(swipe)

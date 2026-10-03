@@ -3,7 +3,7 @@ import json
 import httpx
 from uuid6 import uuid7
 
-from app.models import Card, CardResponse, Decision
+from app.models import Card, CardSwipe, Decision
 from tests.conftest import add_cards, jev_override, make_jev_client
 
 
@@ -30,7 +30,8 @@ class FakeJev:
 async def answer(factory, user_id, cards, decision):
     async with factory() as session:
         session.add_all(
-            CardResponse(user_id=user_id, card_id=card.id, decision=decision) for card in cards
+            CardSwipe(user_id=user_id, card_id=card.id, swipe=decision is Decision.RIGHT)
+            for card in cards
         )
         await session.commit()
 
@@ -255,3 +256,34 @@ async def test_api_key_never_appears_in_logs(session_factory, db_client, capsys)
     logs = output.out + output.err
     assert "jev_failed" in logs
     assert "test-key" not in logs
+
+
+# --- answers saved through POST feed the recommendations ---
+
+
+async def test_answers_posted_through_the_api_drive_recommendations(session_factory, db_client):
+    fake = FakeJev()
+    jev_override(make_jev_client(fake))
+    await add_cards(session_factory, 60)
+    user = uuid7()
+    seeded = [
+        c
+        for c in await seeded_cards(session_factory)
+        if not c.event_name.startswith(("Music", "Sport"))
+    ]
+    liked_card, disliked_card = seeded[0], seeded[1]
+    for card, decision in ((liked_card, "right"), (disliked_card, "left")):
+        response = await db_client.post(
+            f"/card/{user}", json={"card_id": str(card.id), "decision": decision}
+        )
+        assert response.status_code == 201
+
+    response = await db_client.get(f"/card/recommendations/{user}")
+
+    assert response.status_code == 200
+    ids = {c["id"] for c in response.json()}
+    assert str(liked_card.id) not in ids
+    assert str(disliked_card.id) not in ids
+    state = fake.bodies[0]["state"]
+    assert [item["id"] for item in state["liked"]] == [str(liked_card.id)]
+    assert [item["id"] for item in state["disliked"]] == [str(disliked_card.id)]
