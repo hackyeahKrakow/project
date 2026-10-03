@@ -129,3 +129,10 @@ Inne:
 - Animacje respektują `prefers-reduced-motion` (1 ms).
 
 Jak powtórzyć skan: uruchom aplikację (`npm run dev`), wstrzyknij `axe-core` na każdym ekranie i uruchom `axe.run` z regułami jak wyżej.
+
+### Trzecia runda: ścieżka dla osób z niepełnosprawnością ruchową (4.10.2026)
+
+Poza zgodnością z WCAG aplikacja ma teraz jedną potrzebę „Miejsca i dojazd bez barier”, którą ustawia się na ekranie powitalnym, w onboardingu albo w Koncie. Działa w talii, na mapie, w trasie dojazdu (profil wózka, tramwaje niskopodłogowe) i przy parkingach. Pełna ścieżka i to, czego jeszcze brakuje: [USER_FLOW.md](USER_FLOW.md#6-ścieżka-osoba-z-niepełnosprawnością-ruchową).
+
+- Przełącznik „Lokalizacja” od razu pyta przeglądarkę. Przy odmowie sam się wyłącza i pokazuje komunikat w `role="alert"`, zamiast zostać włączony bez efektu.
+- Pole „Na miejscu o” to natywne `<input type="time">` z etykietą. Wynik trasy jest w regionie `aria-live="polite"`. Typ przystanku (tramwaj, autobus) jest w tekście dla czytnika, nie tylko w ikonie.
