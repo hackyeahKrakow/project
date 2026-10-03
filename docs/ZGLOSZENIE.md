@@ -6,21 +6,15 @@ Wersja robocza formularza „Add Project”. Pola oznaczone **[DO DECYZJI]** cze
 
 ## Project Name
 
-**[DO DECYZJI]** Szukamy nazwy z twistem, którą społeczność studencka od razu „łapie”. Domeny sprawdzone 3.10.2026, ewentualne konflikty sprawdzone w wyszukiwarce.
+**spotted student — zmatchuj się z eventami**
 
-| Kandydat | Twist | Domena | Konflikty, które znaleźliśmy |
-| --- | --- | --- | --- |
-| **Kto wbija?** | Pytanie, które pada na każdym grupowym czacie. Od razu znaczy „mikro-wydarzenie oddolne”, nasz wyróżnik na tle GoJammin | `ktowbija.app` wolna, `.pl` zajęta | Nie znaleźliśmy żadnej aplikacji |
-| **Cynk** | „Dać cynk” to po polsku dać znać, co się dzieje. Działa w dwie strony: organizator daje cynk, student dostaje cynk. Logo jako kafelek z układu okresowego „Zn 30” to puszczenie oka do studentów | `dajcynk.app` wolna, `cynk.pl` i `cynk.app` zajęte | „Daj cynk” to zakładki zgłoszeń w lokalnych portalach (Bytom, Pyskowice), więc fraza pospolita. Konfliktu z aplikacją nie znaleźliśmy |
-| **Lecimy** | Jedno słowo, które kończy każdą dyskusję „idziemy czy nie” | `lecimy.app` wolna, `.pl` zajęta | Nie znaleźliśmy aplikacji |
-| **Antyfomo** | Nazwa mówi, jaki problem rozwiązujemy (FOMO) | `antyfomo.app` wolna, `.pl` zajęta | Niemiecka „Was geht” używa hasła „Goodbye to FOMO”, ale to inna nazwa |
-| Wbitka | Slang „wbić się” | `wbitka.app` wolna | Brak, ale słowo mniej znane |
+W polu nazwy wpisujemy „spotted student”, a motto dajemy jako pierwsze zdanie w Solution i na okładce.
 
-Odrzucone: **spotted** (Spotted.de to aplikacja randkowa w UE, a „Spotted: [uczelnia]” to gatunek anonimowych fanpage'y plotkarskich), **Hejnał** (miasto ma oficjalną aplikację „Graj Hejnał”, a hejnał to symbol Krakowa, więc ryzyko z marką miejską), **Wpadaj** (aplikacja do rezerwacji w salonach), **Wbijam** (serwis z anime), **Bywaj**, **Zajawka**, **Pinezka** (poprawne, ale bez twistu).
+Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]”, więc nazwa od razu brzmi swojsko. Zamiast anonimowych wpisów pokazujemy wydarzenia na mapie, a motto mówi wprost, jak to działa: swipe i dopasowanie.
 
-Rekomendacja: **Kto wbija?**, z hasłem „Studencki Kraków na jednej mapie”. Rezerwa: **Cynk**.
-
-Przed decyzją PM sprawdza znak w [TMview](https://www.tmdn.org/tmview/) (EUIPO + UPRP) w klasach Nicejskich 9, 41 i 42. Wybraną domenę `.app` kupujemy od razu (ok. 14 USD), żeby nikt jej nie zajął po pitchu.
+Do pilnowania:
+- **Domeny:** `spottedstudent.app` (14 USD) i `spottedstudent.com` (ok. 11 USD) są wolne, a `spottedstudent.pl` jest zajęta. Kupujemy `.app` albo `.com` od razu.
+- **Kolizje:** „spotted” to słowo pospolite, a Spotted.de to aplikacja randkowa w UE. Dlatego zawsze piszemy pełną nazwę „spotted student”, nigdy samo „spotted”. Po hackathonie sprawdzamy znak w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
 
 ## Problem
 
@@ -35,7 +29,7 @@ Skutki widać po obu stronach:
 
 ## Solution
 
-[Nazwa] to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
+*Zmatchuj się z eventami.* spotted student to aplikacja webowa (PWA) dla studentów w Krakowie. Działa w przeglądarce telefonu, bez instalacji i bez zakładania konta. Ma trzy elementy.
 
 1. **Czysta mapa miasta.** Bez sklepów, stacji i reklam, tylko wydarzenia studenckie i miejsca, w których się odbywają. Każda kategoria ma kolor i ikonę.
 2. **Swipe jak w Tinderze.** W prawo znaczy „interesuje mnie”: wydarzenie trafia na „Moją mapę”. W lewo znaczy „pomiń”. Rekomendacje uczą się z każdego ruchu, a każda karta mówi, dlaczego ją widzisz, np. „Bo lubisz: planszówki · dziś 19:00”. Nie ma czarnej skrzynki.
