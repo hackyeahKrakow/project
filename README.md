@@ -31,6 +31,7 @@ Aplikacja działa na `http://localhost:5173`.
 | Plik | Co zawiera | Dla kogo |
 | --- | --- | --- |
 | [docs/SPEC.md](docs/SPEC.md) | Problem, użytkownicy, funkcje, zakres MVP, roadmapa | Wszyscy, wejście do `/speckit-specify` |
+| [docs/PERSONY.md](docs/PERSONY.md) | Persony i user stories z priorytetami | Pitch, wszyscy |
 | [docs/API.md](docs/API.md) | Kontrakt JSON wydarzenia i wszystkie endpointy | Frontend, backend |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Stack, diagram, model danych, scoring, decyzje | Frontend, backend |
 | [docs/DESIGN.md](docs/DESIGN.md) | Kategorie, karta wydarzenia, ekrany, zasady mapy | Design, frontend |

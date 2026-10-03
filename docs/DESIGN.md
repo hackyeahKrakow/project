@@ -26,9 +26,9 @@ Brak grafiki: tło w kolorze kategorii z dużą ikoną.
 
 ## Ekrany (mobile 390 px)
 
-1. **Onboarding:** wybór uczelni i 3–5 zainteresowań, przycisk „Zaczynamy”.
+1. **Personalizacja (pierwsze uruchomienie):** cztery ekrany, jedno pytanie na ekran, pasek postępu „1/4”, „Pomiń” i „Wstecz” zawsze widoczne, odpowiedzi jako duże chipy (min. 44 px) z ikonami. (1) „Co lubisz robić?”: 3–5 kategorii. (2) „Jakie wydarzenia wolisz?”: kameralne / średnie / duże / bez różnicy. (3) „Czego dziś szukasz?”: do 3 celów (poznać ludzi, nauczyć się czegoś, dobrze się bawić, ruszyć się, kultura i spokój, oszczędzić). (4) „Co jest dla ciebie ważne?”: budżet, odległość, pora. Przycisk „Dalej”, na końcu „Pokaż mi wydarzenia”. Ekran „Moje preferencje” używa tych samych komponentów. Szczegóły w [SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu).
 2. **Mapa:** pełnoekranowa mapa, filtry jako chipy u góry, karta w dolnym panelu (Sheet) po kliknięciu pinu, polubione piny wyróżnione (większe, z obwódką).
-3. **Odkrywaj (swipe):** jedna karta na ekranie, przyciski ✕ i ♥ jako alternatywa dla gestu, uzasadnienie „Bo lubisz…” na karcie.
+3. **Odkrywaj (swipe):** jedna karta na ekranie, przyciski ✕ i ♥ jako alternatywa dla gestu, uzasadnienie „Twój match: …” na karcie (np. „Twój match: kameralne · planszówki · za darmo”).
 4. **Moje:** lista i mapa polubionych wydarzeń.
 5. **Dodaj wydarzenie:** pole „wklej opis”, przycisk „Wypełnij z AI”, formularz z podświetleniem pól do sprawdzenia.
 
@@ -75,6 +75,6 @@ Interaktywny podgląd całego konceptu (logo, 5 ekranów × desktop 1440 / table
 }
 ```
 
-**Mapowanie na Preline:** filtry = Buttons (pill), karta wydarzenia = Card, badge kategorii = Badge, panel wydarzenia na mapie = Offcanvas (na telefonie od dołu), wybór uczelni = Advanced Select, Lista/Mapa = Tabs, formularz = Input/Textarea/Select, nawigacja = Navbar. W React po zmianie trasy wywołujcie `HSStaticMethods.autoInit()`.
+**Mapowanie na Preline:** filtry = Buttons (pill), karta wydarzenia = Card, badge kategorii = Badge, panel wydarzenia na mapie = Offcanvas (na telefonie od dołu), pytania personalizacji = Buttons (chipy) w układzie Stepper/Progress, Lista/Mapa = Tabs, formularz = Input/Textarea/Select, nawigacja = Navbar. W React po zmianie trasy wywołujcie `HSStaticMethods.autoInit()`.
 
 **Responsywność:** breakpointy ≤900 px (marginesy 24 px, kolumny pod sobą, mapa nad listą) i ≤600 px (nagłówek dwurzędowy, filtry przewijane poziomo, karta na mapie jako panel dolny). Ekran Odkrywaj mieści się w jednym oknie (`100vh`), swipe: próg ≈ 90 px, obrót ≈ dx/18 °, pieczątki „POLUBIĘ” / „POMIŃ”. Cele dotykowe min. 44 px.
