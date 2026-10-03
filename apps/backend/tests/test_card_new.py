@@ -33,6 +33,16 @@ async def test_cards_come_in_order_then_no_more(db_client):
         assert response.json() == {"detail": "No more cards"}
 
 
+async def test_card_times_keep_their_timezone(db_client):
+    from datetime import datetime, timezone
+
+    body = (await fetch(db_client, uuid7())).json()
+    starts_at = datetime.fromisoformat(body["starts_at"])
+    assert starts_at.tzinfo is not None
+    assert starts_at == datetime(2026, 11, 14, 17, 0, tzinfo=timezone.utc)
+    assert datetime.fromisoformat(body["ends_at"]).tzinfo is not None
+
+
 async def test_invalid_user_id_is_rejected(db_client):
     response = await db_client.get("/card/new/not-a-uuid")
     assert response.status_code == 422
