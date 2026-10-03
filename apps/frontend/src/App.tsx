@@ -1,57 +1,101 @@
-import { HSStaticMethods } from 'preline/non-auto'
-import { useEffect, useState } from 'react'
-import { type CategoryId } from '@/lib/categories'
-import { Header } from '@/ui'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { catalog } from '@/lib/events'
+import { StoreContext, fresh, load, save, type Store } from '@/lib/store'
+import { BottomNav, SideNav } from '@/ui'
 import Dodaj from '@/pages/Dodaj'
-import Home from '@/pages/Home'
+import Konto from '@/pages/Konto'
+import Logowanie from '@/pages/Logowanie'
 import Mapa from '@/pages/Mapa'
 import Moje from '@/pages/Moje'
 import Odkrywaj from '@/pages/Odkrywaj'
+import Onboarding from '@/pages/Onboarding'
+import Sponsor from '@/pages/Sponsor'
+import Start from '@/pages/Start'
+import Statystyki from '@/pages/Statystyki'
 
 const routeFromHash = () => location.hash.replace(/^#\/?/, '')
+const NO_NAV = new Set(['start', 'onboarding', 'zgoda', 'logowanie'])
+const TITLES: Record<string, string> = {
+  start: 'Zmatchuj się z eventami',
+  onboarding: 'Twoje zainteresowania',
+  zgoda: 'Twoje dane, twoje zasady',
+  odkrywaj: 'Odkrywaj',
+  mapa: 'Mapa',
+  moje: 'Moje',
+  konto: 'Konto',
+  logowanie: 'Logowanie',
+  dodaj: 'Dodaj wydarzenie',
+  statystyki: 'Statystyki',
+  sponsor: 'Zostań sponsorem',
+}
 
 export default function App() {
+  const [state, setState] = useState(load)
   const [route, setRoute] = useState(routeFromHash)
-  const [uni, setUni] = useState('AGH')
-  const [interests, setInterests] = useState<CategoryId[]>(['nauka', 'muzyka', 'gry', 'imprezy'])
-  // ponytail: likes live in memory only; persist via POST /card/{user_id} once the backend implements it
-  const [liked, setLiked] = useState(() => new Set(['planszowki', 'robotyka', 'integracja', 'jam']))
 
+  useEffect(() => save(state), [state])
   useEffect(() => {
-    const onHash = () => {
-      setRoute(routeFromHash())
-      window.scrollTo(0, 0)
-    }
+    document.documentElement.style.fontSize = state.bigText ? '112.5%' : ''
+  }, [state.bigText])
+  useEffect(() => {
+    const onHash = () => setRoute(routeFromHash())
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // Attach Preline behavior to the newly rendered page. autoInit already drops detached nodes and skips
-  // initialised ones; calling cleanCollection() first (as in the Preline guide) would re-init the header's select twice.
-  useEffect(() => {
-    HSStaticMethods.autoInit(['select', 'overlay', 'tabs'])
-  }, [route])
+  const update = useCallback<Store['update']>((patch) => setState((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) })), [])
+  const reset = useCallback(() => {
+    setState(fresh())
+    location.hash = '#/start'
+  }, [])
+  const store = useMemo(() => ({ state, update, reset }), [state, update, reset])
 
-  const setLike = (id: string, on: boolean) =>
-    setLiked((prev) => {
-      const next = new Set(prev)
-      if (on) next.add(id)
-      else next.delete(id)
-      return next
-    })
+  // First visit lands on the welcome screen; after onboarding the app opens on Odkrywaj.
+  const r = route || (state.onboarded ? 'odkrywaj' : 'start')
+  const events = useMemo(() => [...catalog(), ...state.myEvents], [state.myEvents])
+  const liked = useMemo(() => new Set(Object.keys(state.swipes).filter((id) => state.swipes[id] === 'right')), [state.swipes])
 
   const page = {
-    mapa: <Mapa liked={liked} setLike={setLike} />,
-    odkrywaj: <Odkrywaj liked={liked} setLike={setLike} />,
-    moje: <Moje liked={liked} />,
+    start: <Start events={events} />,
+    onboarding: <Onboarding />,
+    zgoda: <Onboarding privacyOnly />,
+    odkrywaj: <Odkrywaj events={events} />,
+    mapa: <Mapa events={events} liked={liked} />,
+    moje: <Moje events={events} liked={liked} />,
+    konto: <Konto events={events} />,
+    logowanie: <Logowanie />,
     dodaj: <Dodaj />,
-  }[route] ?? <Home uni={uni} setUni={setUni} interests={interests} setInterests={setInterests} />
+    statystyki: <Statystyki />,
+    sponsor: <Sponsor />,
+  }[r] ?? <Start events={events} />
 
+  useEffect(() => {
+    document.title = `${TITLES[r] ?? TITLES.start} · spootted` // WCAG 2.4.2: every screen has its own title
+  }, [r])
+
+  const nav = !NO_NAV.has(r)
   return (
-    // Odkrywaj fits one window (100vh); every other page scrolls normally.
-    <div className={`flex flex-col ${route === 'odkrywaj' ? 'h-svh min-h-[620px] overflow-hidden' : 'min-h-svh'}`}>
-      <Header route={route} uni={uni} setUni={setUni} />
-      {page}
-    </div>
+    <StoreContext.Provider value={store}>
+      <a
+        href="#tresc"
+        onClick={(e) => (e.preventDefault(), document.getElementById('tresc')?.focus())}
+        className="sr-only z-50 rounded-xl bg-ink-900 px-4 py-3 text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Przejdź do treści
+      </a>
+      {/* Mobile-first: tab bar at the bottom on phones, rail on tablets, sidebar on laptops. */}
+      <div className="flex h-svh flex-col bg-canvas sm:flex-row">
+        {nav && <SideNav route={r} canAdd={!!state.account} />}
+        <main
+          id="tresc"
+          tabIndex={-1}
+          key={r}
+          className={`relative min-h-0 flex-1 outline-none ${r === 'mapa' || r === 'odkrywaj' ? 'flex flex-col' : 'overflow-y-auto'}`}
+        >
+          {page}
+        </main>
+        {nav && <BottomNav route={r} />}
+      </div>
+    </StoreContext.Provider>
   )
 }

@@ -1,0 +1,162 @@
+import { BadgeCheck, BarChart3, Flame, LogIn, LogOut, Plus, ShieldCheck, SlidersHorizontal, Trash2, UserRound } from 'lucide-react'
+import { CATEGORIES } from '@/lib/categories'
+import { DEMO_ACCOUNTS, ORG_PLAN, PACKAGES } from '@/lib/demo'
+import { LIBRARY, formatDate, type SpottedEvent } from '@/lib/events'
+import { weights } from '@/lib/recommend'
+import { useStore } from '@/lib/store'
+import { Screen, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
+
+// Account tab: guest privacy and settings, or the student / organization profile (docs/USER_FLOW.md).
+export default function Konto({ events }: { events: SpottedEvent[] }) {
+  const { state, update, reset } = useStore()
+  const { account } = state
+  const demo = DEMO_ACCOUNTS.find((a) => a.email === account?.email)
+  const w = weights(state.profile, state.swipes, events)
+  const top = CATEGORIES.map((c) => ({ c, v: w[c.id] }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 4)
+  // Same organizer id as Dodaj gives new events: the demo library, or this account.
+  const ownerId = account?.org === LIBRARY.name ? LIBRARY.id : account && `usr_${account.email}`
+  const orgEvents = ownerId ? events.filter((e) => e.organizer.id === ownerId) : []
+  const plan = PACKAGES.find((p) => p.id === ORG_PLAN.package)!
+
+  return (
+    <Screen wide title="Konto">
+      <div className="grid items-start gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-4">
+          {account ? (
+            <div className={`${card} flex flex-col gap-3 p-4`}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-brand-50 text-xl font-semibold text-brand-700">
+                  {(account.org ?? account.name).slice(0, 1)}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-lg leading-tight font-semibold">
+                    {account.org ?? account.name}
+                    {account.kind === 'org' && account.org === LIBRARY.name && (
+                      <BadgeCheck size={18} className="flex-none text-brand-600" aria-label="zweryfikowane" />
+                    )}
+                  </div>
+                  <div className="text-sm text-muted">{account.kind === 'org' ? `Organizacja · ${account.name}` : 'Konto studenta'}</div>
+                </div>
+              </div>
+              {demo && <p className="text-sm text-muted">{demo.about}</p>}
+              {account.kind === 'org' && (
+                <a href="#/sponsor" className="flex items-center justify-between rounded-xl bg-spark-50 px-3.5 py-2.5 text-sm">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <Flame size={18} className="text-spark-500" aria-hidden />
+                    Pakiet {plan.name}
+                  </span>
+                  <span className="text-muted">
+                    AI: {ORG_PLAN.aiUsed} z {ORG_PLAN.aiLimit} w tym miesiącu
+                  </span>
+                </a>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <a href="#/dodaj" className={`${btnPrimary} h-12 flex-1`}>
+                  <Plus size={20} aria-hidden />
+                  Dodaj
+                </a>
+                {account.kind === 'org' && (
+                  <a href="#/statystyki" className={`${btnOutline} h-12 flex-1`}>
+                    <BarChart3 size={20} aria-hidden />
+                    Statystyki
+                  </a>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className={`${card} flex flex-col gap-3 p-4`}>
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-track">
+                  <UserRound size={28} className="text-muted" aria-hidden />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold">Przeglądasz anonimowo</div>
+                  <div className="text-sm text-muted">Bez maila i numeru telefonu</div>
+                </div>
+              </div>
+              <p className="text-sm text-muted">Konto przyda się, gdy zechcesz dodać własne wydarzenie albo nie stracić polubionych przy zmianie telefonu.</p>
+              <a href="#/logowanie" className={`${btnPrimary} h-12`}>
+                <LogIn size={20} aria-hidden />
+                Zaloguj się lub załóż konto
+              </a>
+            </div>
+          )}
+
+          {orgEvents.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="font-semibold">{account?.kind === 'org' ? 'Wydarzenia organizacji' : 'Moje wydarzenia'}</h2>
+              {orgEvents.slice(0, 8).map((e) => (
+                <div key={e.id} className={`${card} flex items-center justify-between gap-2 px-4 py-3 text-sm`}>
+                  <span className="font-medium">{e.event_name}</span>
+                  <span className="flex-none text-muted">{formatDate(e.starts_at)}</span>
+                </div>
+              ))}
+            </section>
+          )}
+        </div>
+        <div className="flex flex-col gap-4">
+          <section className={`${card} flex flex-col gap-3 p-4`}>
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Twój profil zainteresowań</h2>
+              <a href="#/onboarding" className="flex items-center gap-1 text-sm font-medium text-brand-600">
+                <SlidersHorizontal size={16} aria-hidden />
+                Zmień
+              </a>
+            </div>
+            <p className="text-[13px] text-muted">Wagi rosną z każdym swipe'em w prawo i lekko maleją w lewo. Tak dobieramy talię.</p>
+            {top.map(({ c, v }) => (
+              <div key={c.id} className="flex items-center gap-2.5 text-sm">
+                <c.Icon size={18} color={c.color} strokeWidth={2.2} aria-hidden />
+                <span className="w-24">{c.short}</span>
+                <div className="h-2 flex-1 rounded bg-track">
+                  <div className="h-2 rounded" style={{ width: `${Math.round(v * 100)}%`, background: c.color }} />
+                </div>
+                <span className="w-9 text-right text-muted">{Math.round(v * 100)}%</span>
+              </div>
+            ))}
+          </section>
+
+          <section className={`${card} flex flex-col divide-y divide-line px-4`}>
+            <Toggle
+              label="Lokalizacja"
+              hint="Odległość na kartach i kropka na mapie, tylko na tym telefonie"
+              on={state.location}
+              onChange={(location) => update({ location })}
+            />
+            <Toggle label="Powiadomienia" hint="Wkrótce" on={state.notifications} onChange={(notifications) => update({ notifications })} />
+            <Toggle label="Większy tekst" hint="Dostępność" on={state.bigText} onChange={(bigText) => update({ bigText })} />
+          </section>
+
+          <section className="flex items-start gap-2.5 rounded-[14px] bg-violet-50 p-3.5 text-sm leading-snug">
+            <ShieldCheck size={20} className="flex-none text-violet-600" aria-hidden />
+            <span>
+              Twój anonimowy identyfikator: <code className="text-[12px] break-all">{state.userId}</code>. Odpowiedzi z pytań, polubienia i ustawienia zgód są w
+              pamięci tej przeglądarki. Twojej lokalizacji nie zapisujemy nigdzie.
+            </span>
+          </section>
+
+          <div className="flex flex-col gap-2">
+            {account && (
+              <button type="button" onClick={() => update({ account: null })} className={`${btnOutline} h-12`}>
+                <LogOut size={20} aria-hidden />
+                Wyloguj
+              </button>
+            )}
+            {account?.kind === 'org' && (
+              <a href="#/sponsor" className={`${btnSpark} h-12`}>
+                <Flame size={20} aria-hidden />
+                Zostań sponsorem i zyskaj więcej
+              </a>
+            )}
+            <button type="button" onClick={reset} className="flex h-12 items-center justify-center gap-2 text-[15px] font-medium text-muted">
+              <Trash2 size={18} aria-hidden />
+              Usuń moje dane z tego urządzenia
+            </button>
+          </div>
+        </div>
+      </div>
+    </Screen>
+  )
+}

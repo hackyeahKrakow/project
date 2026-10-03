@@ -1,43 +1,123 @@
-import { BadgeCheck, Calendar, Heart, MapPin, Sparkles, X } from 'lucide-react'
-import { useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { Calendar, Heart, MapPin, RotateCcw, Sparkles, X } from 'lucide-react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { saveSwipe, starterDeck } from '@/lib/api'
 import { CATEGORIES, category } from '@/lib/categories'
-import { EVENTS, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
-import { CategoryBadge, card } from '@/ui'
+import { STARTER, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
+import { recommend, weights, type Scored } from '@/lib/recommend'
+import { useStore, type Decision } from '@/lib/store'
+import { CategoryBadge, OrganizerLine, PromotedTag, btnPrimary, card } from '@/ui'
 
-// ponytail: fixed demo deck; GET /card/{user_id} returns one card at a time once implemented
-const DECK = ['robotyka', 'planszowki', 'integracja', 'jam'].map((id) => EVENTS.find((e) => e.id === id)!)
 const THRESHOLD = 90
 const FLY_MS = 260
+const BATCH = 10
+const REFILL_AT = 5
 
-export default function Odkrywaj({ liked, setLike }: { liked: Set<string>; setLike: (id: string, on: boolean) => void }) {
-  const [i, setI] = useState(0)
+// Six fixed starter cards first, then batches of 10 recommendations; at 5 left the next 10 are added (docs/USER_FLOW.md).
+export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
+  const { state, update } = useStore()
+  const { swipes, profile, userId } = state
+  const [starter, setStarter] = useState(STARTER)
+  const [queue, setQueue] = useState<Scored[]>([])
+  const [here, setHere] = useState<[number, number]>()
+
+  useEffect(() => {
+    let live = true
+    starterDeck(userId).then((d) => live && setStarter(d))
+    return () => {
+      live = false
+    }
+  }, [userId])
+  useEffect(() => {
+    if (state.location)
+      navigator.geolocation?.getCurrentPosition(
+        (p) => setHere([p.coords.latitude, p.coords.longitude]),
+        () => {},
+      )
+  }, [state.location])
+
+  const starterLeft = starter.filter((e) => !swipes[e.id])
+  const pending = queue.filter((x) => !swipes[x.ev.id])
+  useEffect(() => {
+    if (starterLeft.length || pending.length > REFILL_AT) return
+    const more = recommend(events, profile, swipes, new Set(queue.map((q) => q.ev.id)), BATCH, here, new Set(state.follows))
+    if (more.length) setQueue((q) => [...q, ...more])
+  }, [starterLeft.length, pending.length]) // eslint-disable-line react-hooks/exhaustive-deps -- refill only when the deck runs low
+
+  const deck: Scored[] = starterLeft.length ? starterLeft.map((ev) => ({ ev, score: 0, distance: 0, reason: 'Karta startowa: poznajemy twój gust' })) : pending
+  const top = deck[0]
+
+  const decide = (d: Decision) => {
+    if (!top) return
+    update((s) => ({ swipes: { ...s.swipes, [top.ev.id]: d } }))
+    if (state.consent) saveSwipe(userId, top.ev.id, d) // nothing leaves the device before "Rozumiem, zaczynam"
+  }
+
+  const w = weights(profile, swipes, events)
+  const learnt = CATEGORIES.map((c) => ({ c, v: w[c.id] }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 4)
+
+  return (
+    <div className="flex min-h-0 flex-1 justify-center gap-10 px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-6">
+      <section className="flex min-h-0 w-full max-w-[480px] flex-col gap-3 md:max-h-[860px]" aria-labelledby="odkrywaj-h">
+        <div className="flex flex-none items-center justify-between">
+          <h1 id="odkrywaj-h" className="text-[26px] font-semibold tracking-[-0.02em] sm:text-[32px]">
+            Odkrywaj
+          </h1>
+          <span className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-muted">
+            {starterLeft.length ? `Start ${STARTER.length - starterLeft.length + 1} z ${STARTER.length}` : top ? 'Dopasowane do ciebie' : 'Koniec talii'}
+          </span>
+        </div>
+        {/* Stays mounted while Deck remounts per card, so screen readers announce each new card. */}
+        <p className="sr-only" aria-live="polite">
+          {top ? `${top.ev.event_name}, ${formatDate(top.ev.starts_at)}. ${top.reason}` : 'Koniec talii'}
+        </p>
+        <Deck key={top?.ev.id} deck={deck} onDecide={decide} />
+      </section>
+
+      {/* Laptops: what the profile is learning, next to the deck. */}
+      <aside className="hidden w-80 flex-none flex-col gap-4 pt-16 lg:flex" aria-label="Twój profil">
+        <div className={`${card} flex flex-col gap-3 p-5`}>
+          <h2 className="text-[15px] font-semibold">Czego się uczymy</h2>
+          {learnt.map(({ c, v }) => (
+            <div key={c.id} className="flex items-center gap-2.5 text-sm">
+              <c.Icon size={18} color={c.color} strokeWidth={2.2} aria-hidden />
+              <span className="w-24">{c.short}</span>
+              <div className="h-2 flex-1 rounded bg-track" aria-hidden>
+                <div className="h-2 rounded" style={{ width: `${Math.round(v * 100)}%`, background: c.color }} />
+              </div>
+              <span className="w-9 text-right text-muted">{Math.round(v * 100)}%</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[13px] leading-snug text-muted">
+          Przeciągnij kartę w prawo, żeby polubić, w lewo, żeby pominąć. Na klawiaturze: strzałka w prawo i w lewo.
+        </p>
+      </aside>
+    </div>
+  )
+}
+
+function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => void }) {
+  const { reset } = useStore()
   const [dx, setDx] = useState(0)
   const [drag, setDrag] = useState(false)
-  const [likedHere, setLikedHere] = useState(0)
   const startX = useRef(0)
   const busy = useRef(false)
-  const done = i >= DECK.length
+  const done = !deck.length
 
   const fly = (dir: 1 | -1) => {
     if (busy.current || done) return
     busy.current = true
     setDrag(false)
-    setDx(dir * 900)
-    setTimeout(() => {
-      busy.current = false
-      setLike(DECK[i].id, dir > 0)
-      if (dir > 0) setLikedHere((n) => n + 1)
-      setI(i + 1)
-      setDx(0)
-    }, FLY_MS)
+    setDx(dir * 700)
+    setTimeout(() => onDecide(dir > 0 ? 'right' : 'left'), FLY_MS) // the parent remounts Deck with the next card
   }
-
   const down = (e: PointerEvent) => {
     if (busy.current || done) return
     startX.current = e.clientX
     e.currentTarget.setPointerCapture(e.pointerId)
     setDrag(true)
-    setDx(0)
   }
   const move = (e: PointerEvent) => drag && setDx(e.clientX - startX.current)
   const up = () => {
@@ -48,116 +128,85 @@ export default function Odkrywaj({ liked, setLike }: { liked: Set<string>; setLi
     else setDx(0)
   }
 
-  const cardStyle = (pos: number): CSSProperties => {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement
+      if (t.closest('input, textarea, select, [role=dialog]')) return
+      if (e.key === 'ArrowRight') fly(1)
+      if (e.key === 'ArrowLeft') fly(-1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
+  const style = (pos: number): CSSProperties => {
     const transition = drag ? 'none' : `transform ${FLY_MS / 1000}s ease`
     if (pos === 0) return { zIndex: 3, transform: `translateX(${dx}px) rotate(${dx / 18}deg)`, transition }
-    if (pos === 1) return { zIndex: 2, transform: `scale(${0.95 + Math.min(Math.abs(dx) / 1800, 0.05)}) translateY(14px)`, transition }
-    if (pos === 2) return { zIndex: 1, transform: 'scale(0.9) translateY(28px)' }
-    return { display: 'none' }
+    if (pos === 1) return { zIndex: 2, transform: `scale(${0.95 + Math.min(Math.abs(dx) / 1800, 0.05)}) translateY(12px)`, transition }
+    return { zIndex: 1, transform: 'scale(0.9) translateY(24px)' }
   }
 
-  // "What we're learning": share of all liked events per category, top 3.
-  const likedEvents = EVENTS.filter((e) => liked.has(e.id))
-  const counts = CATEGORIES.map((c) => ({ c, n: likedEvents.filter((e) => e.category === c.id).length }))
-    .filter((x) => x.n > 0)
-    .sort((a, b) => b.n - a.n)
-    .slice(0, 3)
-  const total = likedEvents.length
-
   return (
-    <main className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 justify-center gap-12 px-4 pt-2.5 pb-4 sm:px-6 sm:pt-3 md:px-10">
-      <section className="flex min-h-0 max-w-[520px] min-w-0 flex-1 flex-col gap-2.5">
-        <div className="flex flex-none items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-[-0.02em]">Odkrywaj</h1>
-          <div className="rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-muted" aria-live="polite">
-            {done ? 'Koniec talii' : `${i + 1} z ${DECK.length}`}
-          </div>
-        </div>
-
-        <div
-          className="relative min-h-0 flex-1 cursor-grab touch-pan-y select-none"
-          onPointerDown={down}
-          onPointerMove={move}
-          onPointerUp={up}
-          onPointerCancel={up}
-        >
-          {DECK.map((ev, k) => (
+    <>
+      <div
+        className="relative min-h-0 flex-1 cursor-grab touch-pan-y select-none"
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+      >
+        {deck
+          .slice(0, 3)
+          .map((x, k) => (
             <SwipeCard
-              key={ev.id}
-              ev={ev}
-              style={cardStyle(k - i)}
-              like={k === i ? Math.max(0, Math.min(dx / 110, 1)) : 0}
-              skip={k === i ? Math.max(0, Math.min(-dx / 110, 1)) : 0}
+              key={x.ev.id}
+              item={x}
+              style={style(k)}
+              like={k ? 0 : Math.max(0, Math.min(dx / 110, 1))}
+              skip={k ? 0 : Math.max(0, Math.min(-dx / 110, 1))}
             />
-          ))}
-          {done && (
-            <div className="absolute inset-0 z-[5] flex flex-col items-center justify-center gap-2.5 rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center">
-              <div className="text-2xl font-semibold">To już wszystko na dziś</div>
-              <div className="text-muted">
-                Polubione wydarzenia znajdziesz w zakładce{' '}
-                <a href="#/moje" className="font-medium text-brand-600 underline">
-                  Moje
-                </a>
-                .
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-none justify-center gap-10 pt-1">
-          <button
-            type="button"
-            aria-label="Pomiń wydarzenie"
-            onClick={() => fly(-1)}
-            disabled={done}
-            className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
-          >
-            <X size={28} strokeWidth={2.4} aria-hidden />
-          </button>
-          <button
-            type="button"
-            aria-label="Interesuje mnie"
-            onClick={() => fly(1)}
-            disabled={done}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
-          >
-            <Heart size={28} color="#fff" aria-hidden />
-          </button>
-        </div>
-      </section>
-
-      <aside className="hidden w-80 flex-none flex-col gap-4 pt-10 min-[1100px]:flex">
-        <div className={`${card} flex flex-col gap-2.5 p-5`}>
-          <h2 className="text-[15px] font-semibold">Twoja talia</h2>
-          <div className="text-sm text-muted">
-            Polubione: {likedHere} z {Math.min(i, DECK.length)}
+          ))
+          .reverse()}
+        {done && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-line bg-white p-6 text-center">
+            <div className="text-2xl font-semibold">To już wszystko na dziś</div>
+            <p className="text-muted">Polubione wydarzenia są w zakładce Moje i świecą na mapie. Możesz też poszerzyć preferencje.</p>
+            <a href="#/moje" className={`${btnPrimary} h-12`}>
+              Zobacz Moje
+            </a>
+            <button type="button" onClick={reset} className="flex items-center gap-1.5 text-sm text-muted underline">
+              <RotateCcw size={14} aria-hidden />
+              Zacznij demo od nowa
+            </button>
           </div>
-        </div>
-        <div className={`${card} flex flex-col gap-3 p-5`}>
-          <h2 className="text-[15px] font-semibold">Czego się uczymy</h2>
-          {counts.map(({ c, n }) => {
-            const pct = Math.round((n / total) * 100)
-            return (
-              <div key={c.id} className="flex items-center gap-2.5 text-sm">
-                <c.Icon size={18} color={c.color} strokeWidth={2.2} aria-hidden />
-                <span className="w-[120px]">{c.short}</span>
-                <div className="h-2 flex-1 rounded bg-track">
-                  <div className="h-2 rounded" style={{ width: `${pct}%`, background: c.color }} />
-                </div>
-                <span className="w-9 text-right text-muted">{pct}%</span>
-              </div>
-            )
-          })}
-        </div>
-        <p className="text-[13px] leading-snug text-muted">
-          Przeciągnij kartę w prawo, żeby polubić, w lewo, żeby pominąć. Możesz też użyć przycisków.
-        </p>
-      </aside>
-    </main>
+        )}
+      </div>
+      <div className="flex flex-none justify-center gap-10">
+        <button
+          type="button"
+          aria-label="Pomiń wydarzenie"
+          onClick={() => fly(-1)}
+          disabled={done}
+          className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+        >
+          <X size={28} strokeWidth={2.4} aria-hidden />
+        </button>
+        <button
+          type="button"
+          aria-label="Interesuje mnie"
+          onClick={() => fly(1)}
+          disabled={done}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 shadow-[0_4px_12px_rgba(10,31,68,.14)] disabled:opacity-50"
+        >
+          <Heart size={28} color="#fff" aria-hidden />
+        </button>
+      </div>
+    </>
   )
 }
 
-function SwipeCard({ ev, style, like, skip }: { ev: SpottedEvent; style: CSSProperties; like: number; skip: number }) {
+function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProperties; like: number; skip: number }) {
+  const { ev, reason } = item
   const c = category(ev.category)
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
   return (
@@ -166,18 +215,21 @@ function SwipeCard({ ev, style, like, skip }: { ev: SpottedEvent; style: CSSProp
       style={{ background: c.color, ...style }}
       aria-hidden={style.zIndex !== 3}
     >
-      <div className="absolute inset-x-0 top-0 bottom-[45%] flex items-center justify-center">
-        <c.Icon size={112} color="#fff" strokeWidth={1.6} aria-hidden />
+      <div className="absolute inset-x-0 top-0 bottom-[48%] flex items-center justify-center">
+        <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
       </div>
       <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
-        POLUBIĘ
+        WCHODZĘ
       </div>
       <div className={`${stamp} right-4 rotate-10 border-ink-900 text-ink-900`} style={{ opacity: skip }}>
-        POMIŃ
+        NIE DLA MNIE
       </div>
-      <div className="relative flex flex-col gap-2.5 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_62%,rgba(10,31,68,0)_100%)] px-5 pt-14 pb-[18px] text-white">
-        <CategoryBadge cat={c} onDark className="text-[13px]" />
-        <h2 className="text-[24px] leading-[1.15] font-semibold sm:text-[28px]">{ev.event_name}</h2>
+      <div className="relative flex flex-col gap-2 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_62%,rgba(10,31,68,0)_100%)] px-4 pt-12 pb-4 text-white">
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryBadge cat={c} onDark className="text-[13px]" />
+          {ev.promoted && <PromotedTag />}
+        </div>
+        <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
         <div className="flex items-center gap-2 text-[15px] text-brand-50">
           <Calendar size={18} aria-hidden />
           {formatDate(ev.starts_at)}
@@ -190,17 +242,12 @@ function SwipeCard({ ev, style, like, skip }: { ev: SpottedEvent; style: CSSProp
           <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>
             {formatPrice(ev.price)}
           </span>
-          <span className="flex items-center gap-1.5 text-[13px] text-brand-50">
-            <BadgeCheck size={16} className="text-sky-300" aria-hidden />
-            {ev.organizer}
-          </span>
+          <OrganizerLine ev={ev} className="text-[13px] text-brand-50" />
         </div>
-        {ev.reason && (
-          <div className="flex items-center gap-2 rounded-xl bg-violet-50 px-3 py-[9px] text-sm font-medium text-ink-900">
-            <Sparkles size={18} className="text-violet-600" aria-hidden />
-            {ev.reason}
-          </div>
-        )}
+        <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-ink-900">
+          <Sparkles size={18} className="mt-px flex-none text-violet-600" aria-hidden />
+          {reason}
+        </div>
       </div>
     </article>
   )
