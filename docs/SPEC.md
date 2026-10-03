@@ -40,7 +40,7 @@ GoJammin i Karnet Kraków Culture pokazują duże wydarzenia dla wszystkich mies
 - W prawo = interesuje mnie: wydarzenie trafia na „Moją mapę” i jest wyróżnione na mapie.
 - W lewo = nie interesuje: znika z talii, a algorytm obniża wagę tej kategorii.
 - Każda karta pokazuje, dlaczego ją widzisz, np. „Twój match: małe wydarzenia · planszówki · dziś 19:00”.
-- Decyzje gościa (polubienia, pominięcia, obserwowani) zapisują się lokalnie na urządzeniu i tworzą jego własną bazę wydarzeń. Konto jest potrzebne dopiero do tworzenia treści i community.
+- Przeglądanie nie wymaga konta, maila ani numeru telefonu. Decyzje swipe zapisują się pod losowym identyfikatorem użytkownika, bez danych osobowych, a lokalizacja nie jest zapisywana na serwerze.
 
 ### Personalizacja przy pierwszym uruchomieniu
 
@@ -53,7 +53,7 @@ Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery 
 | 3. Czego szukasz | „Czego dziś szukasz?” | Do 3 z: poznać ludzi, nauczyć się czegoś, dobrze się bawić, ruszyć się, kultura i spokój, oszczędzić | Dodatkowa waga kategorii i typów wydarzeń powiązanych z celem |
 | 4. Czego potrzebujesz | „Co jest dla ciebie ważne?” | Budżet (tylko darmowe / do 20 zł / bez limitu), odległość (1 km / 3 km / 5 km / cały Kraków), pora (po zajęciach / wieczory / weekendy) | Twarde filtry domyślne (budżet, pora) i parametr bliskości |
 
-- Odpowiedzi zapisują się wyłącznie na urządzeniu (pamięć przeglądarki), bez konta i bez wysyłania na serwer.
+- Odpowiedzi z onboardingu zapisują się lokalnie i służą do personalizacji rekomendacji; backend operuje na danych pseudonimowych (UUID, bez maila i numeru telefonu).
 - Po ostatnim kroku użytkownik od razu dostaje pierwszą talię, a każda karta tłumaczy dopasowanie („Twój match: kameralne · planszówki · za darmo”).
 - Preferencje można zmienić w ekranie „Moje preferencje”, a swipe'y dalej je dostrajają.
 - Brak odpowiedzi nie blokuje aplikacji: bez personalizacji talia jest posortowana po czasie i bliskości.
@@ -61,8 +61,9 @@ Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery 
 
 ### Dodawanie wydarzeń z AI autofill
 
-- Organizator (członek profilu organizacji) albo zarejestrowany użytkownik wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, wielkość, opis).
+- Organizator (członek profilu organizacji z wykupionym pakietem sponsorskim) wkleja tekst ze swojego posta, a LLM wypełnia formularz (tytuł, data, miejsce, cena, kategoria, wielkość, opis).
 - Autor poprawia i zatwierdza. AI tylko proponuje, a człowiek zatwierdza każde wydarzenie.
+- Zarejestrowany student dodaje wydarzenie tym samym formularzem, ale ręcznie, bez AI. Decyzja zespołu z 3.10: AI jest w płatnych pakietach dla organizacji ([USER_FLOW.md](USER_FLOW.md#5-model-biznesowy-pakiety-dla-organizacji)).
 
 ## Konta i organizacje
 
@@ -94,25 +95,9 @@ Alternatywa odrzucona: tylko konta osobiste z etykietą „organizator”. Prost
 
 Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowanych studentów (mikro-wydarzenia), którą wcześniej ograniczono tylko do organizacji.
 
-## Ścieżka użytkownika (Ola)
+## Ścieżka użytkownika
 
-**Tydzień 1: gość, bez konta**
-
-1. Otwiera aplikację po raz pierwszy i przechodzi personalizację (cztery krótkie pytania, ok. 30 s): lubi gry i naukę, woli kameralne wydarzenia, szuka ludzi do poznania, potrzebuje darmowych wydarzeń do 3 km od akademika.
-2. Od razu dostaje talię 10 kart dopasowanych do odpowiedzi, z uzasadnieniem „Twój match: kameralne · planszówki · za darmo”, i swipe'uje. Po kilku ruchach karty dopasowują się jeszcze lepiej.
-3. Przechodzi do mapy i widzi wyróżnione polubione wydarzenia, które tworzą jej lokalną bazę na telefonie.
-4. Otwiera kartę quizu w barze planszówkowym i sprawdza adres oraz godzinę.
-5. Obserwuje koło naukowe, więc jego wydarzenia są wyżej w talii.
-
-**Tydzień 2: użytkownik z kontem**
-
-6. Zakłada konto (link na e-mail), a jej baza, preferencje i obserwowani przenoszą się na konto.
-7. W piątek dodaje wydarzenie „planszówki w akademiku, 4/6 osób”, a inni mogą dołączyć.
-8. Obserwują ją osoby, które były na planszówkach. Poleca im quiz w barze planszówkowym, który zapisała w swojej bazie.
-
-**Druga strona rynku (Kuba)**
-
-9. Kuba jako administrator profilu koła wkleja tekst posta, sprawdza propozycję AI i publikuje wydarzenie. Później widzi, ile osób je polubiło, a ile odrzuciło.
+Ścieżka demo, konta demo i model biznesowy: [USER_FLOW.md](USER_FLOW.md).
 
 ## Zakres MVP (24h)
 
@@ -128,7 +113,7 @@ Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowan
 | Profile organizacji (dane seed, jeden administrator) | Budujemy | Znaczek „zweryfikowane”, obserwujący |
 | Statystyki swipe'ów dla organizatora | Jeśli starczy czasu | Liczniki polubień i odrzuceń |
 | Konto użytkownika (link na e-mail) i przeniesienie lokalnej bazy | Jeśli starczy czasu | Warunek dla tworzenia wydarzeń |
-| Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz, typ „grassroots”, wymaga zgłaszania nadużyć |
+| Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz bez AI, typ „grassroots”, wymaga zgłaszania nadużyć |
 | Zaproszenia członków i role w organizacji | Roadmapa | Tylko slajd |
 | Publiczny profil, obserwujący, polecanie wydarzeń | Roadmapa | Community użytkowników, tylko slajd |
 | Link „Pokaż w Google Maps” | Jeśli starczy czasu | Zwykły URL z lat/lng, bez API i klucza |

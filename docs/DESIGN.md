@@ -32,7 +32,7 @@ Brak grafiki: tło w kolorze kategorii z dużą ikoną.
 4. **Moje:** lista i mapa polubionych wydarzeń.
 5. **Dodaj wydarzenie:** pole „wklej opis”, przycisk „Wypełnij z AI”, formularz z podświetleniem pól do sprawdzenia.
 
-Dolna nawigacja: Mapa / Odkrywaj / Moje, przycisk „+” do dodawania.
+Dolna nawigacja: Mapa / Odkrywaj / Moje / Konto. Dodawanie wydarzenia jako osobna akcja „+ Dodaj wydarzenie” dla zalogowanych.
 
 ## Zasady mapy
 
