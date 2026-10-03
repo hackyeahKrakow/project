@@ -45,3 +45,36 @@ Dolna nawigacja: Mapa / Odkrywaj / Moje, przycisk „+” do dodawania.
 - Szablon w Canvie 16:9 (np. 1200×675), wariant na każdą kategorię.
 - Eksport do WebP, nazwa pliku = `id` wydarzenia (`evt_001.webp`), katalog `apps/backend/static/img/`.
 - Tylko własne lub wygenerowane grafiki, bez plakatów organizatorów. Sprawdźcie licencję elementów z Canvy.
+
+## Koncept UI: strona WWW (spotted)
+
+Interaktywny podgląd całego konceptu (logo, 5 ekranów × desktop 1440 / tablet 820 / telefon 390 px, plansza Handoff): [design/spotted-koncept-ui.html](design/spotted-koncept-ui.html) (pobierz i otwórz w przeglądarce). Biblioteka komponentów: Preline UI na Tailwind.
+
+**Nazwa i logo:** `spotted`, napis (Outfit 600, małe litery) z falującą flagą pod spodem w czterech pasach: `#7DB8FF`, `#1D5CFF`, `#6B4EE6`, `#FF8A3D`, maszt `#0A1F44`.
+
+**Kolory marki:** Głęboka woda `#0A1F44`, Nurt `#1D5CFF`, Tafla `#7DB8FF`, Zmierzch `#6B4EE6`, Iskra `#FF8A3D` (CTA, tylko jako wypełnienie z granatowym tekstem). Tło `#F3F7FF`, obramowanie `#D9E2F2`, tekst pomocniczy `#4A5B7D`. Kolory kategorii bez zmian (tymczasowe, patrz wyżej).
+
+**Tokeny Tailwind (`app.css`):**
+
+```css
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@source "../node_modules/preline/dist/*.js";
+@import "preline/variants.css";
+
+@theme {
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --color-ink-900: #0A1F44;
+  --color-brand-600: #1D5CFF;
+  --color-sky-300: #7DB8FF;
+  --color-violet-600: #6B4EE6;
+  --color-spark-500: #FF8A3D;
+  --color-canvas: #F3F7FF;
+  --color-line: #D9E2F2;
+  --color-muted: #4A5B7D;
+}
+```
+
+**Mapowanie na Preline:** filtry = Buttons (pill), karta wydarzenia = Card, badge kategorii = Badge, panel wydarzenia na mapie = Offcanvas (na telefonie od dołu), wybór uczelni = Advanced Select, Lista/Mapa = Tabs, formularz = Input/Textarea/Select, nawigacja = Navbar. W React po zmianie trasy wywołujcie `HSStaticMethods.autoInit()`.
+
+**Responsywność:** breakpointy ≤900 px (marginesy 24 px, kolumny pod sobą, mapa nad listą) i ≤600 px (nagłówek dwurzędowy, filtry przewijane poziomo, karta na mapie jako panel dolny). Ekran Odkrywaj mieści się w jednym oknie (`100vh`), swipe: próg ≈ 90 px, obrót ≈ dx/18 °, pieczątki „POLUBIĘ” / „POMIŃ”. Cele dotykowe min. 44 px.
