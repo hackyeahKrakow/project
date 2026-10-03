@@ -185,7 +185,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         </div>
         <div className="flex items-center justify-between gap-2">
           <OrganizerLine ev={ev} />
-          <FollowButton orgId={ev.organizer.id} />
+          <FollowButton orgId={ev.organizer.id} name={ev.organizer.name} />
         </div>
         <PersonaLine org={ev.organizer} />
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
