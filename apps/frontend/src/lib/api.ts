@@ -1,5 +1,5 @@
 import type { CategoryId } from './categories'
-import { STARTER, STARTER_IDS, type Size, type SpottedEvent } from './events'
+import { CARD_IDS, STARTER, type Size, type SpottedEvent } from './events'
 import type { Decision } from './store'
 
 // Empty VITE_API_URL = offline demo on the mock catalog. Locally http://localhost:8000, on Vercel /api.
@@ -16,7 +16,8 @@ export async function starterDeck(userId: string): Promise<SpottedEvent[]> {
       const res = await fetch(`${API}/card/new/${userId}`)
       if (!res.ok) break // 404 = this user already got all six
       const card = (await res.json()) as Card
-      fromApi.set(card.id, card)
+      // null = not known yet in the backend (coordinates, price), keep the local value
+      fromApi.set(card.id, Object.fromEntries(Object.entries(card).filter(([, v]) => v !== null)) as Card)
     }
   } catch {
     /* offline: local copies only */
@@ -24,9 +25,9 @@ export async function starterDeck(userId: string): Promise<SpottedEvent[]> {
   return STARTER.map((e) => ({ ...e, ...fromApi.get(e.id) }))
 }
 
-/** Saves a swipe with POST /card/{user_id}. Only the starter cards exist in the backend; the rest stay local. */
+/** Saves a swipe with POST /card/{user_id}. Only the 20 backend cards exist there; demo events stay local. */
 export function saveSwipe(userId: string, cardId: string, decision: Decision) {
-  if (!API || !STARTER_IDS.has(cardId)) return
+  if (!API || !CARD_IDS.has(cardId)) return
   fetch(`${API}/card/${userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

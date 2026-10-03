@@ -5,19 +5,21 @@ Dokumentacja generowana automatycznie: `/docs` (OpenAPI).
 
 ## Obiekt: Card (karta wydarzenia)
 
+Katalog to 20 wydarzeń z [data/events_oneoff.json](../data/events_oneoff.json); pierwsze 6 to stała talia startowa. Frontend trzyma kopię tego pliku (`apps/frontend/src/lib/events_oneoff.json`, sprawdzana przez `npm run check`), bo backend nie zwraca kategorii, a `null` z API nie nadpisuje wartości lokalnych.
+
 | Pole | Typ | Opis |
 |------|-----|------|
 | `id` | string (UUID7) | Unikalny identyfikator karty |
 | `event_name` | string | Nazwa wydarzenia |
 | `color_code` | string | Kolor karty w formacie hex, np. `#FF8800` |
 | `description` | string | Opis wydarzenia |
-| `image_url` | string \| null | Ścieżka względna do API lub `null` (frontend pokazuje grafikę zastępczą kategorii) |
+| `image_url` | string \| null | Adres zdjęcia lub `null`; frontend na razie pokazuje zdjęcie z Unsplash według kategorii (licencje zdjęć krakow.travel niewyjaśnione) |
 | `starts_at` | string | ISO 8601 w UTC (`Z`), np. `2026-11-15T17:00:00Z` |
 | `ends_at` | string \| null | ISO 8601 w UTC (`Z`); może być `null` |
 | `address` | string | Pokazywany użytkownikowi |
-| `lat` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
-| `lng` | number | Do pinezki; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
-| `price` | number | PLN, `0` = darmowe |
+| `lat` | number \| null | Do pinezki, `null` = jeszcze bez geokodowania; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
+| `lng` | number \| null | Do pinezki, `null` = jeszcze bez geokodowania; z podpowiedzi adresu (`GET /geocode`, Photon) albo kliknięcia na mapie |
+| `price` | number \| null | PLN, `0` = darmowe, `null` = nieznana (frontend: „Cena nieznana”) |
 
 Przykład:
 

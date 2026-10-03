@@ -85,3 +85,13 @@ assert.equal(persona({ ...flat, gry: 0.7, imprezy: 0.7 }, ['gry', 'imprezy'])?.t
 assert.deepEqual(persona({ ...flat, nauka: 0.9, sport: 0.6 })?.ids, ['nauka'])
 assert.equal(describe(['kultura']).title, 'Mól książkowy')
 console.log('persona checks ok')
+
+// The frontend copy of the backend catalog stays identical to data/events_oneoff.json (the backend test checks its own copy).
+const { readFileSync } = await import('node:fs')
+const read = (f: string) => JSON.parse(readFileSync(new URL(f, import.meta.url), 'utf8'))
+assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_oneoff.json'))
+const { CARDS, STARTER } = await import('./src/lib/events.ts')
+assert.equal(CARDS.length, 20)
+assert.deepEqual(STARTER, CARDS.slice(0, 6))
+assert.ok(CARDS.every((e) => e.district && !('ends_at' in e && e.ends_at === null)))
+console.log('catalog checks ok')

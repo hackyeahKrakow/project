@@ -1,4 +1,5 @@
 import type { CategoryId } from './categories'
+import ONEOFF from './events_oneoff.json' with { type: 'json' }
 
 export type Size = 'small' | 'medium' | 'large'
 export type Organizer = {
@@ -110,17 +111,20 @@ const ROWS: Row[] = [
   ['evt_standup', 'Stand-up studencki', 'imprezy', 13, '20:00', 'ul. Bożego Ciała 10', 'Kazimierz', 50.0517, 19.9434, 25, 'medium', TEATR, 'Pięcioro debiutantów, każdy po 10 minut. Prowadzi zwycięzca zeszłej edycji.'],
 ]
 
-// The six fixed starter cards are the first six events in the backend seed (GET /card/new/{user_id}); same ids, so swipes can be saved.
-// The seed has no size or organizer, so they get the documented default (medium) and a neutral organizer.
-export const STARTER: SpottedEvent[] = [
-  { id: '01a103a0-2efc-750f-ad11-896f7fa55c5d', event_name: 'Patriarkh: Epitafium dla Proroka Ilji – Misterium Wierszalińskie', description: 'Blackmetalowy spektakl muzyczno-teatralny o strukturze rytuału, inspirowany historią Wierszalina i postacią Eliasza Klimowicza. Obrzędowe pieśni Podlasia i kresów to oś całego przedstawienia – „podlaskie requiem ludowe”.', starts_at: '2026-10-10T00:00:00+02:00', address: 'Klub Studio, ul. Budryka 4, Kraków', lat: 50.06803, lng: 19.90824, price: null, category: 'muzyka', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: ORGANIZER_TBD },
-  { id: '01a103a0-2efd-7c8f-88d3-1e9e8a8f95f2', event_name: 'Kabaret Młodych Panów: Z żartami nie ma żartów', description: 'Premierowy program na 20-lecie kabaretu – satyra, inteligentny humor, ulubione postacie i pożegnanie kilku bohaterów skeczów.', starts_at: '2026-10-11T00:00:00+02:00', address: 'Nowohuckie Centrum Kultury, al. Jana Pawła II 232, Kraków', lat: 50.07077, lng: 20.03484, price: null, category: 'kultura', size: 'medium', district: 'Nowa Huta', organizer: ORGANIZER_TBD },
-  { id: '01a103a0-2efe-732f-9fce-231eca24c9c6', event_name: 'Hello, Roxette?', description: 'Energetyczne show z największymi hitami Roxette („Joyride”, „The Look”, „Listen to Your Heart”) w nowych aranżacjach, z oprawą wizualną i tancerzami; śpiewa Olga Szomańska.', starts_at: '2026-10-11T00:00:00+02:00', address: 'Centrum Kongresowe ICE Kraków, ul. Konopnickiej 17, Kraków', lat: 50.04795, lng: 19.93146, price: null, category: 'muzyka', size: 'medium', district: 'Kazimierz', organizer: ORGANIZER_TBD },
-  { id: '01a103a0-2eff-7af1-b24f-0f7fc0514754', event_name: 'Polska Noc Kabaretowa 2026', description: 'Siedem kabaretów i artystów, siedem premierowych skeczów: Nowaki, Skeczów Męczących, Smile, Moralnego Niepokoju, Igor Kwiatkowski, K2 (prowadzący) i Mariusz Kałamaga.', starts_at: '2026-10-16T00:00:00+02:00', address: 'TAURON Arena Kraków, ul. Lema 7, Kraków', lat: 50.06772, lng: 19.99155, price: null, category: 'kultura', size: 'medium', district: 'Grzegórzki', organizer: ORGANIZER_TBD },
-  { id: '01a103a0-2f00-7bc0-83d5-96a2dee9f293', event_name: 'Harlem Globetrotters: 100 Years', description: 'Jubileuszowe, widowiskowe show koszykarskie z okazji 100-lecia słynnej drużyny, założonej w Chicago w 1926 roku.', starts_at: '2026-10-21T00:00:00+02:00', address: 'TAURON Arena Kraków, ul. Lema 7, Kraków', lat: 50.06772, lng: 19.99155, price: null, category: 'sport', size: 'medium', district: 'Grzegórzki', organizer: ORGANIZER_TBD },
-  { id: '01a103a0-2f01-7e62-b37d-3dc73b2041c7', event_name: 'Thunder from Down Under: Girls\' Night Outback', description: 'Pokaz australijskich tancerzy – wieczór pełen energii, przeznaczony m.in. na urodziny i babskie wyjścia.', starts_at: '2026-10-22T00:00:00+02:00', address: 'Klub Studio, ul. Budryka 4, Kraków', lat: 50.06803, lng: 19.90824, price: null, category: 'imprezy', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: ORGANIZER_TBD },
-]
-export const STARTER_IDS = new Set(STARTER.map((e) => e.id))
+// The backend catalog (GET /card/new, POST /card): same file and ids as data/events_oneoff.json, so swipes can be saved.
+// It has no size, district or organizer: they get the default size, the nearest district and a neutral organizer.
+const nearest = (lat: number, lng: number) => Object.entries(DISTRICTS).sort(([, a], [, b]) => km(a, [lat, lng]) - km(b, [lat, lng]))[0][0]
+export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
+  ...e,
+  ...(ends_at && { ends_at }),
+  category: e.category as CategoryId,
+  size: 'medium',
+  district: nearest(e.lat, e.lng),
+  organizer: ORGANIZER_TBD,
+}))
+export const CARD_IDS = new Set(CARDS.map((e) => e.id))
+// The first six are the fixed starter sequence served by GET /card/new/{user_id}.
+export const STARTER = CARDS.slice(0, 6)
 
 // End times as [days from today, hh:mm] for events that run longer than one evening.
 const ENDS: Record<string, [number, string]> = {
@@ -148,7 +152,7 @@ export const catalog = (today = new Date()): SpottedEvent[] => [
     organizer,
     promoted: id === 'evt_noc_bibl',
   })),
-  ...STARTER,
+  ...CARDS,
 ]
 
 // Interface is Polish and times are in Europe/Warsaw, e.g. "czw., 8 paź, 19:00".
