@@ -8,7 +8,7 @@ const input = 'h-12 w-full rounded-xl border-line px-3.5 text-base focus:border-
 
 // Login and sign-up are a demo: two hard-coded accounts, then a mocked passkey step. No real auth (docs/USER_FLOW.md).
 export default function Logowanie() {
-  const { update } = useStore()
+  const { state, update } = useStore()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [kind, setKind] = useState<Account['kind']>('student')
   const [email, setEmail] = useState('')
@@ -40,10 +40,10 @@ export default function Logowanie() {
       update({
         account: { email: account.email, name: account.name, kind: account.kind, org: account.org },
         onboarded: true,
-        consent: true,
         ...(profile && { profile }),
       })
-      window.location.hash = '#/konto'
+      // Logging in is not consent: without an earlier "Rozumiem, zaczynam" the privacy notice comes next (docs/USER_FLOW.md).
+      window.location.hash = state.consent ? '#/konto' : '#/zgoda'
     }, 1200)
   }
 

@@ -1,59 +1,88 @@
-import { ArrowLeft, Bell, Check, LocateFixed, ShieldCheck } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bell,
+  Bike,
+  BookOpen,
+  Bus,
+  CalendarDays,
+  Check,
+  Clock4,
+  Coffee,
+  Coins,
+  Dumbbell,
+  Footprints,
+  Gift,
+  LocateFixed,
+  Map as MapIcon,
+  Moon,
+  PartyPopper,
+  PiggyBank,
+  ShieldCheck,
+  Shuffle,
+  User,
+  Users,
+  UsersRound,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { DISTRICTS, type Size } from '@/lib/events'
 import { useStore, type Budget, type Goal, type Profile, type TimeOfDay } from '@/lib/store'
 import { Toggle, btnPrimary, card, chip } from '@/ui'
 
-const SIZES: [Size, string][] = [
-  ['small', 'Kameralne (do ~30 osób)'],
-  ['medium', 'Średnie (30–100)'],
-  ['large', 'Duże (100+)'],
+// Every answer chip has an icon next to its text (docs/DESIGN.md, ekran personalizacji).
+type Answer<T> = [T, string, LucideIcon]
+const SIZES: Answer<Size>[] = [
+  ['small', 'Kameralne (do ~30 osób)', User],
+  ['medium', 'Średnie (30–100)', Users],
+  ['large', 'Duże (100+)', UsersRound],
 ]
-const GOALS: [Goal, string][] = [
-  ['ludzie', 'Poznać ludzi'],
-  ['nauka', 'Nauczyć się czegoś'],
-  ['zabawa', 'Dobrze się bawić'],
-  ['ruch', 'Ruszyć się'],
-  ['spokoj', 'Kultura i spokój'],
-  ['oszczedzac', 'Oszczędzić'],
+const GOALS: Answer<Goal>[] = [
+  ['ludzie', 'Poznać ludzi', Users],
+  ['nauka', 'Nauczyć się czegoś', BookOpen],
+  ['zabawa', 'Dobrze się bawić', PartyPopper],
+  ['ruch', 'Ruszyć się', Dumbbell],
+  ['spokoj', 'Kultura i spokój', Coffee],
+  ['oszczedzac', 'Oszczędzić', PiggyBank],
 ]
-const BUDGETS: [Budget, string][] = [
-  ['free', 'Tylko darmowe'],
-  ['upto20', 'Do 20 zł'],
-  ['any', 'Bez limitu'],
+const BUDGETS: Answer<Budget>[] = [
+  ['free', 'Tylko darmowe', Gift],
+  ['upto20', 'Do 20 zł', Coins],
+  ['any', 'Bez limitu', Wallet],
 ]
-const DISTANCES: [number, string][] = [
-  [1, '1 km'],
-  [3, '3 km'],
-  [5, '5 km'],
-  [0, 'Cały Kraków'],
+const DISTANCES: Answer<number>[] = [
+  [1, '1 km', Footprints],
+  [3, '3 km', Bike],
+  [5, '5 km', Bus],
+  [0, 'Cały Kraków', MapIcon],
 ]
-const TIMES: [TimeOfDay, string][] = [
-  ['po_zajeciach', 'Po zajęciach'],
-  ['wieczory', 'Wieczory'],
-  ['weekendy', 'Weekendy'],
+const TIMES: Answer<TimeOfDay>[] = [
+  ['po_zajeciach', 'Po zajęciach', Clock4],
+  ['wieczory', 'Wieczory', Moon],
+  ['weekendy', 'Weekendy', CalendarDays],
 ]
 
 const toggle = <T,>(list: T[], v: T, max = 99) => (list.includes(v) ? list.filter((x) => x !== v) : list.length < max ? [...list, v] : list)
 
 // Four one-tap questions (docs/SPEC.md), optional permissions, then the privacy notice with an explicit consent button.
-export default function Onboarding() {
+// `privacyOnly`: after login or sign-up, show just the privacy notice so consent is always an explicit button press.
+export default function Onboarding({ privacyOnly = false }: { privacyOnly?: boolean }) {
   const { state, update } = useStore()
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(privacyOnly ? 5 : 0)
   const [p, setP] = useState<Profile>(state.profile)
   const [loc, setLoc] = useState(state.location)
   const [notifications, setNotifications] = useState(state.notifications)
   const set = (patch: Partial<Profile>) => setP({ ...p, ...patch })
 
   const finish = () => {
-    update({ profile: p, location: loc, notifications, onboarded: true, consent: true })
+    update(privacyOnly ? { consent: true } : { profile: p, location: loc, notifications, onboarded: true, consent: true })
     if (loc)
       navigator.geolocation?.getCurrentPosition(
         () => {},
         () => {},
       ) // ask the browser now, not mid-demo
-    window.location.hash = '#/odkrywaj'
+    window.location.hash = state.account ? '#/konto' : '#/odkrywaj'
   }
 
   const steps = [
@@ -85,10 +114,10 @@ export default function Onboarding() {
       hint: 'Możesz wybrać kilka',
       body: (
         <div className="flex flex-col gap-2">
-          {SIZES.map(([s, label]) => (
-            <Option key={s} on={p.sizes.includes(s)} onClick={() => set({ sizes: toggle(p.sizes, s) })} label={label} />
+          {SIZES.map(([s, label, Icon]) => (
+            <Option key={s} on={p.sizes.includes(s)} onClick={() => set({ sizes: toggle(p.sizes, s) })} label={label} Icon={Icon} />
           ))}
-          <Option on={!p.sizes.length} onClick={() => set({ sizes: [] })} label="Bez różnicy" />
+          <Option on={!p.sizes.length} onClick={() => set({ sizes: [] })} label="Bez różnicy" Icon={Shuffle} />
         </div>
       ),
     },
@@ -97,7 +126,7 @@ export default function Onboarding() {
       hint: 'Do 3 odpowiedzi',
       body: (
         <div className="flex flex-wrap gap-2">
-          {GOALS.map(([g, label]) => (
+          {GOALS.map(([g, label, Icon]) => (
             <button
               key={g}
               type="button"
@@ -105,6 +134,7 @@ export default function Onboarding() {
               onClick={() => set({ goals: toggle(p.goals, g, 3) })}
               className={chip(p.goals.includes(g))}
             >
+              <Icon size={18} aria-hidden />
               {label}
             </button>
           ))}
@@ -117,8 +147,9 @@ export default function Onboarding() {
       body: (
         <div className="flex flex-col gap-4">
           <Group label="Budżet">
-            {BUDGETS.map(([b, label]) => (
+            {BUDGETS.map(([b, label, Icon]) => (
               <button key={b} type="button" aria-pressed={p.budget === b} onClick={() => set({ budget: b })} className={chip(p.budget === b)}>
+                <Icon size={18} aria-hidden />
                 {label}
               </button>
             ))}
@@ -136,14 +167,15 @@ export default function Onboarding() {
             </select>
           </label>
           <Group label="Jak daleko dojedziesz?">
-            {DISTANCES.map(([d, label]) => (
+            {DISTANCES.map(([d, label, Icon]) => (
               <button key={d} type="button" aria-pressed={p.distanceKm === d} onClick={() => set({ distanceKm: d })} className={chip(p.distanceKm === d)}>
+                <Icon size={18} aria-hidden />
                 {label}
               </button>
             ))}
           </Group>
           <Group label="Kiedy masz czas?">
-            {TIMES.map(([t, label]) => (
+            {TIMES.map(([t, label, Icon]) => (
               <button
                 key={t}
                 type="button"
@@ -151,6 +183,7 @@ export default function Onboarding() {
                 onClick={() => set({ times: toggle(p.times, t) })}
                 className={chip(p.times.includes(t))}
               >
+                <Icon size={18} aria-hidden />
                 {label}
               </button>
             ))}
@@ -189,14 +222,14 @@ export default function Onboarding() {
       <div className="flex flex-none items-center gap-3 px-4 pt-4">
         <button
           type="button"
-          onClick={() => (step ? setStep(step - 1) : (window.location.hash = '#/start'))}
+          onClick={() => (step && !privacyOnly ? setStep(step - 1) : (window.location.hash = privacyOnly ? '#/logowanie' : '#/start'))}
           className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white"
           aria-label="Wstecz"
         >
           <ArrowLeft size={22} aria-hidden />
         </button>
         <div
-          className="flex flex-1 gap-1.5"
+          className={`flex flex-1 gap-1.5 ${privacyOnly ? 'invisible' : ''}`}
           role="progressbar"
           aria-label="Postęp"
           aria-valuemin={1}
@@ -255,7 +288,7 @@ export default function Onboarding() {
   )
 }
 
-function Option({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
+function Option({ on, onClick, label, Icon }: { on: boolean; onClick: () => void; label: string; Icon: LucideIcon }) {
   return (
     <button
       type="button"
@@ -263,7 +296,10 @@ function Option({ on, onClick, label }: { on: boolean; onClick: () => void; labe
       onClick={onClick}
       className={`flex min-h-14 items-center justify-between rounded-2xl px-4 text-left text-[16px] font-medium ${on ? 'border-2 border-brand-600 bg-brand-50' : 'border border-line bg-white'}`}
     >
-      {label}
+      <span className="flex items-center gap-3">
+        <Icon size={22} className="text-brand-600" aria-hidden />
+        {label}
+      </span>
       {on && <Check size={20} strokeWidth={2.6} className="text-brand-600" aria-hidden />}
     </button>
   )

@@ -12,9 +12,9 @@ Metoda:
 Nie testowaliśmy prawdziwym czytnikiem ekranu (VoiceOver, NVDA): to zostaje do zrobienia ręcznie.
 
 ### Summary
-**Issues found:** 15 | **Critical:** 0 | **Major:** 5 | **Minor:** 10
+**Issues found:** 16 | **Critical:** 0 | **Major:** 6 | **Minor:** 10
 
-Wszystkie 15 problemów jest poprawionych w tym PR. Po poprawkach axe zgłasza 0 naruszeń na 10 ekranach w 3 szerokościach. Otwarte uwagi są na końcu.
+Wszystkie 16 problemów jest poprawionych w tym PR (punkt 16 zgłosił review Copilota). Po poprawkach axe zgłasza 0 naruszeń na 10 ekranach w 3 szerokościach. Otwarte uwagi są na końcu.
 
 ### Findings
 
@@ -33,6 +33,7 @@ Wszystkie 15 problemów jest poprawionych w tym PR. Po poprawkach axe zgłasza 0
 | 6 | Fokus prawie niewidoczny: bazowy styl shadcn daje szary obrys z 50% przezroczystością | 2.4.7 Focus Visible | 🟡 Major | ✅ Jeden globalny `:focus-visible`: 3 px `#1D5CFF` z odstępem 2 px |
 | 7 | Panel wydarzenia (bottom sheet) otwierał się bez przeniesienia fokusu i nie oddawał go po zamknięciu | 2.4.3 Focus Order | 🟡 Major | ✅ Fokus idzie na „Zamknij”, Escape zamyka panel, fokus wraca do przycisku, który go otworzył |
 | 8 | Swipe tylko gestem albo przyciskami, bez skrótów | 2.1.1 Keyboard | 🟢 Minor | ✅ Strzałki ← i → (przyciski ✕ i ♥ zostają) |
+| 16 | Przezroczyste `<select>` (filtr kategorii na mapie, kategoria w formularzu) nie pokazywały fokusu, bo obrys rysuje się na niewidocznym elemencie | 2.4.7 Focus Visible | 🟡 Major | ✅ Obrys na widocznym rodzicu przez `has-focus-visible:` |
 | 9 | Brak linku pomijającego nawigację | 2.4.1 Bypass Blocks | 🟢 Minor | ✅ „Przejdź do treści” jako pierwszy element na każdym ekranie |
 | 10 | Piny na mapie mają 34 px | 2.5.5 Target Size | 🟢 Minor | ✅ Przycisk ma min. 44×44 px, kolorowe kółko w środku może być mniejsze |
 | 11 | Ten sam tytuł karty przeglądarki na każdym ekranie | 2.4.2 Page Titled | 🟢 Minor | ✅ Tytuł ekranu, np. „Mapa · spootted” |
@@ -88,7 +89,9 @@ Wszystkie 15 problemów jest poprawionych w tym PR. Po poprawkach axe zgłasza 0
 | Statystyki (paski) | `role="img"`: „W prawo 512, w lewo 461, pominięte 267” | – |
 
 ### Priority Fixes
-Poprawione w tym PR: punkty 1–15.
+Poprawione w tym PR: punkty 1–16.
+
+Panel wydarzenia jest celowo **niemodalny** (`role="dialog"` bez `aria-modal`): na laptopie leży obok mapy i listy, które dalej działają. Dlatego nie więzimy fokusu, tylko przenosimy go do panelu, zamykamy Escape i oddajemy fokus do przycisku, który panel otworzył.
 
 Otwarte uwagi:
 1. **Test na prawdziwym czytniku (VoiceOver na iPhonie, NVDA na Windows).** Dotyczy osób niewidomych. Sprawdźcie ogłaszanie kart w talii i panel wydarzenia.

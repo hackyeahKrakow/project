@@ -42,21 +42,31 @@ function timeFit(ev: SpottedEvent, p: Profile) {
 
 export type Scored = { ev: SpottedEvent; score: number; reason: string; distance: number }
 
-export function score(ev: SpottedEvent, p: Profile, w: Record<CategoryId, number>, here?: [number, number], today = todayYmd()): Scored {
+/** score = 0.45·category + 0.25·proximity + 0.20·time + 0.10·followed organizer (docs/ARCHITECTURE.md), × size fit. */
+export function score(
+  ev: SpottedEvent,
+  p: Profile,
+  w: Record<CategoryId, number>,
+  here?: [number, number],
+  today = todayYmd(),
+  follows: ReadonlySet<string> = new Set(),
+): Scored {
   const from = here ?? DISTRICTS[p.district] ?? DISTRICTS['Stare Miasto']
   const distance = km(from, [ev.lat, ev.lng])
   const reach = p.distanceKm || 8
   const proximity = Math.max(0, 1 - distance / reach)
   const soon = Math.max(0, 1 - Math.max(0, daysFromToday(ev.starts_at, today)) / 14)
-  const sizeFit = !p.sizes.length || p.sizes.includes(ev.size) ? 1 : 0.3
-  const s = 0.45 * w[ev.category] + 0.25 * proximity + 0.2 * soon * timeFit(ev, p) + 0.1 * sizeFit
+  const followed = follows.has(ev.organizer.id)
+  const sizeFit = !p.sizes.length || p.sizes.includes(ev.size) ? 1 : 0.85
+  const s = (0.45 * w[ev.category] + 0.25 * proximity + 0.2 * soon * timeFit(ev, p) + 0.1 * (followed ? 1 : 0)) * sizeFit
 
   // "Bo lubisz…" lists only what really drove the match (docs/SPEC.md, DSA transparency).
   const parts = [w[ev.category] >= 0.6 ? category(ev.category).short.toLowerCase() : null, p.sizes.includes(ev.size) ? SIZE_LABEL[ev.size] : null].filter(
     Boolean,
   )
   const reason = [
-    parts.length ? `Bo lubisz: ${parts.join(', ')}` : 'Nowość dla ciebie',
+    followed ? `Obserwujesz: ${ev.organizer.name}` : null,
+    parts.length ? `Bo lubisz: ${parts.join(', ')}` : followed ? null : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,
     whenLabel(ev.starts_at, today),
     ev.price === 0 || p.budget !== 'any' ? formatPrice(ev.price).toLowerCase() : null,
@@ -67,12 +77,20 @@ export function score(ev: SpottedEvent, p: Profile, w: Record<CategoryId, number
 }
 
 /** Next cards: upcoming, not swiped, within budget and reach, best first. */
-export function recommend(events: SpottedEvent[], p: Profile, swipes: Record<string, Decision>, exclude: Set<string>, n: number, here?: [number, number]) {
+export function recommend(
+  events: SpottedEvent[],
+  p: Profile,
+  swipes: Record<string, Decision>,
+  exclude: Set<string>,
+  n: number,
+  here?: [number, number],
+  follows: ReadonlySet<string> = new Set(),
+) {
   const w = weights(p, swipes, events)
   const today = todayYmd()
   return events
     .filter((e) => !swipes[e.id] && !exclude.has(e.id) && daysFromToday(e.starts_at, today) >= 0 && fitsBudget(e, p))
-    .map((e) => score(e, p, w, here, today))
+    .map((e) => score(e, p, w, here, today, follows))
     .filter((x) => !p.distanceKm || x.distance <= p.distanceKm + 1)
     .sort((a, b) => b.score - a.score)
     .slice(0, n)

@@ -1,7 +1,7 @@
 // Run: npm run check — asserts the date, recommendation and calendar logic the pages rely on.
 import assert from 'node:assert/strict'
 import { at, catalog, formatDate, formatPrice, inRange, warsawDay, whenLabel } from './src/lib/events.ts'
-import { ics } from './src/lib/ics.ts'
+import { fold, ics } from './src/lib/ics.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
 import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
@@ -48,4 +48,18 @@ const cal = ics([{ ...events[0], event_name: 'A, B; C' }], new Date('2026-10-03T
 assert.ok(cal.includes('SUMMARY:A\\, B\\; C'))
 assert.equal(cal.match(/BEGIN:VEVENT/g)?.length, 1)
 assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
+// Following an organizer lifts its events and is named in the reason.
+const lib = events.find((e) => e.id === 'evt_ksiazka')!
+const plain = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50).findIndex((x) => x.ev.id === lib.id)
+const followedDeck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50, undefined, new Set([lib.organizer.id]))
+const followed = followedDeck.findIndex((x) => x.ev.id === lib.id)
+assert.ok(followed < plain, `${followed} < ${plain}`)
+assert.ok(followedDeck[followed].reason.startsWith('Obserwujesz:'), followedDeck[followed].reason)
+
+// .ics folding: max 75 octets per physical line, never splitting a UTF-8 character, unfolds to the original.
+const long = 'DESCRIPTION:' + 'Zażółć gęślą jaźń, '.repeat(12)
+const folded = fold(long)
+assert.ok(folded.split('\r\n').every((l) => new TextEncoder().encode(l).length <= 75))
+assert.equal(folded.replace(/\r\n /g, ''), long)
+assert.equal(fold('SHORT:ok'), 'SHORT:ok')
 console.log('events checks ok')

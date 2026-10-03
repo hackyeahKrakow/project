@@ -8,6 +8,27 @@ const stamp = (d: Date) =>
 // RFC 5545: escape \ ; , and newlines in text values.
 const text = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, '\\n')
 
+const utf8 = new TextEncoder()
+
+/** RFC 5545 §3.1: lines longer than 75 octets continue on the next line after CRLF + space, never inside a UTF-8 character. */
+export function fold(line: string) {
+  const out: string[] = []
+  let cur = ''
+  let size = 0
+  for (const ch of line) {
+    const n = utf8.encode(ch).length
+    if (size + n > (out.length ? 74 : 75)) {
+      out.push(cur)
+      cur = ''
+      size = 0
+    }
+    cur += ch
+    size += n
+  }
+  out.push(cur)
+  return out.join('\r\n ')
+}
+
 /** iCalendar file with the given events (2 h long when no end time is known). */
 export function ics(events: SpottedEvent[], now = new Date()) {
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//spootted//PL', 'CALSCALE:GREGORIAN']
@@ -26,7 +47,7 @@ export function ics(events: SpottedEvent[], now = new Date()) {
     )
   }
   lines.push('END:VCALENDAR')
-  return lines.join('\r\n')
+  return lines.map(fold).join('\r\n')
 }
 
 export function downloadIcs(events: SpottedEvent[], name = 'spootted.ics') {

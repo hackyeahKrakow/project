@@ -15,7 +15,9 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
   const top = CATEGORIES.map((c) => ({ c, v: w[c.id] }))
     .sort((a, b) => b.v - a.v)
     .slice(0, 4)
-  const orgEvents = account?.kind === 'org' ? events.filter((e) => e.organizer.id === LIBRARY.id) : state.myEvents
+  // Same organizer id as Dodaj gives new events: the demo library, or this account.
+  const ownerId = account?.org === LIBRARY.name ? LIBRARY.id : account && `usr_${account.email}`
+  const orgEvents = ownerId ? events.filter((e) => e.organizer.id === ownerId) : []
   const plan = PACKAGES.find((p) => p.id === ORG_PLAN.package)!
 
   return (
@@ -130,8 +132,8 @@ export default function Konto({ events }: { events: SpottedEvent[] }) {
           <section className="flex items-start gap-2.5 rounded-[14px] bg-violet-50 p-3.5 text-sm leading-snug">
             <ShieldCheck size={20} className="flex-none text-violet-600" aria-hidden />
             <span>
-              Twój anonimowy identyfikator: <code className="text-[12px] break-all">{state.userId}</code>. Odpowiedzi z pytań, polubienia i lokalizacja są w
-              pamięci tej przeglądarki.
+              Twój anonimowy identyfikator: <code className="text-[12px] break-all">{state.userId}</code>. Odpowiedzi z pytań, polubienia i ustawienia zgód są w
+              pamięci tej przeglądarki. Twojej lokalizacji nie zapisujemy nigdzie.
             </span>
           </section>
 

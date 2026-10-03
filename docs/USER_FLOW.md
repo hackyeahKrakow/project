@@ -56,7 +56,9 @@ Pobieranie kart (backend):
 Karta pokazuje:
 - grafikę, tytuł, godzinę i cenę;
 - odległość w km, jeśli użytkownik udostępnił lokalizację, a inaczej nazwę dzielnicy;
-- powód rekomendacji „Bo lubisz…”.
+- powód rekomendacji „Bo lubisz…” albo „Obserwujesz: [organizator]”.
+
+Na karcie wydarzenia jest przycisk **„Obserwuj”** przy organizatorze. Lista obserwowanych zostaje na urządzeniu i podnosi ich wydarzenia w talii (waga 0,10 we wzorze z ARCHITECTURE.md).
 
 W prawo wydarzenie trafia do kalendarza i świeci na mapie. W lewo wydarzenie odpada.
 
@@ -67,7 +69,7 @@ Zgodnie z sekcją „Nawigacja”.
 ## 3. Zalogowany: osoba prywatna (student)
 
 Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
-- Ręczny formularz: tytuł, data, miejsce, opis, kategorie, wielkość grupy, dla kogo.
+- Ręczny formularz: tytuł, kategoria, data, godzina, adres, dzielnica (pin na mapie stawiamy w jej środku, bez geokodowania z przeglądarki, zob. Nominatim w LEGAL.md), cena, wielkość, opis. Formularz sprawdza puste i błędne pola przed publikacją.
 - Pola kategorii i wielkości grupy są te same co w onboardingu, żeby dane wydarzenia pasowały do profili.
 - Bez AI. Autouzupełnianie jest w pakiecie dla organizacji.
 
@@ -85,7 +87,7 @@ Ma wszystko, co anonimowy użytkownik, plus **„+ Dodaj wydarzenie”**:
 | Student | `ola@demo` | Ola Nowak, 1. rok AGH: jej profil zainteresowań, dodanie wydarzenia ręcznie |
 | Organizacja | `biblioteka@demo` | Biblioteka Miejska „Pod Kopcem” (demo), dyrektor Marek Wiśniewski: funkcje AI, statystyki, pakiet Płomień |
 
-Hasło obu kont: `demo1234`. Po haśle jest drugi krok, klucz dostępu (passkey), który w demo jest atrapą bez WebAuthn. Logowanie jest atrapą: dwa konta na sztywno, bez prawdziwej autoryzacji. Na slajdzie piszemy to wprost. Rejestracja tworzy konto tylko na tym urządzeniu.
+Hasło obu kont: `demo1234`. Po haśle jest drugi krok, klucz dostępu (passkey), który w demo jest atrapą bez WebAuthn. Logowanie jest atrapą: dwa konta na sztywno, bez prawdziwej autoryzacji. Na slajdzie piszemy to wprost. Rejestracja tworzy konto tylko na tym urządzeniu. Samo zalogowanie to nie zgoda: jeśli ktoś wszedł przez „Chcę tworzyć wydarzenia” i nie widział jeszcze ekranu prywatności, po kluczu dostępu dostaje ekran „Twoje dane, twoje zasady” z przyciskiem „Rozumiem, zaczynam”.
 
 ## 5. Model biznesowy: pakiety dla organizacji
 

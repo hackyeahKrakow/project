@@ -87,7 +87,9 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
               {label}
             </button>
           ))}
-          <label className={`${chip(!!cat)} relative shadow-sm focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-600`}>
+          <label
+            className={`${chip(!!cat)} relative shadow-sm has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600`}
+          >
             {cat ? category(cat).short : 'Kategoria'}
             <ChevronDown size={16} aria-hidden />
             <select

@@ -133,7 +133,12 @@ function Month({ byDay, today, onOpen }: { byDay: Map<string, SpottedEvent[]>; t
   const first = new Date(`${month}-01T00:00:00Z`)
   const lead = (first.getUTCDay() + 6) % 7 // Monday-first
   const days = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
-  const shift = (n: number) => setMonth(new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + n, 1)).toISOString().slice(0, 7))
+  // Moving to another month also picks a day in it: today in the current month, otherwise the 1st.
+  const shift = (n: number) => {
+    const next = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + n, 1)).toISOString().slice(0, 7)
+    setMonth(next)
+    setPicked(next === today.slice(0, 7) ? today : `${next}-01`)
+  }
   const list = byDay.get(picked) ?? []
 
   return (

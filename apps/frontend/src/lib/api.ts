@@ -46,8 +46,11 @@ export type Draft = {
   missing_fields: string[]
 }
 
-/** POST /events/parse. Returns null when the API or the model is unavailable, so the caller can use the demo draft. */
-export async function parseEvent(text: string): Promise<Draft | null> {
+/**
+ * POST /events/parse. `'invalid'` = the text was rejected (422, e.g. too long); null = the API or model is unavailable,
+ * so the caller can fall back to the demo draft.
+ */
+export async function parseEvent(text: string): Promise<Draft | 'invalid' | null> {
   if (!API) return null
   try {
     const res = await fetch(`${API}/events/parse`, {
@@ -56,21 +59,8 @@ export async function parseEvent(text: string): Promise<Draft | null> {
       body: JSON.stringify({ text }),
       signal: AbortSignal.timeout(25_000),
     })
+    if (res.status === 422) return 'invalid'
     return res.ok ? ((await res.json()) as Draft) : null
-  } catch {
-    return null
-  }
-}
-
-/** Address → coordinates with OpenStreetMap Nominatim (low volume, called only on publish). */
-export async function geocode(address: string): Promise<[number, number] | null> {
-  try {
-    const q = encodeURIComponent(/krak[oó]w/i.test(address) ? address : `${address}, Kraków`)
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=pl&q=${q}`, {
-      signal: AbortSignal.timeout(6_000),
-    })
-    const [hit] = (await res.json()) as { lat: string; lon: string }[]
-    return hit ? [Number(hit.lat), Number(hit.lon)] : null
   } catch {
     return null
   }

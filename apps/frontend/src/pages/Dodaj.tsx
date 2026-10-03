@@ -1,13 +1,13 @@
 import { ArrowLeft, CircleAlert, Info, LoaderCircle, LogIn, Sparkles } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { geocode, parseEvent, type Draft } from '@/lib/api'
+import { parseEvent, type Draft } from '@/lib/api'
 import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
-import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
+import { DISTRICTS, LIBRARY, at, daysFromToday, warsawDay, type Size, type SpottedEvent } from '@/lib/events'
 import { useStore } from '@/lib/store'
 import { CategoryBadge, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 
-type Form = { title: string; category: CategoryId; price: string; date: string; time: string; place: string; size: Size; description: string }
+type Form = { title: string; category: CategoryId; price: string; date: string; time: string; place: string; district: string; size: Size; description: string }
 type Key = keyof Form
 
 const EMPTY: Form = {
@@ -17,6 +17,7 @@ const EMPTY: Form = {
   date: warsawDay(new Date().toISOString()),
   time: '19:00',
   place: '',
+  district: 'Stare Miasto',
   size: 'small',
   description: '',
 }
@@ -40,6 +41,18 @@ const nextFriday = () => {
   return at(0, '20:00')
 }
 
+/** Polish message for the first invalid field, or '' when the form can be published. */
+function validate(f: Form, today = warsawDay(new Date().toISOString())) {
+  if (!f.title.trim()) return 'Podaj tytuł.'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) return 'Podaj datę.'
+  if (f.date < today) return 'Data nie może być w przeszłości.'
+  if (!/^\d{2}:\d{2}$/.test(f.time)) return 'Podaj godzinę.'
+  if (!f.place.trim()) return 'Podaj adres.'
+  const price = Number(f.price.replace(',', '.'))
+  if (f.price.trim() === '' || !Number.isFinite(price) || price < 0) return 'Cena musi być liczbą od 0 w górę.'
+  return ''
+}
+
 function fromDraft(d: Draft, prev: Form): Form {
   const start = d.starts_at ? new Date(d.starts_at) : null
   return {
@@ -49,6 +62,7 @@ function fromDraft(d: Draft, prev: Form): Form {
     date: start ? warsawDay(d.starts_at!) : prev.date,
     time: start ? start.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' }) : prev.time,
     place: d.address ?? prev.place,
+    district: prev.district,
     size: d.size ?? prev.size,
     description: d.description ?? prev.description,
   }
@@ -87,6 +101,10 @@ export default function Dodaj() {
     setBusy('ai')
     setNotice('')
     const real = await parseEvent(paste)
+    if (real === 'invalid') {
+      setBusy('')
+      return setNotice('Tekst posta musi mieć od 10 do 4000 znaków.')
+    }
     const draft = real ?? demoDraft(nextFriday())
     if (!real) setNotice('Model AI jest teraz niedostępny, więc pokazujemy przykładową odpowiedź dla tego posta.')
     setForm(fromDraft(draft, form))
@@ -94,12 +112,16 @@ export default function Dodaj() {
     setBusy('')
   }
 
-  const publish = async () => {
-    if (!form.title.trim() || !form.place.trim()) return setNotice('Uzupełnij tytuł i miejsce.')
+  const publish = () => {
+    const error = validate(form)
+    if (error) return setNotice(error)
     setBusy('publish')
     const iso = at(daysFromToday(`${form.date}T12:00:00Z`), form.time)
-    const [lat, lng] = (await geocode(form.place)) ?? DISTRICTS['Stare Miasto']
-    const district = Object.keys(DISTRICTS).sort((a, b) => km(DISTRICTS[a], [lat, lng]) - km(DISTRICTS[b], [lat, lng]))[0]
+    // ponytail: pin at the district center (small spread so pins don't stack); geocoding the address needs a backend proxy
+    // that respects the Nominatim policy (User-Agent, 1 req/s, cache: docs/LEGAL.md)
+    const spread = () => (Math.random() - 0.5) * 0.006
+    const [lat, lng] = DISTRICTS[form.district].map((v) => v + spread())
+    const district = form.district
     const ev: SpottedEvent = {
       id: `my_${Date.now()}`,
       event_name: form.title.trim(),
@@ -108,7 +130,7 @@ export default function Dodaj() {
       address: form.place.trim(),
       lat,
       lng,
-      price: Number(form.price.replace(',', '.')) || 0,
+      price: Number(form.price.replace(',', '.')),
       category: form.category,
       size: form.size,
       district,
@@ -165,6 +187,7 @@ export default function Dodaj() {
           </div>
           <textarea
             id="paste"
+            maxLength={4000}
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
             className="h-36 resize-none rounded-xl border border-line bg-canvas px-3.5 py-3 text-[15px] leading-[1.45] focus:border-brand-600 focus:ring-brand-600"
@@ -191,7 +214,9 @@ export default function Dodaj() {
       >
         {field('title', 'Tytuł', text('title'))}
         {field('category', 'Kategoria', (cls) => (
-          <div className={`${cls} relative flex items-center`}>
+          <div
+            className={`${cls} relative flex items-center has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand-600`}
+          >
             <CategoryBadge cat={category(form.category)} className="text-sm" />
             <select
               aria-label="Kategoria"
@@ -211,9 +236,16 @@ export default function Dodaj() {
           {field('date', 'Data', text('date', 'date'), 'flex-[3]')}
           {field('time', 'Godzina', text('time', 'time'), 'flex-[2]')}
         </div>
-        {field('place', 'Miejsce', text('place'))}
+        {field('place', 'Adres', text('place'))}
+        {field('district', 'Dzielnica (pin na mapie)', (cls) => (
+          <select className={cls} value={form.district} onChange={(e) => set('district', e.target.value)}>
+            {Object.keys(DISTRICTS).map((d) => (
+              <option key={d}>{d}</option>
+            ))}
+          </select>
+        ))}
         <div className="flex gap-3">
-          {field('price', 'Cena (zł)', text('price'), 'flex-1')}
+          {field('price', 'Cena (zł, 0 = za darmo)', text('price'), 'flex-1')}
           {field(
             'size',
             'Wielkość',

@@ -14,10 +14,11 @@ import Start from '@/pages/Start'
 import Statystyki from '@/pages/Statystyki'
 
 const routeFromHash = () => location.hash.replace(/^#\/?/, '')
-const NO_NAV = new Set(['start', 'onboarding', 'logowanie'])
+const NO_NAV = new Set(['start', 'onboarding', 'zgoda', 'logowanie'])
 const TITLES: Record<string, string> = {
   start: 'Zmatchuj się z eventami',
   onboarding: 'Twoje zainteresowania',
+  zgoda: 'Twoje dane, twoje zasady',
   odkrywaj: 'Odkrywaj',
   mapa: 'Mapa',
   moje: 'Moje',
@@ -57,6 +58,7 @@ export default function App() {
   const page = {
     start: <Start events={events} />,
     onboarding: <Onboarding />,
+    zgoda: <Onboarding privacyOnly />,
     odkrywaj: <Odkrywaj events={events} />,
     mapa: <Mapa events={events} liked={liked} />,
     moje: <Moje events={events} liked={liked} />,

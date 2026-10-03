@@ -23,6 +23,7 @@ export type State = {
   consent: boolean // "Rozumiem, zaczynam" on the privacy screen
   profile: Profile
   swipes: Record<string, Decision>
+  follows: string[] // organizer ids (US-10)
   location: boolean
   notifications: boolean
   bigText: boolean
@@ -48,6 +49,7 @@ export const fresh = (): State => ({
   consent: false,
   profile: EMPTY_PROFILE,
   swipes: {},
+  follows: [],
   location: false,
   notifications: false,
   bigText: false,

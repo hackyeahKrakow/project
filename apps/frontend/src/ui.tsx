@@ -1,4 +1,19 @@
-import { BadgeCheck, CalendarPlus, Calendar, Compass, Heart, Map as MapIcon, MapPin, Megaphone, Plus, UserRound, Users, X } from 'lucide-react'
+import {
+  BadgeCheck,
+  CalendarPlus,
+  Calendar,
+  Compass,
+  Heart,
+  Map as MapIcon,
+  MapPin,
+  Megaphone,
+  Plus,
+  UserCheck,
+  UserPlus,
+  UserRound,
+  Users,
+  X,
+} from 'lucide-react'
 import { GeolocateControl, Map as MapLibre, Marker, setWorkerUrl } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import iconUrl from '@/assets/icon.svg'
@@ -10,6 +25,7 @@ import { createPortal } from 'react-dom'
 import { type Category, category } from '@/lib/categories'
 import { SIZE_LABEL, formatDate, formatPrice, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
+import { useStore } from '@/lib/store'
 
 // Preline "Buttons" styled with spootted tokens.
 export const btn =
@@ -77,6 +93,10 @@ export function PromotedTag() {
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
+  const { state, update } = useStore()
+  const following = state.follows.includes(ev.organizer.id)
+  // Following lives on this device and lifts the organizer's events in the deck (US-10).
+  const toggleFollow = () => update((s) => ({ follows: following ? s.follows.filter((id) => id !== ev.organizer.id) : [...s.follows, ev.organizer.id] }))
   return (
     <article className="flex flex-col">
       <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" />
@@ -101,7 +121,18 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-lg bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-700">{formatPrice(ev.price)}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
           <OrganizerLine ev={ev} />
+          <button
+            type="button"
+            onClick={toggleFollow}
+            aria-pressed={following}
+            className={`flex min-h-11 flex-none items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${following ? 'bg-brand-50 text-brand-700' : 'border border-line text-ink-900'}`}
+          >
+            {following ? <UserCheck size={16} aria-hidden /> : <UserPlus size={16} aria-hidden />}
+            {following ? 'Obserwujesz' : 'Obserwuj'}
+          </button>
         </div>
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
         <div className="flex gap-2">

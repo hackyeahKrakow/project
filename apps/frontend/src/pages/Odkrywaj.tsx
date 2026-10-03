@@ -39,7 +39,7 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
   const pending = queue.filter((x) => !swipes[x.ev.id])
   useEffect(() => {
     if (starterLeft.length || pending.length > REFILL_AT) return
-    const more = recommend(events, profile, swipes, new Set(queue.map((q) => q.ev.id)), BATCH, here)
+    const more = recommend(events, profile, swipes, new Set(queue.map((q) => q.ev.id)), BATCH, here, new Set(state.follows))
     if (more.length) setQueue((q) => [...q, ...more])
   }, [starterLeft.length, pending.length]) // eslint-disable-line react-hooks/exhaustive-deps -- refill only when the deck runs low
 
@@ -49,7 +49,7 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
   const decide = (d: Decision) => {
     if (!top) return
     update((s) => ({ swipes: { ...s.swipes, [top.ev.id]: d } }))
-    saveSwipe(userId, top.ev.id, d)
+    if (state.consent) saveSwipe(userId, top.ev.id, d) // nothing leaves the device before "Rozumiem, zaczynam"
   }
 
   const w = weights(profile, swipes, events)
