@@ -221,7 +221,7 @@ function SwipeCard({ item, style, like, skip, top }: { item: Scored; style: CSSP
       <div className="absolute inset-x-0 top-0 bottom-[48%] flex items-center justify-center">
         <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
       </div>
-      <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-x-0 top-0 h-[70%] w-full object-cover" />
+      <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
       <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
         WCHODZĘ
       </div>

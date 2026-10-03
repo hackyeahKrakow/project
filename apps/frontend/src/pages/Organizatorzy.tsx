@@ -69,14 +69,14 @@ export default function Organizatorzy({ events, liked }: { events: SpottedEvent[
         <ul className="flex flex-col gap-3">
           {shown.map(({ org, upcoming }) => (
             <li key={org.id} className={`${card} flex flex-col gap-3 p-4`}>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span
                   className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-700"
                   aria-hidden
                 >
                   {org.name[0]}
                 </span>
-                <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex min-w-48 flex-1 flex-col">
                   <h2 className="font-semibold">
                     <OrganizerLine ev={{ organizer: org }} className="text-[15px] text-fg" />
                   </h2>

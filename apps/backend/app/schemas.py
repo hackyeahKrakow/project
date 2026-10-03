@@ -30,9 +30,13 @@ class CardFetchResponse(BaseModel):
     starts_at: datetime = Field(description="Start of the event, ISO 8601")
     ends_at: datetime | None = Field(description="End of the event, ISO 8601, may be null")
     address: str = Field(max_length=300, description="Address shown to the user")
-    lat: float = Field(ge=-90, le=90, description="Latitude for the map pin")
-    lng: float = Field(ge=-180, le=180, description="Longitude for the map pin")
-    price: float = Field(ge=0, description="Price in PLN, 0 = free")
+    lat: float | None = Field(
+        ge=-90, le=90, description="Latitude for the map pin, null when the place is not geocoded yet"
+    )
+    lng: float | None = Field(
+        ge=-180, le=180, description="Longitude for the map pin, null when the place is not geocoded yet"
+    )
+    price: float | None = Field(ge=0, description="Price in PLN, 0 = free, null when unknown")
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -7,9 +7,9 @@ CREATE TABLE cards (
 	starts_at DATETIME NOT NULL, 
 	ends_at DATETIME, 
 	address VARCHAR(300) NOT NULL, 
-	lat FLOAT NOT NULL, 
-	lng FLOAT NOT NULL, 
-	price FLOAT NOT NULL, 
+	lat FLOAT, 
+	lng FLOAT, 
+	price FLOAT, 
 	PRIMARY KEY (id)
 );
 

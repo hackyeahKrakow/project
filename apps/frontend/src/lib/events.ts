@@ -1,4 +1,5 @@
 import type { CategoryId } from './categories'
+import ONEOFF from './events_oneoff.json' with { type: 'json' }
 
 export type Size = 'small' | 'medium' | 'large'
 export type Organizer = {
@@ -19,7 +20,7 @@ export type SpottedEvent = {
   address: string
   lat: number
   lng: number
-  price: number
+  price: number | null // null = unknown, 0 = free
   category: CategoryId
   size: Size
   district: string
@@ -54,7 +55,7 @@ const KARIER = o('org_karier', 'Biuro Karier (demo)')
 const AZS = o('org_azs', 'Sekcja Biegowa AZS (demo)')
 const TEATR = o('org_teatr', 'Teatr Studencki (demo)')
 const EKO = o('org_eko', 'Koło Ekologiczne (demo)')
-const PRZEWODNICY = o('org_przew', 'Koło Przewodników (demo)')
+const ORGANIZER_TBD = o('org_tbd', 'Organizator nieznany (demo)', 'org', false)
 const KASIA: Organizer = { ...o('usr_kasia', 'Kasia, studentka AGH', 'student'), persona: ['imprezy', 'gry'] }
 const MIKOLAJ: Organizer = { ...o('usr_mikolaj', 'Mikołaj, student UJ', 'student'), persona: ['gry', 'warsztaty'] }
 
@@ -110,16 +111,20 @@ const ROWS: Row[] = [
   ['evt_standup', 'Stand-up studencki', 'imprezy', 13, '20:00', 'ul. Bożego Ciała 10', 'Kazimierz', 50.0517, 19.9434, 25, 'medium', TEATR, 'Pięcioro debiutantów, każdy po 10 minut. Prowadzi zwycięzca zeszłej edycji.'],
 ]
 
-// The six fixed starter cards come from the backend seed (GET /card/new/{user_id}); same ids, so swipes can be saved.
-export const STARTER: SpottedEvent[] = [
-  { id: '01a10200-0830-7370-ae21-2e47cc06805f', event_name: 'Studencki Nocny Market', description: 'Street food, muzyka na żywo i stoiska kół naukowych.', starts_at: '2026-11-14T18:00:00+01:00', ends_at: '2026-11-14T23:00:00+01:00', address: 'Rynek Główny 1', lat: 50.0617, lng: 19.9373, price: 0, category: 'imprezy', size: 'large', district: 'Stare Miasto', organizer: SAMORZAD },
-  { id: '01a10200-0831-797f-b50e-774683352488', event_name: 'Turniej gier planszowych', description: 'Open turniej dla początkujących i zaawansowanych, nagrody dla zwycięzców.', starts_at: '2026-11-15T16:00:00+01:00', address: 'ul. Reymonta 17', lat: 50.0647, lng: 19.9234, price: 10, category: 'gry', size: 'medium', district: 'Czarna Wieś (Miasteczko AGH)', organizer: PLANSZ },
-  { id: '01a10200-0832-7c17-aa31-2be7e76e7a57', event_name: 'Hackathon dla początkujących', description: 'Całodniowe warsztaty programowania w zespołach z mentorami.', starts_at: '2026-11-20T09:00:00+01:00', ends_at: '2026-11-20T20:00:00+01:00', address: 'ul. Podchorążych 2', lat: 50.0701, lng: 19.9026, price: 0, category: 'nauka', size: 'medium', district: 'Bronowice', organizer: DS },
-  { id: '01a10200-0833-793b-baed-a7c26b03f790', event_name: 'Koncert w Rotundzie', description: 'Wieczór z lokalnymi zespołami studenckimi.', starts_at: '2026-11-21T19:30:00+01:00', address: 'ul. Oleandry 1', lat: 50.0603, lng: 19.9238, price: 25, category: 'muzyka', size: 'large', district: 'Krowodrza', organizer: AKORD },
-  { id: '01a10200-0834-7591-8c3e-835ac248aba0', event_name: 'Spacer po Kazimierzu z przewodnikiem', description: 'Dwugodzinny spacer śladami historii dzielnicy, zniżki dla studentów.', starts_at: '2026-11-22T11:00:00+01:00', ends_at: '2026-11-22T13:00:00+01:00', address: 'Plac Wolnica 1', lat: 50.0494, lng: 19.9455, price: 15, category: 'kultura', size: 'small', district: 'Kazimierz', organizer: PRZEWODNICY },
-  { id: '01a10200-0835-7c78-8dba-f85e707ea49e', event_name: 'Wieczór kina studenckiego', description: 'Pokaz krótkich filmów studentów i dyskusja z reżyserami.', starts_at: '2026-11-27T20:00:00+01:00', address: 'ul. Św. Tomasza 11', lat: 50.0636, lng: 19.9411, price: 0, category: 'kultura', size: 'medium', district: 'Stare Miasto', organizer: DKF },
-]
-export const STARTER_IDS = new Set(STARTER.map((e) => e.id))
+// The backend catalog (GET /card/new, POST /card): same file and ids as data/events_oneoff.json, so swipes can be saved.
+// It has no size, district or organizer: they get the default size, the nearest district and a neutral organizer.
+const nearest = (lat: number, lng: number) => Object.entries(DISTRICTS).sort(([, a], [, b]) => km(a, [lat, lng]) - km(b, [lat, lng]))[0][0]
+export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
+  ...e,
+  ...(ends_at && { ends_at }),
+  category: e.category as CategoryId,
+  size: 'medium',
+  district: nearest(e.lat, e.lng),
+  organizer: ORGANIZER_TBD,
+}))
+export const CARD_IDS = new Set(CARDS.map((e) => e.id))
+// The first six are the fixed starter sequence served by GET /card/new/{user_id}.
+export const STARTER = CARDS.slice(0, 6)
 
 // End times as [days from today, hh:mm] for events that run longer than one evening.
 const ENDS: Record<string, [number, string]> = {
@@ -147,7 +152,7 @@ export const catalog = (today = new Date()): SpottedEvent[] => [
     organizer,
     promoted: id === 'evt_noc_bibl',
   })),
-  ...STARTER,
+  ...CARDS,
 ]
 
 // Interface is Polish and times are in Europe/Warsaw, e.g. "czw., 8 paź, 19:00".
@@ -166,7 +171,7 @@ const longDayFmt = new Intl.DateTimeFormat('pl-PL', { weekday: 'long', day: 'num
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso))
 export const formatTime = (iso: string) => timeFmt.format(new Date(iso))
 export const formatDay = (ymd: string) => longDayFmt.format(new Date(`${ymd}T12:00:00Z`))
-export const formatPrice = (price: number) => (price === 0 ? 'Za darmo' : `${price} zł`)
+export const formatPrice = (price: number | null) => (price === null ? 'Cena nieznana' : price === 0 ? 'Za darmo' : `${price} zł`)
 export const warsawDay = (iso: string) => dayFmt.format(new Date(iso))
 export const todayYmd = () => warsawDay(new Date().toISOString())
 export const daysFromToday = (iso: string, today = todayYmd()) => Math.round((Date.parse(warsawDay(iso)) - Date.parse(today)) / 86_400_000)

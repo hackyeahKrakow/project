@@ -31,7 +31,7 @@ const hourOf = (iso: string) => Number(new Intl.DateTimeFormat('en-GB', { hour: 
 const weekdayOf = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Europe/Warsaw' })
 
 /** Budget is a hard filter; everything else is a score. */
-export const fitsBudget = (ev: SpottedEvent, p: Profile) => (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price <= 20 : true)
+export const fitsBudget = (ev: SpottedEvent, p: Profile) => (p.budget === 'free' ? ev.price === 0 : p.budget === 'upto20' ? ev.price !== null && ev.price <= 20 : true)
 
 function timeFit(ev: SpottedEvent, p: Profile) {
   if (!p.times.length) return 1
@@ -68,8 +68,8 @@ export function score(
     followed ? `Obserwujesz: ${ev.organizer.name}` : null,
     parts.length ? `Bo lubisz: ${parts.join(', ')}` : followed ? null : 'Nowość dla ciebie',
     distance < 1 ? `${Math.round(distance * 1000)} m od ${here ? 'ciebie' : p.district}` : `${distance.toFixed(1).replace('.', ',')} km`,
-    whenLabel(ev.starts_at, today),
-    ev.price === 0 || p.budget !== 'any' ? formatPrice(ev.price).toLowerCase() : null,
+    daysFromToday(ev.starts_at, today) < 2 ? whenLabel(ev.starts_at, today) : null, // the card shows the full date already
+    p.budget !== 'any' && ev.price !== null ? formatPrice(ev.price).toLowerCase() : null,
   ]
     .filter(Boolean)
     .join(' · ')
