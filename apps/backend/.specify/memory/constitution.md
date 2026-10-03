@@ -47,9 +47,16 @@ Rationale: a short question is cheaper than building the wrong thing.
 
 ## Development Workflow
 
-- Work MUST happen on branches named with a type prefix (e.g. `feature/...`,
-  `fix/...`, `docs/...`, `chore/...`); direct commits to `main` MUST NOT be made.
-- Commit messages MUST use type prefixes (`feat`, `fix`, `chore`, `docs`, etc.).
+- Each feature MUST be developed on its own branch, pushed to the remote, named
+  with a type prefix (e.g. `feature/user_endpoints`, `fix/health_check`,
+  `docs/api_usage`, `chore/update_deps`); direct commits to `main` MUST NOT be made.
+- Work MUST be committed and pushed to the feature's remote branch at the end of
+  every turn, so the remote always reflects the current state.
+- Commit messages MUST use type prefixes (`feat`, `fix`, `chore`, `docs`, etc.)
+  followed by a short description, e.g. `feat: add user registration endpoint`,
+  `fix: handle missing config value`, `docs: describe how to run the backend`.
+- Changes MUST be limited to files inside the `apps/backend` directory; files
+  outside it (e.g. `apps/frontend`, `docs`, `README.md`) MUST NOT be modified.
 - Changes MUST land through pull requests with at least a one-sentence
   description, squash-merged, with review by another person when possible.
 - Branches SHOULD be committed to at least every ~2 hours and synced often with
@@ -64,4 +71,4 @@ versioning: MAJOR for removed or redefined principles, MINOR for added principle
 or materially expanded guidance, PATCH for clarifications. All PRs and reviews
 MUST verify compliance, and unjustified complexity MUST be rejected.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
+**Version**: 1.1.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
