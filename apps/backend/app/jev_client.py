@@ -5,9 +5,10 @@ from app.logger import get_logger
 
 log = get_logger(__name__)
 
+# Jev only sees the instruction text, not the question key, so each question must name its id.
 INSTRUCTIONS = (
     "Given the events this user liked and disliked, will this user be interested in the "
-    "candidate event with this id?"
+    "candidate event with id"
 )
 
 
@@ -39,7 +40,7 @@ class JevClient:
             "model": self._model,
             "state": state,
             "questions": {
-                question_id: {"type": "noul", "instructions": INSTRUCTIONS}
+                question_id: {"type": "noul", "instructions": f"{INSTRUCTIONS} {question_id}?"}
                 for question_id in question_ids
             },
         }
