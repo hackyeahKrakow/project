@@ -7,8 +7,8 @@ log = get_logger(__name__)
 
 # Jev only sees the instruction text, not the question key, so each question must name its id.
 INSTRUCTIONS = (
-    "Given the events this user liked and disliked, will this user be interested in the "
-    "candidate event with id"
+    "Given the choices this user made and the events this user liked and disliked, will this "
+    "user be interested in the candidate event with id"
 )
 
 

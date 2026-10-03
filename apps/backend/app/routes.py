@@ -1,6 +1,6 @@
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
 from pydantic.types import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +15,7 @@ from app.event_parser import (
     warsaw_today,
 )
 from app.geocode import GeocodeError, Geocoder, Place, get_geocoder
+from app.info_service import MAX_INFO_CHARS, InfoTooLargeError, save_info
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
 from app.recommender import get_recommendations
@@ -24,6 +25,7 @@ from app.schemas import (
     CardResponseRequest,
     ErrorResponse,
     HealthResponse,
+    InfoOut,
 )
 
 router = APIRouter()
@@ -195,3 +197,42 @@ async def geocode(
     except GeocodeError as exc:
         log.warning("geocode_failed", reason=str(exc))
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Geocoder unavailable") from None
+
+
+@router.post(
+    "/info/{user_id}",
+    operation_id="info_save",
+    summary="Save what the user told us (JSON)",
+    description=(
+        "Accepts any JSON document and saves it for this user, replacing the previous one. It is "
+        "passed to the Jev model as the user's choices, next to their right and left answers, when "
+        "recommendations are computed, so it can change which cards are recommended. The document "
+        "is sent to the AI as it is, so it must not contain personal data or a location. "
+        f"At most {MAX_INFO_CHARS} characters once serialized."
+    ),
+    response_model=InfoOut,
+    responses={
+        413: {"model": ErrorResponse, "description": "The JSON is too large"},
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+    },
+)
+async def info_save(
+    user_id: UserId,
+    body: Annotated[
+        Any,
+        Body(
+            description="Any JSON document",
+            examples=[{"interests": ["koncerty", "kabaret"], "budget": "do 50 zł"}],
+        ),
+    ],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> InfoOut:
+    try:
+        updated_at = await save_info(session, user_id, body)
+    except InfoTooLargeError:
+        raise HTTPException(
+            status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=f"JSON is larger than {MAX_INFO_CHARS} characters",
+        ) from None
+    log.info("info_saved")
+    return InfoOut(user_id=user_id, updated_at=updated_at)
