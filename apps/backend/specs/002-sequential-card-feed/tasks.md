@@ -98,3 +98,7 @@ description: "Task list for Sequential Card Feed"
 - **MVP**: Phase 1 + Phase 2 + User Story 1 (cards 1 to 6 in order, then 404).
 - Then User Story 2 (per-user progress, concurrency, persistence tests) and Polish.
 - Commit and push to `feature/backend_logic` at the end of every turn.
+
+## Phase 6: Convergence
+
+- [ ] T016 Keep the timezone on card times: add a `TypeDecorator` (e.g. `UTCDateTime`, storing UTC and returning timezone-aware UTC datetimes) in app/models.py and use it for `Card.starts_at` and `Card.ends_at` instead of `DateTime(timezone=True)`; add a test in tests/test_card_new.py asserting `starts_at` in the response ends with an offset such as `Z` or `+00:00` and equals the seeded instant (2026-11-14T17:00:00 UTC for card 1) per FR-009 and data-model.md "timezone-aware" (partial)
