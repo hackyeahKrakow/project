@@ -1,5 +1,6 @@
 import { HSStaticMethods } from 'preline/non-auto'
 import { useEffect, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { type CategoryId } from '@/lib/categories'
 import { Header } from '@/ui'
 import Dodaj from '@/pages/Dodaj'
@@ -52,6 +53,7 @@ export default function App() {
     <div className={`flex flex-col ${route === 'odkrywaj' ? 'h-svh min-h-[620px] overflow-hidden' : 'min-h-svh'}`}>
       <Header route={route} uni={uni} setUni={setUni} />
       {page}
+      <Analytics />
     </div>
   )
 }
