@@ -1,8 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from pydantic.types import UUID7
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.card_service import get_next_card
+from app.database import get_session
 from app.logger import get_logger
 from app.schemas import (
     CardFetchResponse,
@@ -34,6 +37,30 @@ log = get_logger(__name__)
 async def health() -> HealthResponse:
     log.info("health_checked")
     return HealthResponse(status="ok")
+
+
+@router.get(
+    "/card/new/{user_id}",
+    operation_id="card_new",
+    summary="Get the next card in the fixed sequence",
+    description=(
+        "Returns the next of six predefined cards (numbered 1 to 6) for this user, in order. "
+        "The service remembers each user's position, so a card is never returned twice to the "
+        "same user. After card 6 it returns 404."
+    ),
+    response_model=CardFetchResponse,
+    responses={
+        404: {"model": ErrorResponse, "description": "No more cards"},
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+    },
+)
+async def card_new(
+    user_id: UserId, session: Annotated[AsyncSession, Depends(get_session)]
+) -> CardFetchResponse:
+    card = await get_next_card(session, user_id)
+    if card is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No more cards")
+    return CardFetchResponse.model_validate(card)
 
 
 @router.get(

@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text, Uuid
+from sqlalchemy import CheckConstraint, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid6 import uuid7
 
@@ -42,3 +42,13 @@ class CardResponse(Base):
     decision: Mapped[Decision] = mapped_column(Enum(Decision, native_enum=False))
 
     card: Mapped[Card] = relationship(back_populates="responses")
+
+
+class UserCardProgress(Base):
+    __tablename__ = "user_card_progress"
+    __table_args__ = (
+        CheckConstraint("cards_served >= 0 AND cards_served <= 6", name="cards_served_range"),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    cards_served: Mapped[int] = mapped_column(Integer, default=0)

@@ -45,11 +45,12 @@
 
 ## 5. Testing
 
-- **Decision**: `tests/conftest.py` creates an in-memory SQLite engine with `StaticPool`, creates
-  tables, seeds cards, and overrides the `get_session` dependency. Tests call the endpoint through
+- **Decision**: `tests/conftest.py` creates a temporary file-based SQLite database (`tmp_path`),
+  creates tables, seeds cards, and overrides the `get_session` dependency. Tests call the endpoint through
   `httpx.ASGITransport` (the app lifespan is not needed). Include a concurrency test using
   `asyncio.gather` for one user.
-- **Rationale**: Isolated, fast, and no file database to clean up.
+- **Rationale**: Isolated and fast; a file database (not in-memory) lets concurrent requests use
+  separate connections like production and lets the restart test reopen the same data.
 
 ## Open questions (non-blocking, defaults chosen)
 
