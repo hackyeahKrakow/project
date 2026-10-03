@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     geocode_url: str = "https://photon.komoot.io/api/"
     geocode_user_agent: str = "spootted/0.1 (HackYeah 2026 demo)"
     geocode_timeout_seconds: float = 6.0
+    # GET /transit/near: stops (GTFS) and disruptions (GTFS-Realtime ServiceAlerts) from ZTP Kraków open data
+    gtfs_url: str = "https://gtfs.ztp.krakow.pl/"
+    gtfs_timeout_seconds: float = 20.0
 
     @property
     def cors_origin_list(self) -> list[str]:

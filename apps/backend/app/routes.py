@@ -18,6 +18,7 @@ from app.geocode import GeocodeError, Geocoder, Place, get_geocoder
 from app.jev_client import JevClient, get_jev_client
 from app.logger import get_logger
 from app.recommender import get_recommendations
+from app.transit import Transit, TransitError, TransitNear, get_transit
 from app.schemas import (
     CardFetchResponse,
     CardResponseOut,
@@ -195,3 +196,30 @@ async def geocode(
     except GeocodeError as exc:
         log.warning("geocode_failed", reason=str(exc))
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Geocoder unavailable") from None
+
+
+@router.get(
+    "/transit/near",
+    operation_id="transit_near",
+    summary="Public transport near an event",
+    description=(
+        "Nearest tram and bus stop (within 1.5 km) and current disruptions at stops within 400 m. "
+        "Data comes from ZTP Kraków open data: GTFS timetables (cached for a day) and GTFS-Realtime "
+        "ServiceAlerts (cached for 2 minutes). Returns 503 when the stop list can't be loaded."
+    ),
+    response_model=TransitNear,
+    responses={
+        422: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "ZTP data unavailable"},
+    },
+)
+async def transit_near(
+    transit: Annotated[Transit, Depends(get_transit)],
+    lat: Annotated[float, Query(ge=49.9, le=50.2, description="Event latitude (Kraków area)")],
+    lng: Annotated[float, Query(ge=19.7, le=20.3, description="Event longitude (Kraków area)")],
+) -> TransitNear:
+    try:
+        return await transit.near(lat, lng)
+    except TransitError as exc:
+        log.warning("transit_failed", reason=str(exc))
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="ZTP data unavailable") from None

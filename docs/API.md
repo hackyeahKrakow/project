@@ -162,6 +162,26 @@ Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](ht
 - **422**: za krótkie albo za długie `q`
 - **503**: `{ "detail": "Geocoder unavailable" }` — Photon nie odpowiada albo odrzucił zapytanie. Formularz działa dalej: adres wpisuje się ręcznie, a pin trafia do środka wybranej dzielnicy.
 
+### GET /transit/near — `transit_near`
+
+Komunikacja miejska przy karcie wydarzenia. Backend czyta otwarte dane [ZTP Kraków](https://gtfs.ztp.krakow.pl): przystanki z `stops.txt` w `GTFS_KRK_T.zip` (tramwaje) i `GTFS_KRK_A.zip` (autobusy), raz na dobę na proces, oraz bieżące komunikaty z `ServiceAlerts_T.pb` i `ServiceAlerts_A.pb` (GTFS-Realtime), co 2 minuty. Zwraca najbliższy przystanek tramwajowy i autobusowy (do 1,5 km) oraz utrudnienia dotyczące przystanków w promieniu 400 m: po `stop_id` z komunikatu albo po nazwie przystanku w jego treści. Frontend pyta przy otwarciu karty i nic nie pokazuje, gdy API nie odpowiada.
+
+- **Parametry**: `lat` 49,9–50,2 i `lng` 19,7–20,3 (okolice Krakowa)
+- **200**:
+
+```json
+{
+  "stops": [
+    { "name": "AGH / UR", "mode": "bus", "distance_m": 85 },
+    { "name": "Plac Inwalidów", "mode": "tram", "distance_m": 230 }
+  ],
+  "alerts": [{ "header": "Przystanek nieczynny", "description": "…" }]
+}
+```
+
+- **422**: współrzędne spoza Krakowa
+- **503**: `{ "detail": "ZTP data unavailable" }` — nie udało się pobrać listy przystanków. Gdy padną tylko komunikaty, endpoint zwraca przystanki i pustą listę `alerts`.
+
 ## Błędy
 
 Wszystkie błędy mają ten sam kształt:

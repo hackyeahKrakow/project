@@ -79,3 +79,19 @@ export async function searchAddress(q: string): Promise<Place[] | null> {
     return null
   }
 }
+
+export type TransitNear = {
+  stops: { name: string; mode: 'tram' | 'bus'; distance_m: number }[]
+  alerts: { header: string; description: string }[]
+}
+
+/** GET /transit/near: nearest tram and bus stop and current ZTP disruptions around the event. null when unavailable. */
+export async function transitNear(lat: number, lng: number): Promise<TransitNear | null> {
+  if (!API) return null
+  try {
+    const res = await fetch(`${API}/transit/near?lat=${lat}&lng=${lng}`, { signal: AbortSignal.timeout(25_000) })
+    return res.ok ? ((await res.json()) as TransitNear) : null
+  } catch {
+    return null
+  }
+}
