@@ -130,7 +130,7 @@ Zasada: potrzebę dostępności ustawia się raz, najwcześniej jak się da, a p
 | 2. Onboarding, krok 4 | Widzi zaznaczony chip „Potrzebuję miejsc i dojazdu bez barier” (może go zmienić). | To samo ustawienie co na ekranie powitalnym, zapisane w profilu na telefonie. |
 | 3. Zgody | Włącza lokalizację. | Przeglądarka od razu pyta o zgodę. Przy odmowie przełącznik sam się wyłącza i pokazuje, jak to naprawić. |
 | 4. Odkrywaj | Swipe'uje. | Wydarzenia w miejscach z barierami nie trafiają do talii. Miejsca bez barier są wyżej i mają w uzasadnieniu „Bez barier”. Miejsca o nieznanej dostępności zostają, bo inaczej talia byłaby prawie pusta. |
-| 5. Mapa | Otwiera mapę. | Chip „Bez barier” jest już włączony. Niebieska kropka pokazuje się sama. |
+| 5. Mapa | Otwiera mapę. | Ta sama zasada co w talii: miejsc z barierami nie ma, miejsca o nieznanej dostępności są. Chip „Potwierdzone bez barier” zawęża mapę do miejsc z potwierdzoną dostępnością. Niebieska kropka pokazuje się sama. |
 | 6. Karta wydarzenia | Otwiera koncert w TAURON Arenie. | Znaczek „Bez barier” (z deklaracji dostępności miejsca) albo „Dostępność nieznana”, żeby wiedział, że trzeba dopytać. |
 | 7. Dojazd | Ustawia „Na miejscu o” i klika „Zaplanuj dojazd”. | Trasa z jego lokalizacji (`GET /route`, Transitous na rozkładach ZTP) z zapasem 15 min zamiast 10. Odcinki piesze bez schodów (profil wózka). Przy każdym tramwaju: „Tramwaj niskopodłogowy” albo „Tramwaj wysokopodłogowy, stopnie przy wejściu”. Kursy z wysoką podłogą idą na koniec listy. Opóźnienia na żywo są oznaczone. |
 | 8. Utrudnienia | — | Jeśli przystanek przy wydarzeniu jest nieczynny, karta pokazuje komunikat ZTP, zanim Kuba wyjdzie z domu. |

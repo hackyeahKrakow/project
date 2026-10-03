@@ -19,7 +19,8 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const [cat, setCat] = useState<CategoryId | ''>('')
   const [free, setFree] = useState(false)
   const [mine, setMine] = useState(false)
-  const [stepFree, setStepFree] = useState(!!state.profile.stepFree)
+  const [stepFree, setStepFree] = useState(false)
+  const needsStepFree = !!state.profile.stepFree // same rule as the deck: venues with barriers never show, unknown ones do
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
   const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
@@ -27,9 +28,9 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const shown = useMemo(
     () =>
       events
-        .filter((e) => inRange(e, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)) && (!stepFree || e.wheelchair === 'yes'))
+        .filter((e) => inRange(e, when) && (!cat || e.category === cat) && (!free || e.price === 0) && (!mine || liked.has(e.id)) && (!stepFree || e.wheelchair === 'yes') && !(needsStepFree && e.wheelchair === 'no'))
         .sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
-    [events, when, cat, free, mine, liked, stepFree],
+    [events, when, cat, free, mine, liked, stepFree, needsStepFree],
   )
   const selected = events.find((e) => e.id === selectedId)
   const close = useCallback(() => setSelectedId(undefined), [])
@@ -115,7 +116,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
           </button>
           <button type="button" aria-pressed={stepFree} className={`${chip(stepFree)} shadow-sm`} onClick={() => setStepFree(!stepFree)}>
             <Accessibility size={16} aria-hidden />
-            Bez barier
+            Potwierdzone bez barier
           </button>
         </div>
 
