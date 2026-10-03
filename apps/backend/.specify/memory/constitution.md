@@ -1,7 +1,7 @@
 <!--
 Sync Impact Report
-- Version: template → 1.0.0 → 1.1.0 → 2.0.0
-- Removed principle: "Kontrakt API jest źródłem prawdy" (2.0.0); remaining principles renumbered I–IV
+- Version: template → 1.0.0 → 1.1.0
+- Removed principle: "Kontrakt API jest źródłem prawdy" (version not bumped); remaining principles renumbered I–IV
 - Added sections: Ograniczenia technologiczne, Sposób pracy
 - Templates: plan/spec/tasks templates do not require changes
 -->
@@ -55,4 +55,4 @@ LLM jest używany wyłącznie do zamiany tekstu organizatora na szkic wydarzenia
 
 Ta konstytucja ma pierwszeństwo przed innymi ustaleniami technicznymi. Zmiany wymagają zgody zespołu na #decyzje i podbicia wersji. Przy konflikcie z `docs/PLAN.md` w sprawie zakresu decyduje PM.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
+**Version**: 1.1.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
