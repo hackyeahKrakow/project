@@ -162,7 +162,7 @@ npm run dev
 # Aplikacja: http://localhost:5173
 ```
 
-Klucze do modeli AI (`OPENCODE_API_KEY`, `LLM_API_KEY`) podajemy w `apps/backend/.env`. Bez kluczy aplikacja działa, ale bez funkcji AI.
+Klucz do modeli AI (`OPENCODE_API_KEY`) podajemy w `apps/backend/.env`. Bez klucza aplikacja działa, a funkcje AI pokazują przykładową odpowiedź.
 
 ## Presentation
 

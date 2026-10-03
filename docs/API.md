@@ -120,6 +120,32 @@ Zapisuje decyzję użytkownika (swipe w prawo lub w lewo) dla karty razem z czas
 
 Pole `created_at` wysłane w ciele żądania jest ignorowane.
 
+### POST /events/parse — `events_parse`
+
+Zamienia tekst posta organizatora w szkic wydarzenia (funkcje AI). Backend wysyła tekst do modelu czatu z OpenCode Zen (`PARSE_MODEL`, domyślnie `minimax-m2.5-free`, klucz `OPENCODE_API_KEY`) razem z dzisiejszą datą, żeby „w czwartek” zamienić na datę. Nic nie jest zapisywane: szkic sprawdza i zatwierdza człowiek. Gdy model zwróci niepoprawny JSON, backend próbuje jeszcze raz, a potem zwraca pusty szkic.
+
+- **Ciało**: `{ "text": "treść posta (10–4000 znaków)" }`
+- **200**:
+
+```json
+{
+  "title": "Noc bibliotek w filii na Józefińskiej",
+  "description": "Escape room, quiz o Krakowie i ciche czytanie do świtu.",
+  "category": "kultura",
+  "starts_at": "2026-10-09T20:00:00+02:00",
+  "ends_at": null,
+  "address": "ul. Józefińska 20, Kraków",
+  "price": 0,
+  "size": "large",
+  "missing_fields": ["ends_at", "size"]
+}
+```
+
+`missing_fields` to pola puste albo takie, których model nie był pewien. Frontend podświetla je jako „Sprawdź”. `category` to jedno z id z [data/categories.json](../data/categories.json), `size`: `small` / `medium` / `large`.
+
+- **422**: `{ "detail": "..." }` — za krótki albo za długi tekst
+- **503**: `{ "detail": "AI unavailable" }` — brak klucza, limit, błąd sieci albo modelu. Frontend wtedy wypełnia formularz przykładową odpowiedzią i mówi o tym użytkownikowi.
+
 ## Błędy
 
 Wszystkie błędy mają ten sam kształt:
