@@ -46,10 +46,10 @@ limit 32,000 tokens (state + questions); keep the flat `app/` layout
 | I. Simplicity in 24 hours | Pass | One endpoint, one external call, no new tables |
 | II. Data legality | Pass | Only our own card data is sent; no scraping |
 | III. Privacy | Pass | The user id is never sent to Jev; only card details and decisions; nothing stored |
-| IV. AI under human control | **Violation (justified)** | Principle IV limits the LLM to event-draft autofill and says recommendations come from a formula. This feature uses Jev for recommendations at the team lead's explicit request; `docs/ARCHITECTURE.md` was updated accordingly. Mitigations: typed Jev output only, answers validated against the candidate pool, deterministic random fallback, no AI output written to the database. The constitution text still needs amending (pending approval) |
+| IV. AI under human control and code | Pass | Amended to allow Jev recommendations: typed output only, answers validated against the candidate pool, nothing stored, random fallback, no user id sent, key only in `.env` |
 | Quality and workflow rules (v1.1.0) | Pass | Modular files, secrets only in `.env`, branch `feature/rec_algorithm`, changes in `apps/backend` (plus the requested `docs/ARCHITECTURE.md`) |
 
-Post-design re-check: only the justified principle IV item remains.
+Post-design re-check: no violations.
 
 ## Project Structure
 
@@ -87,6 +87,4 @@ touching the route. `schemas.py` is reused unchanged (`CardFetchResponse`, `Erro
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| Constitution IV (AI used for recommendations) | Team lead explicitly wants Jev to choose the 10 cards | The formula in the old ARCHITECTURE.md is what this feature replaces; keeping it would not meet the request |
+No constitution violations; nothing to justify. (Principle IV was amended to cover Jev recommendations.)

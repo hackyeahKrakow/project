@@ -86,8 +86,8 @@
 
 ## Open questions (non-blocking, defaults chosen)
 
-1. Constitution principle IV still forbids AI recommendations; amending it needs the team lead's
-   approval (recorded in the plan's Complexity Tracking).
+1. Constitution principle IV was rewritten to allow Jev recommendations (version left at 1.1.0 on
+   request).
 2. `docs/API.md` does not list the new endpoint yet; add it when the team agrees on the path.
 3. Cards have no `category` field; Jev judges interest from the event name, description, price and
    address. A category field would likely improve results later.
