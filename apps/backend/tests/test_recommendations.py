@@ -290,3 +290,204 @@ async def test_answers_posted_through_the_api_drive_recommendations(session_fact
     state = fake.bodies[0]["state"]
     assert [item["id"] for item in state["liked"]] == [str(liked_card.id)]
     assert [item["id"] for item in state["disliked"]] == [str(disliked_card.id)]
+
+
+# --- Fallback model: Jev's low-confidence cards are decided by DeepSeek V4.1 Flash on DeepInfra ---
+
+
+class UncertainJev:
+    """Jev is sure about "Music" (0.9) and "Sport" (0.1) cards and unsure about the rest (0.55)."""
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        names = {c["id"]: c["event_name"] for c in body["state"]["candidates"]}
+
+        def probability(name: str) -> float:
+            return 0.9 if name.startswith("Music") else 0.1 if name.startswith("Sport") else 0.55
+
+        answers = {
+            question_id: {"type": "noul", "noul": probability(names[question_id])}
+            for question_id in body["questions"]
+        }
+        return httpx.Response(200, json={"answers": answers})
+
+
+class FakeFallbackModel:
+    """Says yes to candidates with "Pick" in the name; records requests."""
+
+    def __init__(self, reply=None):
+        self.requests: list[httpx.Request] = []
+        self.bodies: list[dict] = []
+        self.reply = reply
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        self.requests.append(request)
+        self.bodies.append(body)
+        if self.reply is not None:
+            return self.reply(request)
+        state = json.loads(body["messages"][1]["content"])
+        decisions = {c["id"]: "Pick" in c["event_name"] for c in state["candidates"]}
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": json.dumps({"decisions": decisions})}}]}
+        )
+
+
+def decider_override(handler):
+    from app.fallback_decider import FallbackDecider, get_fallback_decider
+    from app.main import app
+
+    decider = FallbackDecider(
+        api_key="di-key",
+        model="deepseek-ai/DeepSeek-V4.1-Flash",
+        url="https://deepinfra.test/chat",
+        timeout=2.0,
+        reasoning_effort="none",
+        transport=httpx.MockTransport(handler),
+    )
+    app.dependency_overrides[get_fallback_decider] = lambda: decider
+
+
+async def uncertain_setup(session_factory):
+    """The only 50 unanswered cards: 10 unsure "Pick", 30 unsure "Skip", 5 sure "Music", 5 sure "Sport"."""
+    from sqlalchemy import update
+
+    user = uuid7()
+    seeded = await seeded_cards(session_factory)
+    extra = await add_cards(session_factory, 50)
+    names = [f"Pick {i}" for i in range(10)] + [f"Skip {i}" for i in range(30)]
+    names += [f"{'Music' if i % 2 else 'Sport'} {i}" for i in range(10)]
+    async with session_factory() as session:
+        for card, name in zip(extra, names):
+            await session.execute(update(Card).where(Card.id == card.id).values(event_name=name))
+        await session.commit()
+    await answer(session_factory, user, seeded, Decision.RIGHT)
+    return user
+
+
+async def test_low_confidence_cards_are_decided_by_the_fallback_model(session_factory, db_client):
+    jev_override(make_jev_client(UncertainJev()))
+    router = FakeFallbackModel()
+    decider_override(router)
+    user = await uncertain_setup(session_factory)
+
+    response = await db_client.get(f"/card/recommendations/{user}")
+
+    assert response.status_code == 200
+    names = [c["event_name"] for c in response.json()]
+    assert len(names) == 10
+    # the fallback model's yes cards rank right after Jev's confident yes cards
+    assert sum(n.startswith("Music") for n in names) == 5
+    assert sum(n.startswith("Pick") for n in names) == 5
+    # one call, with only the cards Jev was unsure about, and no user id in it
+    assert len(router.bodies) == 1
+    sent = json.loads(router.bodies[0]["messages"][1]["content"])["candidates"]
+    assert sent and all(not c["event_name"].startswith(("Music", "Sport")) for c in sent)
+    assert all(c["id"].isdigit() for c in sent)  # short keys, not the card ids
+    assert router.bodies[0]["model"] == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert router.bodies[0]["reasoning_effort"] == "none"  # no thinking: fast, and max_tokens is for the answer
+    assert router.bodies[0]["response_format"] == {"type": "json_object"}
+    assert router.requests[0].headers["authorization"] == "Bearer di-key"
+    assert str(user) not in json.dumps(router.bodies[0])
+
+
+async def test_confident_jev_does_not_call_the_fallback_model(session_factory, db_client):
+    jev_override(make_jev_client(FakeJev()))
+    router = FakeFallbackModel()
+    decider_override(router)
+    user = await history_for(session_factory)
+
+    response = await db_client.get(f"/card/recommendations/{user}")
+
+    assert response.status_code == 200
+    assert router.bodies == []
+
+
+async def test_fallback_failures_keep_jevs_scores(session_factory, db_client):
+    jev_override(make_jev_client(UncertainJev()))
+    user = await uncertain_setup(session_factory)
+
+    def timeout(request):
+        raise httpx.ReadTimeout("slow", request=request)
+
+    broken = {
+        "http_500": lambda r: httpx.Response(500, json={"error": "boom"}),
+        "invalid_json": lambda r: httpx.Response(200, text="not json"),
+        "wrong_shape": lambda r: httpx.Response(
+            200, json={"choices": [{"message": {"content": '{"decisions": "yes"}'}}]}
+        ),
+        "timeout": timeout,
+        # a thinking model that used up max_tokens: no content, or JSON cut off in the middle
+        "null_content": lambda r: httpx.Response(
+            200, json={"choices": [{"message": {"content": None, "reasoning_content": "hmm"}, "finish_reason": "length"}]}
+        ),
+        "truncated_json": lambda r: httpx.Response(
+            200, json={"choices": [{"message": {"content": '{"decisions": {"1": tr'}, "finish_reason": "length"}]}
+        ),
+    }
+    for name, handler in broken.items():
+        decider_override(FakeFallbackModel(reply=handler))
+        response = await db_client.get(f"/card/recommendations/{user}")
+        assert response.status_code == 200, name
+        names = [c["event_name"] for c in response.json()]
+        assert len(names) == 10, name
+        assert sum(n.startswith("Music") for n in names) == 5, name  # Jev's confident yes cards still lead
+
+
+async def test_threshold_zero_turns_the_fallback_off(session_factory, db_client, monkeypatch):
+    from app.config import get_settings
+
+    monkeypatch.setenv("JEV_MIN_CONFIDENCE", "0")
+    get_settings.cache_clear()
+    jev_override(make_jev_client(UncertainJev()))
+    router = FakeFallbackModel()
+    decider_override(router)
+    user = await uncertain_setup(session_factory)
+
+    response = await db_client.get(f"/card/recommendations/{user}")
+
+    assert response.status_code == 200
+    assert router.bodies == []
+
+
+async def test_reasoning_effort_is_sent_only_when_set():
+    from app.fallback_decider import FallbackDecider
+
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        content = json.dumps({"decisions": {"1": True}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    state = {"candidates": [{"id": "card-1", "event_name": "x"}]}
+    for effort in ("none", "high", None):
+        decider = FallbackDecider("k", "m", "https://deepinfra.test/chat", 2.0, reasoning_effort=effort, transport=httpx.MockTransport(handler))
+        assert await decider.decide(state) == {"card-1": True}
+    assert [b.get("reasoning_effort") for b in seen] == ["none", "high", None]
+    assert "reasoning_effort" not in seen[2]
+
+
+async def test_decider_settings_come_from_the_environment(monkeypatch):
+    from app.config import get_settings
+    from app.fallback_decider import get_fallback_decider
+
+    monkeypatch.setenv("DEEPINFRA_API_KEY", "di-key")
+    get_settings.cache_clear()
+    decider = get_fallback_decider()
+    assert decider._model == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert decider._url == "https://api.deepinfra.com/v1/openai/chat/completions"
+    assert decider._reasoning_effort == "none"
+    monkeypatch.setenv("FALLBACK_REASONING_EFFORT", "")
+    get_settings.cache_clear()
+    assert get_fallback_decider()._reasoning_effort is None
+
+
+async def test_no_deepinfra_key_means_no_fallback(monkeypatch):
+    from app.config import get_settings
+    from app.fallback_decider import get_fallback_decider
+
+    assert get_fallback_decider() is None  # conftest sets DEEPINFRA_API_KEY to empty
+    monkeypatch.setenv("DEEPINFRA_API_KEY", "di-key")
+    get_settings.cache_clear()
+    assert get_fallback_decider() is not None

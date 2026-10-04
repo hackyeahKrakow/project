@@ -81,10 +81,11 @@ Rekomendacje wybiera model Jev 1.13 (System One, TypeSafe AI) wołany przez Open
 1. Backend losuje z bazy do 50 kart, na które użytkownik jeszcze nie odpowiedział (mniej niż 50 to nie błąd).
 2. Pobiera wszystkie odpowiedzi użytkownika: prawo = interesuje go wydarzenie, lewo = nie interesuje.
 3. Wysyła do Jev jedno zapytanie: stan (karty polubione, karty odrzucone, kandydaci) i po jednym pytaniu typu `noul` na kandydata („czy to wydarzenie zainteresuje użytkownika?”). Wszystkie pytania są liczone równolegle w jednym wywołaniu.
-4. Backend sortuje kandydatów po prawdopodobieństwie `tak`, odrzuca niepoprawne odpowiedzi i zwraca 10 najlepszych (mniej, gdy kandydatów jest mniej).
-5. Gdy Jev jest niedostępny, za wolny albo zwróci niepoprawną odpowiedź, backend zwraca do 10 losowych kandydatów zamiast błędu.
+4. Pewność Jev w kandydacie to `|p - 0.5| * 2` (0 = pół na pół, 1 = pewny). Gdy jest niższa niż `JEV_MIN_CONFIDENCE` (domyślnie 0,2, czyli prawdopodobieństwo `tak` Jev między 40% a 60%; na zwykłych danych to ok. 13% kart), a ustawiono `DEEPINFRA_API_KEY`, decyzję o tej karcie podejmuje zamiast Jev model z DeepInfra (`FALLBACK_MODEL`, domyślnie `deepseek-ai/DeepSeek-V4.1-Flash`). Wołany jest przez DeepInfra (`POST https://api.deepinfra.com/v1/openai/chat/completions`, `Authorization: Bearer $DEEPINFRA_API_KEY`, `response_format: json_object`, `reasoning_effort: none`, bo DeepSeek V4 domyślnie myśli, a to jest wolne i zjada limit tokenów odpowiedzi). Dostaje ten sam stan, ale tylko z niepewnymi kandydatami, i odpowiada `tak` albo `nie` dla każdego. `tak` liczy się jako wynik `0,5 + próg/2`, `nie` jako `0,5 - próg/2`, więc taka karta jest za pewnymi `tak` Jev i przed jego pewnymi `nie`. Gdy model z DeepInfra zawiedzie, zostają wyniki Jev.
+5. Backend sortuje kandydatów po wyniku `tak`, odrzuca niepoprawne odpowiedzi i zwraca 10 najlepszych (mniej, gdy kandydatów jest mniej).
+6. Gdy Jev jest niedostępny, za wolny albo zwróci niepoprawną odpowiedź, backend zwraca do 10 losowych kandydatów zamiast błędu.
 
-Do Jev trafiają tylko dane kart i decyzje, bez identyfikatora użytkownika. Wyniki nie są zapisywane w bazie.
+Do Jev i do modelu z DeepInfra trafiają tylko dane kart i decyzje, bez identyfikatora użytkownika. Wyniki nie są zapisywane w bazie.
 
 ### Personalizacja w rekomendacjach
 

@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     jev_model: str = "jev-1.13-free"
     jev_url: str = "https://opencode.ai/zen/v1/systemone"
     jev_timeout_seconds: float = 8.0
+    # Cards Jev is unsure about (confidence = |p - 0.5| * 2, below this value) are decided by the fallback
+    # model on DeepInfra instead; no DEEPINFRA_API_KEY means Jev alone decides. 0 turns the fallback off.
+    jev_min_confidence: float = Field(default=0.2, ge=0, le=1)
+    deepinfra_api_key: SecretStr | None = None
+    fallback_model: str = "deepseek-ai/DeepSeek-V4.1-Flash"
+    deepinfra_url: str = "https://api.deepinfra.com/v1/openai/chat/completions"
+    fallback_timeout_seconds: float = 15.0
+    # DeepSeek V4 thinks before it answers by default, which is slow and spends the reply's token limit
+    # on reasoning; "none" turns that off on DeepInfra. Empty leaves the parameter out of the request.
+    fallback_reasoning_effort: str = "none"
     # POST /events/parse: OpenAI-compatible chat model on OpenCode Zen, same OPENCODE_API_KEY
     parse_model: str = "minimax-m2.5-free"
     parse_url: str = "https://opencode.ai/zen/v1/chat/completions"
