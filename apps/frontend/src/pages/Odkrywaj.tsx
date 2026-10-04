@@ -10,7 +10,7 @@ import { useStore, type Decision } from '@/lib/store'
 import { CategoryBadge, OrganizerLine, Photo, PromotedTag, btnPrimary, card } from '@/ui'
 
 const THRESHOLD = 90
-const FLY_MS = 260
+const FLY_MS = 300
 const BATCH = 10
 const REFILL_AT = 5
 
@@ -59,7 +59,7 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
     .slice(0, 4)
 
   return (
-    <div className="flex min-h-0 flex-1 justify-center gap-10 px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-6">
+    <div className="flex min-h-0 flex-1 justify-center gap-10 overflow-hidden px-4 pt-4 pb-3 sm:px-8 sm:pt-6 sm:pb-6">
       <section className="flex min-h-0 w-full max-w-[480px] flex-col gap-3 md:max-h-[860px]" aria-labelledby="odkrywaj-h">
         <div className="flex flex-none items-center justify-between">
           <h1 id="odkrywaj-h" className="text-[26px] font-semibold tracking-[-0.02em] sm:text-[32px]">
@@ -69,11 +69,11 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
             {starterLeft.length ? `Start ${STARTER.length - starterLeft.length + 1} z ${STARTER.length}` : top ? 'Dopasowane do ciebie' : 'Koniec talii'}
           </span>
         </div>
-        {/* Stays mounted while Deck remounts per card, so screen readers announce each new card. */}
+        {/* Outside the deck, so screen readers announce each new card. */}
         <p className="sr-only" aria-live="polite">
           {top ? `${top.ev.event_name}, ${formatDate(top.ev.starts_at)}. ${top.reason}` : 'Koniec talii'}
         </p>
-        <Deck key={top?.ev.id} deck={deck} onDecide={decide} />
+        <Deck deck={deck} onDecide={decide} />
       </section>
 
       {/* Laptops: what the profile is learning, next to the deck. */}
@@ -101,32 +101,65 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
 
 function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => void }) {
   const { reset } = useStore()
-  const [dx, setDx] = useState(0)
+  const [pos, setPos] = useState({ x: 0, y: 0, tilt: 1 })
   const [drag, setDrag] = useState(false)
-  const startX = useRef(0)
-  const busy = useRef(false)
+  const [flying, setFlying] = useState(false)
+  // Gesture bookkeeping that must not re-render: active pointer, start point, last sample for velocity.
+  const g = useRef({ id: -1, x0: 0, y0: 0, t: 0, x: 0, y: 0, vx: 0, vy: 0 })
   const done = !deck.length
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  const fly = (dir: 1 | -1) => {
-    if (busy.current || done) return
-    busy.current = true
+  const fly = (dir: 1 | -1, vy = 0) => {
+    if (flying || done) return
+    setFlying(true)
     setDrag(false)
-    setDx(dir * 700)
-    setTimeout(() => onDecide(dir > 0 ? 'right' : 'left'), FLY_MS) // the parent remounts Deck with the next card
+    // Far enough to leave any screen; the page clips it (overflow-hidden), so nothing scrolls sideways.
+    setPos((p) => ({ ...p, x: dir * (window.innerWidth + 200), y: p.y + vy * FLY_MS }))
+    setTimeout(() => {
+      onDecide(dir > 0 ? 'right' : 'left')
+      // The card behind keeps its element (same key) and springs from its spot to the front.
+      setPos((p) => ({ ...p, x: 0, y: 0 }))
+      setFlying(false)
+    }, FLY_MS)
   }
-  const down = (e: PointerEvent) => {
-    if (busy.current || done) return
-    startX.current = e.clientX
+  const down = (e: PointerEvent<HTMLDivElement>) => {
+    if (flying || done || g.current.id !== -1 || e.button !== 0) return // one finger, primary button
+    const r = e.currentTarget.getBoundingClientRect()
+    g.current = {
+      id: e.pointerId,
+      x0: e.clientX,
+      y0: e.clientY,
+      t: e.timeStamp,
+      x: e.clientX,
+      y: e.clientY,
+      vx: 0,
+      vy: 0,
+    }
+    setPos({ x: 0, y: 0, tilt: e.clientY < r.top + r.height / 2 ? 1 : -1 }) // grabbed low = tilts the other way, like Tinder
     e.currentTarget.setPointerCapture(e.pointerId)
     setDrag(true)
   }
-  const move = (e: PointerEvent) => drag && setDx(e.clientX - startX.current)
-  const up = () => {
-    if (!drag) return
+  const move = (e: PointerEvent) => {
+    const c = g.current
+    if (e.pointerId !== c.id) return
+    const dt = Math.max(e.timeStamp - c.t, 1)
+    // Smoothed velocity in px/ms, so a quick flick counts even before the threshold.
+    c.vx = 0.8 * ((e.clientX - c.x) / dt) + 0.2 * c.vx
+    c.vy = 0.8 * ((e.clientY - c.y) / dt) + 0.2 * c.vy
+    Object.assign(c, { t: e.timeStamp, x: e.clientX, y: e.clientY })
+    setPos((p) => ({ ...p, x: e.clientX - c.x0, y: e.clientY - c.y0 }))
+  }
+  // decide = false when the browser takes the pointer away (pointercancel): snap back, never swipe by accident.
+  const up = (e: PointerEvent, decide = true) => {
+    const c = g.current
+    if (e.pointerId !== c.id) return
+    c.id = -1
     setDrag(false)
-    if (dx > THRESHOLD) fly(1)
-    else if (dx < -THRESHOLD) fly(-1)
-    else setDx(0)
+    const dx = decide ? c.x - c.x0 : 0
+    const flick = Math.abs(c.vx) > 0.5 && Math.abs(dx) > 30 && Math.sign(c.vx) === Math.sign(dx)
+    if (dx > THRESHOLD || (flick && dx > 0)) fly(1, c.vy)
+    else if (dx < -THRESHOLD || (flick && dx < 0)) fly(-1, c.vy)
+    else setPos((p) => ({ ...p, x: 0, y: 0 }))
   }
 
   useEffect(() => {
@@ -140,22 +173,34 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  const style = (pos: number): CSSProperties => {
-    // Fling out with an ease-out, snap back with a slight overshoot, follow the finger with no delay.
-    const transition = drag ? 'none' : dx ? `transform ${FLY_MS / 1000}s cubic-bezier(.2,.8,.2,1)` : 'transform .4s cubic-bezier(.34,1.56,.64,1)'
-    if (pos === 0) return { zIndex: 3, transform: `translateX(${dx}px) rotate(${dx / 18}deg)`, transition }
-    if (pos === 1) return { zIndex: 2, transform: `scale(${0.95 + Math.min(Math.abs(dx) / 1800, 0.05)}) translateY(12px)`, transition }
-    return { zIndex: 1, transform: 'scale(0.9) translateY(24px)' }
+  // How far the top card is out (0..1): the card behind grows into place as it goes.
+  const out = Math.min(Math.abs(pos.x) / (THRESHOLD * 2), 1)
+  const style = (k: number): CSSProperties => {
+    // Same transform list at every position, so a card moving to the front interpolates cleanly.
+    const t = (x: number, y: number, r: number, s: number) => `translate(${x}px, ${y}px) rotate(${r}deg) scale(${s})`
+    // Follow the finger with no delay, fly out with an ease-out, snap back or step forward with a slight overshoot.
+    const transition = drag
+      ? 'none'
+      : flying
+        ? `transform ${FLY_MS}ms cubic-bezier(.2,.8,.2,1)`
+        : `transform ${reduce ? 150 : 400}ms cubic-bezier(.34,1.56,.64,1)`
+    if (k === 0) {
+      const r = reduce ? 0 : Math.max(-30, Math.min(30, (pos.x / 14) * pos.tilt))
+      return { zIndex: 3, transform: t(pos.x, pos.y, r, 1), transition }
+    }
+    if (k === 1) return { zIndex: 2, transform: t(0, 12 - 12 * out, 0, 0.95 + 0.05 * out), transition }
+    return { zIndex: 1, transform: t(0, 24, 0, 0.9), transition }
   }
 
   return (
     <>
       <div
-        className="relative min-h-0 flex-1 cursor-grab touch-pan-y select-none"
+        className="relative min-h-0 flex-1 animate-in cursor-grab touch-none duration-300 ease-out select-none fade-in zoom-in-95 [-webkit-touch-callout:none] active:cursor-grabbing"
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
-        onPointerCancel={up}
+        onPointerCancel={(e) => up(e, false)}
+        onLostPointerCapture={(e) => up(e, false)}
       >
         {deck
           .slice(0, 3)
@@ -164,9 +209,8 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
               key={x.ev.id}
               item={x}
               style={style(k)}
-              top={k === 0}
-              like={k ? 0 : Math.max(0, Math.min(dx / 110, 1))}
-              skip={k ? 0 : Math.max(0, Math.min(-dx / 110, 1))}
+              like={k ? 0 : Math.max(0, Math.min(pos.x / 110, 1))}
+              skip={k ? 0 : Math.max(0, Math.min(-pos.x / 110, 1))}
             />
           ))
           .reverse()}
@@ -208,13 +252,13 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   )
 }
 
-function SwipeCard({ item, style, like, skip, top }: { item: Scored; style: CSSProperties; like: number; skip: number; top: boolean }) {
+function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProperties; like: number; skip: number }) {
   const { ev, reason } = item
   const c = category(ev.category)
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
   return (
     <article
-      className={`absolute inset-0 flex flex-col justify-end overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] ${top ? 'animate-in duration-300 ease-out zoom-in-95' : ''}`}
+      className="absolute inset-0 flex flex-col justify-end overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] will-change-transform"
       style={{ background: c.color, ...style }}
       aria-hidden={style.zIndex !== 3}
     >

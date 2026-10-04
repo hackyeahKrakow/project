@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
 from pydantic.types import UUID7
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -195,12 +195,16 @@ async def events_parse(
 async def geocode(
     geocoder: Annotated[Geocoder, Depends(get_geocoder)],
     q: Annotated[str, Query(min_length=3, max_length=120, description="Typed address")],
+    response: Response,
 ) -> list[Place]:
     try:
-        return await geocoder.search(q)
+        places = await geocoder.search(q)
     except GeocodeError as exc:
         log.warning("geocode_failed", reason=str(exc))
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Geocoder unavailable") from None
+    # Same answer for everyone: Vercel's CDN serves repeats for a day without invoking the function (Hobby limits).
+    response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400"
+    return places
 
 
 @router.post(

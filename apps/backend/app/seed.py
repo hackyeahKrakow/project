@@ -11,7 +11,7 @@ from app.models import Card
 
 log = get_logger(__name__)
 
-# The 20 events in seed_events.json (a copy of data/events_oneoff.json, checked by a test) are the whole
+# The events in seed_events.json (a copy of data/events_oneoff.json, checked by a test) are the whole
 # catalog. File order matters: the first STARTER_COUNT are the fixed sequence served by /card/new,
 # position + 1 is the card number. The rest are reached through recommendations.
 STARTER_COUNT = 6

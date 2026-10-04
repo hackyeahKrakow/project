@@ -39,8 +39,8 @@ async def test_card_times_keep_their_timezone(db_client):
     body = (await fetch(db_client, uuid7())).json()
     starts_at = datetime.fromisoformat(body["starts_at"])
     assert starts_at.tzinfo is not None
-    assert starts_at == datetime(2026, 10, 9, 22, 0, tzinfo=timezone.utc)  # 2026-10-10T00:00+02:00
-    assert body["ends_at"] is None
+    assert starts_at == datetime(2026, 10, 7, 7, 0, tzinfo=timezone.utc)  # 2026-10-07T09:00+02:00
+    assert datetime.fromisoformat(body["ends_at"]) == datetime(2026, 10, 7, 12, 0, tzinfo=timezone.utc)
 
 
 async def test_invalid_user_id_is_rejected(db_client):
