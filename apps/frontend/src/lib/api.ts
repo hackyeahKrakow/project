@@ -47,6 +47,16 @@ export function saveSwipe(userId: string, cardId: string, decision: Decision) {
   }).catch(() => {}) // ponytail: fire-and-forget, the local copy is the source of truth for the demo
 }
 
+/** Saves the onboarding answers with POST /info/{user_id} (replaces the previous JSON). Never put a location in `info`. */
+export function saveInfo(userId: string, info: object) {
+  if (!API) return
+  fetch(`${API}/info/${userId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(info),
+  }).catch(() => {}) // fire-and-forget, the local copy stays the source of truth
+}
+
 export type Draft = {
   title: string | null
   description: string | null

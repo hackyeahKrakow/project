@@ -29,6 +29,7 @@ import {
 import { useState, type ReactNode } from 'react'
 import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { DISTRICTS, type Size } from '@/lib/events'
+import { saveInfo } from '@/lib/api'
 import { askPermission } from '@/lib/notify'
 import { useStore, type Budget, type Goal, type Profile, type TimeOfDay } from '@/lib/store'
 import { LocationToggle, Toggle, btnPrimary, card, chip } from '@/ui'
@@ -78,6 +79,8 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
   const set = (patch: Partial<Profile>) => setP({ ...p, ...patch })
 
   const finish = () => {
+    // The consent button is the moment answers may leave the device: send the questionnaire (no location) as one JSON.
+    saveInfo(state.userId, privacyOnly ? state.profile : p)
     update(privacyOnly ? { consent: true } : { profile: p, location: loc, notifications, onboarded: true, consent: true })
     window.location.hash = state.account ? '#/konto' : '#/odkrywaj'
   }
@@ -264,7 +267,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
             <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">Twoje dane, twoje zasady</h1>
             <ul className="flex flex-col gap-3 text-[15px] leading-snug">
               <Li>Nie mamy twojego maila ani numeru telefonu.</Li>
-              <Li>Odpowiedzi z pytań zostają na tym telefonie.</Li>
+              <Li>Odpowiedzi z pytań (bez lokalizacji) zapisujemy pod anonimowym identyfikatorem, żeby lepiej dobierać karty.</Li>
               <Li>Lokalizację wysyłamy tylko, gdy klikniesz „Zaplanuj dojazd”: idzie do planera tras Transitous (z opcją „bez barier”, jeśli ją włączysz) i nigdzie jej nie zapisujemy.</Li>
               <Li>Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.</Li>
               <Li>Każda karta mówi, dlaczego ją widzisz („Bo lubisz…”).</Li>
