@@ -1,10 +1,12 @@
-import { CalendarHeart, PenLine } from 'lucide-react'
+import { Accessibility, CalendarHeart, ChevronDown, PenLine } from 'lucide-react'
 import { category } from '@/lib/categories'
 import { inRange, type SpottedEvent } from '@/lib/events'
-import { Logo, btnOutline, btnPrimary } from '@/ui'
+import { useStore } from '@/lib/store'
+import { Logo, Toggle, btnOutline, btnPrimary } from '@/ui'
 
 // Pins falling onto an illustrated map: "a lot is going on here" (docs/USER_FLOW.md, ekran powitalny).
 export default function Start({ events }: { events: SpottedEvent[] }) {
+  const { state, update } = useStore()
   const today = events.filter((e) => inRange(e, 'dzis'))
   const week = events.filter((e) => inRange(e, 'tydzien'))
   const pins = week.slice(0, 18)
@@ -63,6 +65,24 @@ export default function Start({ events }: { events: SpottedEvent[] }) {
           <PenLine size={20} aria-hidden />
           Chcę tworzyć wydarzenia
         </a>
+        {/* Before onboarding, so a person who needs bigger text or step-free places sets it up first (docs/USER_FLOW.md). */}
+        <details className="group rounded-2xl border border-line px-4">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 font-semibold">
+            <Accessibility size={20} className="text-link" aria-hidden />
+            Ułatwienia dostępu
+            <ChevronDown size={18} className="ml-auto transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="flex flex-col divide-y divide-line pb-1">
+            <Toggle label="Większy tekst" on={state.bigText} onChange={(bigText) => update({ bigText })} />
+            <Toggle label="Wysoki kontrast" on={state.highContrast} onChange={(highContrast) => update({ highContrast })} />
+            <Toggle
+              label="Miejsca i dojazd bez barier"
+              hint="Wózek, kule, wózek dziecięcy"
+              on={!!state.profile.stepFree}
+              onChange={(stepFree) => update((s) => ({ profile: { ...s.profile, stepFree } }))}
+            />
+          </div>
+        </details>
         <p className="text-center text-[13px] text-muted">Przeglądanie bez konta, maila i numeru telefonu.</p>
       </div>
     </div>

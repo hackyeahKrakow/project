@@ -32,6 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router)
+# On Vercel the backend can still see /api/... although vercel.json strips it; answer on both paths.
+app.include_router(router, prefix="/api", include_in_schema=False)
 
 
 @app.exception_handler(RequestValidationError)

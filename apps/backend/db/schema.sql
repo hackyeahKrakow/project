@@ -20,6 +20,13 @@ CREATE TABLE user_card_progress (
 	CONSTRAINT cards_served_range CHECK (cards_served >= 0 AND cards_served <= 6)
 );
 
+CREATE TABLE user_info (
+	user_id CHAR(32) NOT NULL, 
+	data TEXT NOT NULL, 
+	updated_at DATETIME NOT NULL, 
+	PRIMARY KEY (user_id)
+);
+
 CREATE TABLE card_swipes (
 	user_id CHAR(32) NOT NULL, 
 	card_id CHAR(32) NOT NULL, 

@@ -51,13 +51,24 @@ Przy pierwszym wejściu aplikacja nie pokazuje pustej mapy, tylko zadaje cztery 
 | 1. Ulubione rzeczy | „Co lubisz robić?” | 3–5 kategorii z ikonami (nauka, sport, muzyka, gry, imprezy, kultura, warsztaty). Opcjonalnie podtagi, np. gry → planszówki, RPG, e-sport | Startowa waga kategorii: wybrane 0.7, reszta 0.3 |
 | 2. Skala | „Jakie wydarzenia wolisz?” | Kameralne (do ok. 30 osób), średnie (30–100), duże (100+), bez różnicy. Można wybrać kilka | Dopasowanie do wielkości wydarzenia |
 | 3. Czego szukasz | „Czego dziś szukasz?” | Do 3 z: poznać ludzi, nauczyć się czegoś, dobrze się bawić, ruszyć się, kultura i spokój, oszczędzić | Dodatkowa waga kategorii i typów wydarzeń powiązanych z celem |
-| 4. Czego potrzebujesz | „Co jest dla ciebie ważne?” | Budżet (tylko darmowe / do 20 zł / bez limitu), odległość (1 km / 3 km / 5 km / cały Kraków), pora (po zajęciach / wieczory / weekendy) | Twarde filtry domyślne (budżet, pora) i parametr bliskości |
+| 4. Czego potrzebujesz | „Co jest dla ciebie ważne?” | Budżet (tylko darmowe / do 20 zł / bez limitu), odległość (1 km / 3 km / 5 km / cały Kraków), pora (po zajęciach / wieczory / weekendy), dostępność dla wózka (tak / bez znaczenia) | Twarde filtry domyślne (budżet, pora, dostępność) i parametr bliskości |
 
 - Odpowiedzi z onboardingu zapisują się lokalnie i służą do personalizacji rekomendacji; backend operuje na danych pseudonimowych (UUID, bez maila i numeru telefonu).
 - Po ostatnim kroku użytkownik od razu dostaje pierwszą talię, a każda karta tłumaczy dopasowanie („Twój match: kameralne · planszówki · za darmo”).
 - Preferencje można zmienić w ekranie „Moje preferencje”, a swipe'y dalej je dostrajają.
 - Brak odpowiedzi nie blokuje aplikacji: bez personalizacji talia jest posortowana po czasie i bliskości.
 - Szczegóły scoringu w [ARCHITECTURE.md](ARCHITECTURE.md#rekomendacje), ekran w [DESIGN.md](DESIGN.md#ekrany-mobile-390-px).
+
+### Dostępność dla osób na wózku
+
+Dla osoby poruszającej się na wózku brak informacji o dostępności oznacza ryzyko, że wydarzenie jest nieosiągalne. Dlatego dostępność jest częścią karty wydarzenia i filtrem, a nie dopiskiem w opisie.
+
+- Karta wydarzenia ma sekcję dostępności ze statusem ogólnym (dostępne / częściowo / niedostępne / brak informacji) oraz szczegółami: wejście bez schodów lub podjazd, winda (wymiary), szerokość drzwi, toaleta dostosowana, miejsce parkingowe, dojazd i przystanek z niską podłogą.
+- Każdy szczegół ma źródło: organizator, OpenStreetMap (znacznik `wheelchair`) albo zgłoszenie użytkowników. „Brak informacji” jest osobnym, jawnym stanem.
+- Filtr „dostępne dla wózka” działa na mapie i w talii swipe, można go włączyć już w personalizacji. Piny i karty mają ikonę dostępności obok koloru kategorii.
+- Organizator uzupełnia dostępność w formularzu, a AI autofill proponuje wartości z tekstu posta. Dostępność miejsca (np. budynku biblioteki) zapisuje się raz w profilu organizacji i jest dziedziczona.
+- Zarejestrowani użytkownicy mogą potwierdzić lub zgłosić nieścisłość.
+- Aplikacja pokazuje dane, jakie ma, i nie gwarantuje dostępności. Przy braku informacji zachęca do kontaktu z organizatorem.
 
 ### Dodawanie wydarzeń z AI autofill
 
@@ -111,6 +122,8 @@ Uwaga: ta decyzja przywraca możliwość tworzenia wydarzeń przez zarejestrowan
 | Rekomendacje (scoring) | Budujemy | Prosta, wyjaśnialna formuła, uwzględnia odpowiedzi z personalizacji |
 | Formularz dodawania z AI autofill | Budujemy | Główna rola AI, na demo w imieniu profilu organizacji |
 | Profile organizacji (dane seed, jeden administrator) | Budujemy | Znaczek „zweryfikowane”, obserwujący |
+| Dostępność dla wózka: sekcja na karcie, filtr, pole w formularzu | Budujemy | Dane ręczne w danych demo, status „brak informacji” |
+| Dostępność z OpenStreetMap (`wheelchair`) i potwierdzenia użytkowników | Jeśli starczy czasu | Źródło danych dla miejsc bez opisu |
 | Statystyki swipe'ów dla organizatora | Jeśli starczy czasu | Liczniki polubień i odrzuceń |
 | Konto użytkownika (link na e-mail) i przeniesienie lokalnej bazy | Jeśli starczy czasu | Warunek dla tworzenia wydarzeń |
 | Mikro-wydarzenia z limitem miejsc (tylko z kontem) | Jeśli starczy czasu | Ten sam formularz bez AI, typ „grassroots”, wymaga zgłaszania nadużyć |
@@ -142,6 +155,8 @@ Wydarzenia dodają ich właściciele, a my bierzemy tylko dane otwarte. Nie scra
 - Kolor nigdy nie jest jedynym nośnikiem informacji (kategorie mają też ikony).
 
 ## Roadmapa po hackathonie
+
+**Bramka przed pierwszym płatnym pakietem:** własna instancja planera MOTIS na danych GTFS ZTP zamiast publicznego Transitous, który jest darmowy tylko do użytku niekomercyjnego ([LEGAL.md](LEGAL.md)). Dopóki jej nie ma, nie włączamy płatności dla organizacji.
 
 - Powiadomienia opt-in dla wybranych kategorii i organizacji, z limitem dziennym i godzinami ciszy.
 - Znajomi, zaproszenia, grupy.

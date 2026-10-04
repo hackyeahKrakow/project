@@ -4,6 +4,7 @@ import { at, catalog, demoCatalog, eventDays, formatDate, formatPrice, formatRan
 import { fold, ics } from './src/lib/ics.ts'
 import { describe, persona } from './src/lib/persona.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
+import { inKrakow } from './src/lib/geo.ts'
 import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
 assert.equal(formatDate('2026-10-08T19:00:00+02:00'), 'czw., 8 paź, 19:00')
@@ -108,3 +109,17 @@ assert.equal(real('free', paid).length, 0)
 assert.equal(real('free')[0].ev.category, 'kultura')
 assert.ok(CARDS.every((e) => e.district && !('ends_at' in e && e.ends_at === null)))
 console.log('catalog checks ok')
+
+// Step-free users: a venue with barriers never shows up, a step-free one is preferred and says why; unknown ones stay.
+const access = catalog().map((e, i) => (i === 7 ? { ...e, wheelchair: 'no' as const } : e))
+const stepFree = recommend(access, { ...EMPTY_PROFILE, stepFree: true }, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
+assert.ok(!stepFree.some((x) => x.ev.wheelchair === 'no'))
+assert.equal(stepFree.length, CARDS.length - 1)
+const unfiltered = recommend(access, EMPTY_PROFILE, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
+const firstYes = stepFree.findIndex((x) => x.ev.wheelchair === 'yes')
+assert.ok(firstYes < unfiltered.findIndex((x) => x.ev.id === stepFree[firstYes].ev.id))
+assert.ok(stepFree[firstYes].reason.includes('Bez barier'))
+assert.equal(unfiltered.length, CARDS.length)
+// A fix far from Kraków (e.g. a laptop located by IP) is not used as the start of a trip.
+assert.ok(inKrakow([50.0647, 19.9232]) && !inKrakow([52.2297, 21.0122]))
+console.log('accessibility checks ok')

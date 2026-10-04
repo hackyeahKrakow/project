@@ -13,6 +13,7 @@ export type Profile = {
   distanceKm: number // 0 = all of Kraków
   times: TimeOfDay[]
   district: string
+  stepFree?: boolean // needs step-free venues and journeys (wheelchair, crutches, pram); missing = no
 }
 export type Account = { email: string; name: string; kind: 'student' | 'org'; org?: string }
 export type Decision = 'right' | 'left'

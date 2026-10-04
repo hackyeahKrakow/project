@@ -78,3 +78,15 @@ class CardSwipe(Base):
     created_at: Mapped[datetime] = mapped_column(
         UTCDateTime, default=lambda: datetime.now(timezone.utc)
     )
+
+
+class UserInfo(Base):
+    """Whatever JSON the client sent about the user; Jev gets it as the user's choices."""
+
+    __tablename__ = "user_info"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    data: Mapped[str] = mapped_column(Text)  # the JSON document as text
+    updated_at: Mapped[datetime] = mapped_column(
+        UTCDateTime, default=lambda: datetime.now(timezone.utc)
+    )

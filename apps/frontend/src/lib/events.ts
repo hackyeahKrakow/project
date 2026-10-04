@@ -21,12 +21,18 @@ export type SpottedEvent = {
   lat: number
   lng: number
   price: number | null // null = unknown, 0 = free
+  image_url?: string | null // the event's own photo; without it the card shows a stock photo (lib/photos.ts)
   category: CategoryId
   size: Size
   district: string
   organizer: Organizer
   promoted?: boolean
+  wheelchair?: Wheelchair // declared by the organizer; missing = unknown
 }
+
+// The same values as OpenStreetMap's wheelchair=* tag (and Wheelmap), so venue data can be taken from OSM later.
+export type Wheelchair = 'yes' | 'limited' | 'no'
+export const WHEELCHAIR_LABEL: Record<Wheelchair, string> = { yes: 'Bez barier', limited: 'Częściowo bez barier', no: 'Z barierami' }
 
 export const SIZE_LABEL: Record<Size, string> = { small: 'kameralne', medium: 'średnie', large: 'duże' }
 
@@ -113,6 +119,13 @@ const ROWS: Row[] = [
 
 // The backend catalog (GET /card/new, POST /card): same file and ids as data/events_oneoff.json, so swipes can be saved.
 // It has no size, district or organizer: they get the default size, the nearest district and a neutral organizer.
+// Step-free access from each venue's own accessibility page (checked 3.10.2026); venues not listed stay "unknown".
+const VENUE_WHEELCHAIR: [venue: string, access: Wheelchair][] = [
+  ['TAURON Arena', 'yes'], // tauronarenakrakow.pl/dla-osob-z-niepelnosprawnosciami: 52 wheelchair places on level A
+  ['ICE Kraków', 'yes'], // icekrakow.pl/deklaracja-dostepnosci: wheelchair platforms in the auditoriums
+  ['Nowohuckie Centrum Kultury', 'yes'], // nck.krakow.pl/o-nck/deklaracja-dostepnosci: lift to every floor
+]
+const venueAccess = (address: string) => VENUE_WHEELCHAIR.find(([venue]) => address.includes(venue))?.[1]
 const nearest = (lat: number, lng: number) => Object.entries(DISTRICTS).sort(([, a], [, b]) => km(a, [lat, lng]) - km(b, [lat, lng]))[0][0]
 export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
   ...e,
@@ -121,6 +134,7 @@ export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
   size: 'medium',
   district: nearest(e.lat, e.lng),
   organizer: ORGANIZER_TBD,
+  ...(venueAccess(e.address) && { wheelchair: venueAccess(e.address) }),
 }))
 export const CARD_IDS = new Set(CARDS.map((e) => e.id))
 // The first six are the fixed starter sequence served by GET /card/new/{user_id}.

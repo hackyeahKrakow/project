@@ -162,6 +162,78 @@ Podpowiedzi adresu w formularzu „Dodaj wydarzenie”. Backend pyta [Photon](ht
 - **422**: za krótkie albo za długie `q`
 - **503**: `{ "detail": "Geocoder unavailable" }` — Photon nie odpowiada albo odrzucił zapytanie. Formularz działa dalej: adres wpisuje się ręcznie, a pin trafia do środka wybranej dzielnicy.
 
+### GET /transit/near — `transit_near`
+
+Komunikacja miejska przy karcie wydarzenia. Backend czyta otwarte dane [ZTP Kraków](https://gtfs.ztp.krakow.pl): przystanki z `stops.txt` w `GTFS_KRK_T.zip` (tramwaje) i `GTFS_KRK_A.zip` (autobusy), raz na dobę na proces, oraz bieżące komunikaty z `ServiceAlerts_T.pb` i `ServiceAlerts_A.pb` (GTFS-Realtime), co 2 minuty. Zwraca najbliższy przystanek tramwajowy i autobusowy (do 1,5 km) oraz utrudnienia dotyczące przystanków w promieniu 400 m: po `stop_id` z komunikatu albo po nazwie przystanku w jego treści. Frontend pyta przy otwarciu karty i nic nie pokazuje, gdy API nie odpowiada.
+
+- **Parametry**: `lat` 49,9–50,2 i `lng` 19,7–20,3 (okolice Krakowa)
+- **200**:
+
+```json
+{
+  "stops": [
+    { "name": "AGH / UR", "mode": "bus", "distance_m": 85 },
+    { "name": "Plac Inwalidów", "mode": "tram", "distance_m": 230 }
+  ],
+  "alerts": [{ "header": "Przystanek nieczynny", "description": "…" }]
+}
+```
+
+- **422**: współrzędne spoza Krakowa
+- **503**: `{ "detail": "ZTP data unavailable" }` — nie udało się pobrać listy przystanków. Gdy padną tylko komunikaty, endpoint zwraca przystanki i pustą listę `alerts`.
+
+### GET /route — `route`
+
+Trasa komunikacją miejską na wydarzenie. Backend pyta [Transitous](https://transitous.org) (MOTIS na rozkładach GTFS ZTP Kraków z opóźnieniami na żywo, `GET /api/v5/plan`): `arriveBy=true` i `timetableView=false`, czyli „bądź na miejscu przed tą godziną i wyjdź jak najpóźniej”. Zwraca do 3 opcji i czas dojścia pieszo. Pozycja użytkownika idzie do Transitous tylko w tym jednym zapytaniu; nie zapisujemy jej i nie logujemy. Frontend pyta dopiero po kliknięciu „Zaplanuj dojazd” (zasady Transitous: rozsądne obciążenie, User-Agent z kontaktem, otwarty kod).
+
+- **Parametry**: `from_lat`, `from_lng` (start, okolice Krakowa), `to_lat`, `to_lng` (wydarzenie), `time` (ISO 8601 z offsetem), `arrive_by` (domyślnie `true`; `false` = wyjazd o `time`), `wheelchair` (domyślnie `false`; `true` = odcinki piesze bez schodów, opcje z pojazdem wysokopodłogowym na końcu)
+- **200**:
+
+```json
+{
+  "options": [
+    {
+      "start": "2026-10-16T16:22:00Z",
+      "end": "2026-10-16T16:58:00Z",
+      "minutes": 36,
+      "transfers": 0,
+      "legs": [
+        { "mode": "WALK", "line": null, "headsign": null, "from_name": "START", "to_name": "AGH / UR", "start": "…", "end": "…", "minutes": 4, "low_floor": null, "realtime": false },
+        { "mode": "TRAM", "line": "4", "headsign": "Wzgórza Krzesławickie", "from_name": "AGH / UR", "to_name": "TAURON Arena Kraków Wieczysta", "start": "…", "end": "…", "minutes": 27, "low_floor": true, "realtime": true }
+      ]
+    }
+  ],
+  "walk_minutes": 95
+}
+```
+
+`low_floor` pochodzi z pola `wheelchair_accessible` kursu w GTFS ZTP (w MOTIS `wheelchairAccessible`, od wersji 2.10): `true` = tramwaj lub autobus niskopodłogowy, `false` = stopnie przy wejściu, `null` = brak danych.
+
+- **422**: współrzędne spoza Krakowa albo zła data
+- **503**: `{ "detail": "Journey planner unavailable" }`
+
+### GET /parking/near — `parking_near`
+
+Parkingi i miejsca dla osób z niepełnosprawnością przy wydarzeniu, z OpenStreetMap przez [Overpass](https://overpass-api.de): `amenity=parking` w promieniu 800 m (bez prywatnych i dla klientów) oraz `amenity=parking_space` + `parking_space=disabled` w promieniu 400 m. Wynik trzymamy dobę na miejsce, zapytania idą po jednym na raz.
+
+- **Parametry**: `lat`, `lng` wydarzenia (okolice Krakowa)
+- **200**:
+
+```json
+{
+  "parkings": [
+    { "name": "Parking TAURON Arena", "distance_m": 160, "lat": 50.069, "lng": 19.993, "capacity": 1200, "disabled_spaces": 24, "has_disabled_spaces": true, "fee": true, "park_ride": false }
+  ],
+  "disabled_spaces": 3,
+  "nearest_disabled_m": 25
+}
+```
+
+`disabled_spaces` przy parkingu to liczba z tagu `capacity:disabled`; `has_disabled_spaces` jest `true` także przy `capacity:disabled=yes` bez liczby. Liczby wolnych miejsc OSM nie zna.
+
+- **422**: współrzędne spoza Krakowa
+- **503**: `{ "detail": "Overpass unavailable" }`
+
 ## Błędy
 
 Wszystkie błędy mają ten sam kształt:

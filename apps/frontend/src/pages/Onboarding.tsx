@@ -1,4 +1,5 @@
 import {
+  Accessibility,
   ArrowLeft,
   Bell,
   Bike,
@@ -30,7 +31,7 @@ import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { DISTRICTS, type Size } from '@/lib/events'
 import { askPermission } from '@/lib/notify'
 import { useStore, type Budget, type Goal, type Profile, type TimeOfDay } from '@/lib/store'
-import { Toggle, btnPrimary, card, chip } from '@/ui'
+import { LocationToggle, Toggle, btnPrimary, card, chip } from '@/ui'
 
 // Every answer chip has an icon next to its text (docs/DESIGN.md, ekran personalizacji).
 type Answer<T> = [T, string, LucideIcon]
@@ -78,11 +79,6 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
 
   const finish = () => {
     update(privacyOnly ? { consent: true } : { profile: p, location: loc, notifications, onboarded: true, consent: true })
-    if (loc)
-      navigator.geolocation?.getCurrentPosition(
-        () => {},
-        () => {},
-      ) // ask the browser now, not mid-demo
     window.location.hash = state.account ? '#/konto' : '#/odkrywaj'
   }
 
@@ -175,6 +171,12 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
               </button>
             ))}
           </Group>
+          <Group label="Dostępność">
+            <button type="button" aria-pressed={!!p.stepFree} onClick={() => set({ stepFree: !p.stepFree })} className={chip(!!p.stepFree)}>
+              <Accessibility size={18} aria-hidden />
+              Potrzebuję miejsc i dojazdu bez barier
+            </button>
+          </Group>
           <Group label="Kiedy masz czas?">
             {TIMES.map(([t, label, Icon]) => (
               <button
@@ -200,7 +202,7 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
           <div className="flex items-center gap-3">
             <LocateFixed size={22} className="flex-none text-link" aria-hidden />
             <div className="flex-1">
-              <Toggle label="Lokalizacja" hint="Odległość na kartach i twoja kropka na mapie. Nie zapisujemy jej na serwerze." on={loc} onChange={setLoc} />
+              <LocationToggle hint="Odległość na kartach, twoja kropka na mapie i start trasy dojazdu. Nie zapisujemy jej na serwerze." on={loc} onChange={setLoc} />
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -261,7 +263,8 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
             <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">Twoje dane, twoje zasady</h1>
             <ul className="flex flex-col gap-3 text-[15px] leading-snug">
               <Li>Nie mamy twojego maila ani numeru telefonu.</Li>
-              <Li>Odpowiedzi z pytań i lokalizacja zostają na tym telefonie.</Li>
+              <Li>Odpowiedzi z pytań zostają na tym telefonie.</Li>
+              <Li>Lokalizację wysyłamy tylko, gdy klikniesz „Zaplanuj dojazd”: idzie do planera tras Transitous (z opcją „bez barier”, jeśli ją włączysz) i nigdzie jej nie zapisujemy.</Li>
               <Li>Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.</Li>
               <Li>Każda karta mówi, dlaczego ją widzisz („Bo lubisz…”).</Li>
               <Li>Wyczyścisz przeglądarkę albo zmienisz telefon? Zaczynasz od nowa. Dane usuniesz też w zakładce Konto.</Li>

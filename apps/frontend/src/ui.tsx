@@ -1,4 +1,5 @@
 import {
+  Accessibility,
   BadgeCheck,
   CalendarPlus,
   Calendar,
@@ -24,8 +25,10 @@ import logoUrl from '@/assets/logo-full.svg'
 import maplibreWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { Dojazd } from '@/Dojazd'
+import { locate } from '@/lib/geo'
 import { type Category, category } from '@/lib/categories'
-import { SIZE_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
+import { SIZE_LABEL, WHEELCHAIR_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
 import { describe, myPersona } from '@/lib/persona'
 import { photoUrl } from '@/lib/photos'
@@ -158,6 +161,7 @@ export function FollowButton({ orgId, name }: { orgId: string; name?: string }) 
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
+  const { state } = useStore()
   return (
     <article className="flex flex-col">
       <Thumb cat={c} iconSize={56} className="aspect-[16/7] w-full" photo={photoUrl(ev)} />
@@ -169,6 +173,18 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         <div className="flex flex-wrap gap-1.5">
           <CategoryBadge cat={c} className="text-[13px]" />
           <span className="rounded-full bg-track px-2.5 py-1 text-[13px] font-medium">{SIZE_LABEL[ev.size]}</span>
+          {ev.wheelchair && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-track px-2.5 py-1 text-[13px] font-medium">
+              <Accessibility size={14} aria-hidden />
+              {WHEELCHAIR_LABEL[ev.wheelchair]}
+            </span>
+          )}
+          {!ev.wheelchair && state.profile.stepFree && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-[13px] font-medium text-muted">
+              <Accessibility size={14} aria-hidden />
+              Dostępność nieznana
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1.5 text-[15px]">
           <div className="flex items-center gap-2">
@@ -189,15 +205,16 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         </div>
         <PersonaLine org={ev.organizer} />
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
+        <Dojazd ev={ev} />
         <div className="flex gap-2">
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${ev.lat},${ev.lng}`}
+            href={`https://www.google.com/maps/dir/?api=1&destination=${ev.lat},${ev.lng}&travelmode=transit`}
             target="_blank"
             rel="noreferrer"
             className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}
           >
             <MapPin size={18} strokeWidth={2.2} aria-hidden />
-            Dojazd
+            Nawiguj
           </a>
           <button type="button" onClick={() => downloadIcs([ev], `${ev.id}.ics`)} className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}>
             <CalendarPlus size={18} strokeWidth={2.2} aria-hidden />
@@ -264,6 +281,30 @@ export function Toggle({ label, hint, on, onChange }: { label: string; hint?: st
       {/* Off track is #6B7A99 so the switch state stays visible (3:1 against white, WCAG 1.4.11). */}
       <span className="relative h-7 w-12 flex-none rounded-full bg-[#6B7A99] transition-colors peer-checked:bg-brand-600 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link after:absolute after:top-1 after:left-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
     </label>
+  )
+}
+
+/** Location switch: turning it on asks the browser right away; a refusal switches it back off and says why. */
+export function LocationToggle({ on, onChange, hint }: { on: boolean; onChange: (on: boolean) => void; hint: string }) {
+  const [error, setError] = useState('')
+  const change = (v: boolean) => {
+    setError('')
+    onChange(v)
+    if (v)
+      locate().catch((e: Error) => {
+        onChange(false)
+        setError(e.message)
+      })
+  }
+  return (
+    <div>
+      <Toggle label="Lokalizacja" hint={hint} on={on} onChange={change} />
+      {error && (
+        <p role="alert" className="mb-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -469,7 +510,12 @@ export function EventMap({
     m.once('load', () => {
       for (const layer of m.getStyle().layers) if (/poi|housenumber/.test(layer.id)) m.removeLayer(layer.id)
     })
-    if (locate) m.addControl(new GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false }), 'top-right')
+    if (locate) {
+      // The blue dot shows by itself once location is on; before, the control only added a button nobody pressed.
+      const geo = new GeolocateControl({ positionOptions: { enableHighAccuracy: true, timeout: 10_000, maximumAge: 120_000 }, trackUserLocation: false })
+      m.addControl(geo, 'top-right')
+      m.once('load', () => geo.trigger())
+    }
     map.current = m
     setMapVersion((v) => v + 1)
     const all = markers.current

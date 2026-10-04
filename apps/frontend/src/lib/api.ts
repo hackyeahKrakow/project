@@ -91,3 +91,78 @@ export async function searchAddress(q: string): Promise<Place[] | null> {
     return null
   }
 }
+
+export type TransitNear = {
+  stops: { name: string; mode: 'tram' | 'bus'; distance_m: number }[]
+  alerts: { header: string; description: string }[]
+}
+
+/** GET /transit/near: nearest tram and bus stop and current ZTP disruptions around the event. null when unavailable. */
+export async function transitNear(lat: number, lng: number): Promise<TransitNear | null> {
+  if (!API) return null
+  try {
+    const res = await fetch(`${API}/transit/near?lat=${lat}&lng=${lng}`, { signal: AbortSignal.timeout(25_000) })
+    return res.ok ? ((await res.json()) as TransitNear) : null
+  } catch {
+    return null
+  }
+}
+
+export type RouteLeg = {
+  mode: string // WALK, TRAM, BUS, RAIL…
+  line: string | null
+  headsign: string | null
+  from_name: string
+  to_name: string
+  start: string
+  end: string
+  minutes: number
+  low_floor: boolean | null // from the ZTP timetable; null = unknown
+  realtime: boolean
+}
+export type RouteOption = { start: string; end: string; minutes: number; transfers: number; legs: RouteLeg[] }
+export type RoutePlan = { options: RouteOption[]; walk_minutes: number | null }
+
+/** GET /route: public transport options arriving by `time` (Transitous over the ZTP timetable). null when unavailable. */
+export async function planRoute(from: [number, number], to: [number, number], time: string, arriveBy: boolean, wheelchair: boolean): Promise<RoutePlan | null> {
+  if (!API) return null
+  const q = new URLSearchParams({
+    from_lat: String(from[0]),
+    from_lng: String(from[1]),
+    to_lat: String(to[0]),
+    to_lng: String(to[1]),
+    time,
+    arrive_by: String(arriveBy),
+    wheelchair: String(wheelchair),
+  })
+  try {
+    const res = await fetch(`${API}/route?${q}`, { signal: AbortSignal.timeout(20_000) })
+    return res.ok ? ((await res.json()) as RoutePlan) : null
+  } catch {
+    return null
+  }
+}
+
+export type Parking = {
+  name: string
+  distance_m: number
+  lat: number
+  lng: number
+  capacity: number | null
+  disabled_spaces: number | null
+  has_disabled_spaces: boolean | null
+  fee: boolean | null
+  park_ride: boolean
+}
+export type ParkingNear = { parkings: Parking[]; disabled_spaces: number; nearest_disabled_m: number | null }
+
+/** GET /parking/near: car parks and spaces for people with disabilities around the event (OpenStreetMap). null when unavailable. */
+export async function parkingNear(lat: number, lng: number): Promise<ParkingNear | null> {
+  if (!API) return null
+  try {
+    const res = await fetch(`${API}/parking/near?lat=${lat}&lng=${lng}`, { signal: AbortSignal.timeout(30_000) })
+    return res.ok ? ((await res.json()) as ParkingNear) : null
+  } catch {
+    return null
+  }
+}
