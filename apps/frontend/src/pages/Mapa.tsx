@@ -24,7 +24,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const needsStepFree = !!state.profile.stepFree // same rule as the deck: venues with barriers never show, unknown ones do
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
-  const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
+  const [legendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
 
   const shown = useMemo(
     () =>
@@ -94,7 +94,12 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
       <div className="relative flex min-h-0 flex-1 flex-col">
         <EventMap events={shown} liked={liked} selectedId={selectedId} onSelect={setSelectedId} locate={state.location} className="min-h-0 flex-1" />
 
-        <div className="absolute inset-x-0 top-0 z-10 flex gap-2 overflow-x-auto px-3 pt-3 pb-2 [scrollbar-width:none]" role="group" aria-label="Filtry">
+        {/* From sm up the sheet is a 400 px panel on the right: the chips end before it instead of hiding under it. */}
+        <div
+          className={`absolute inset-x-0 top-0 z-10 flex gap-2 overflow-x-auto px-3 pt-3 pb-2 [scrollbar-width:none] ${selected || openList ? 'sm:right-[424px]' : ''}`}
+          role="group"
+          aria-label="Filtry"
+        >
           {WHEN.map(([w, label]) => (
             <button key={w} type="button" aria-pressed={when === w} className={`${chip(when === w)} shadow-sm`} onClick={() => setWhen(w)}>
               {label}
@@ -131,13 +136,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
 
         {/* Legend: what pin colors and badges mean (color is never the only carrier, so each row has the icon too). */}
         <details className="group absolute bottom-20 left-3 z-10 max-w-[240px] rounded-2xl bg-surface/95 text-sm shadow-lg md:bottom-4" open={legendOpen}>
-          <summary
-            className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 font-semibold"
-            onClick={(e) => {
-              e.preventDefault()
-              setLegendOpen(!legendOpen)
-            }}
-          >
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 font-semibold">
             <Info size={18} aria-hidden />
             Legenda
             <ChevronDown size={16} className="ml-auto transition-transform group-open:rotate-180" aria-hidden />

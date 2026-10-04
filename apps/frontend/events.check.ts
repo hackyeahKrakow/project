@@ -5,6 +5,7 @@ import { fold, ics } from './src/lib/ics.ts'
 import { describe, persona } from './src/lib/persona.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
 import { inKrakow } from './src/lib/geo.ts'
+import { photoUrl } from './src/lib/photos.ts'
 import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
 assert.equal(formatDate('2026-10-08T19:00:00+02:00'), 'czw., 8 paź, 19:00')
@@ -65,7 +66,8 @@ assert.ok(cal.includes('BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H')) // th
 assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
 // Following an organizer lifts its events and is named in the reason.
 const lib = events.find((e) => e.id === 'evt_ksiazka')!
-const plain = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50).findIndex((x) => x.ev.id === lib.id)
+const plainAt = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50).findIndex((x) => x.ev.id === lib.id)
+const plain = plainAt < 0 ? Infinity : plainAt // outside the 50-card deck ranks below all of it
 const followedDeck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50, undefined, new Set([lib.organizer.id]))
 const followed = followedDeck.findIndex((x) => x.ev.id === lib.id)
 assert.ok(followed < plain, `${followed} < ${plain}`)
@@ -93,7 +95,7 @@ const { readFileSync } = await import('node:fs')
 const read = (f: string) => JSON.parse(readFileSync(new URL(f, import.meta.url), 'utf8'))
 assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_oneoff.json'))
 const { CARDS, STARTER } = await import('./src/lib/events.ts')
-assert.equal(CARDS.length, 48)
+assert.equal(CARDS.length, 124)
 assert.deepEqual(STARTER, CARDS.slice(0, 6))
 // The app shows only the 20 backend cards; the demo events stay in demoCatalog().
 assert.deepEqual(catalog(), CARDS)
@@ -102,8 +104,9 @@ assert.ok(demoCatalog().length > CARDS.length)
 // a known paid price is still filtered out, and interests rank a matching category first.
 const real = (budget: 'free' | 'upto20', evs = catalog()) =>
   recommend(evs, { ...EMPTY_PROFILE, interests: ['kultura'], budget }, {}, new Set(STARTER.map((e) => e.id)), 50, undefined, new Set(), '2026-10-03')
-assert.equal(real('free').length, CARDS.length - STARTER.length)
-assert.equal(real('upto20').length, CARDS.length - STARTER.length)
+const realDeck = Math.min(50, CARDS.length - STARTER.length) // recommend() returns at most the limit
+assert.equal(real('free').length, realDeck)
+assert.equal(real('upto20').length, realDeck)
 const paid = catalog().map((e) => ({ ...e, price: 30 }))
 assert.equal(real('free', paid).length, 0)
 assert.equal(real('free')[0].ev.category, 'kultura')
@@ -114,12 +117,15 @@ console.log('catalog checks ok')
 const access = catalog().map((e, i) => (i === 7 ? { ...e, wheelchair: 'no' as const } : e))
 const stepFree = recommend(access, { ...EMPTY_PROFILE, stepFree: true }, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
 assert.ok(!stepFree.some((x) => x.ev.wheelchair === 'no'))
-assert.equal(stepFree.length, CARDS.length - 1)
+assert.equal(stepFree.length, Math.min(50, CARDS.length - 1))
 const unfiltered = recommend(access, EMPTY_PROFILE, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
 const firstYes = stepFree.findIndex((x) => x.ev.wheelchair === 'yes')
 assert.ok(firstYes < unfiltered.findIndex((x) => x.ev.id === stepFree[firstYes].ev.id))
 assert.ok(stepFree[firstYes].reason.includes('Bez barier'))
-assert.equal(unfiltered.length, CARDS.length)
+assert.equal(unfiltered.length, Math.min(50, CARDS.length))
 // A fix far from Kraków (e.g. a laptop located by IP) is not used as the start of a trip.
 assert.ok(inKrakow([50.0647, 19.9232]) && !inKrakow([52.2297, 21.0122]))
 console.log('accessibility checks ok')
+
+// No krakow.travel photo is shown until KBF confirms the licence (docs/LEGAL.md).
+assert.ok(catalog().every((e) => !photoUrl(e).includes('krakow.travel')))

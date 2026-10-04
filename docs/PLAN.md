@@ -47,7 +47,7 @@ Każdy punkt to jedno issue (skrypt [scripts/create_github_issues.sh](../scripts
 - [ ] **D1 · Kategorie** (0:45): finalne kolory i ikony Lucide dla 6–8 kategorii. Gotowe: tabela w [DESIGN.md](DESIGN.md#kategorie) i [data/categories.json](../data/categories.json) zaktualizowane, info na #decyzje.
 - [ ] **D2 · Makiety 3 ekranów** (2:00): mapa z kartą, talia swipe, onboarding; mobile 390 px. Gotowe: link do Figmy w issue.
 - [ ] **D3 · Szablon grafik wydarzeń** (3:00): szablon w Canvie 16:9 z wariantem na kategorię, eksport WebP. Gotowe: min. 15 grafik w `apps/backend/static/img/`.
-- [ ] **D4 · Nazwa i logo robocze** (3:00, z PM). Gotowe: nazwa w README i plik SVG logo.
+- [x] **D4 · Nazwa i logo robocze** (3:00, z PM). Gotowe: nazwa „spootted" w README, motto „zmatchuj się z eventami w Krakowie", logo SVG w `apps/frontend/public/logo.svg`, [docs/BRAND.md](BRAND.md).
 
 ### PM + legal (GitHub Issues, Discord)
 

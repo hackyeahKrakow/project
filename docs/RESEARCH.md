@@ -1,6 +1,6 @@
 # Research
 
-Stan na 3 października 2026. Liczby do slajdów pitchu.
+Stan na 3 października 2026. Liczby do slajdów pitchu. Brand: [docs/BRAND.md](BRAND.md).
 
 ## Skala i problem
 

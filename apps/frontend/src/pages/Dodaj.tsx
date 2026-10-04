@@ -1,12 +1,12 @@
 import { ArrowLeft, CircleAlert, Info, LoaderCircle, LogIn, Sparkles } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { parseEvent, searchAddress, type Draft, type Place } from '@/lib/api'
-import { CATEGORIES, category, type CategoryId } from '@/lib/categories'
+import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
 import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent, type Wheelchair } from '@/lib/events'
 import { myPersona } from '@/lib/persona'
 import { useStore } from '@/lib/store'
-import { CategoryBadge, Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
+import { Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
 
 type Form = {
   title: string
@@ -267,13 +267,13 @@ export default function Dodaj() {
       >
         {field('title', 'Tytuł', text('title'))}
         {field('category', 'Kategoria', (cls) => (
-          <div className={`${cls} relative flex items-center has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link`}>
-            <CategoryBadge cat={category(form.category)} className="text-sm" />
+          <div className={`${cls} relative flex items-center`}>
+            <label htmlFor="category-select" className="sr-only">Kategoria</label>
             <select
-              aria-label="Kategoria"
+              id="category-select"
               value={form.category}
               onChange={(e) => set('category', e.target.value)}
-              className="absolute inset-0 cursor-pointer opacity-0"
+              className="h-12 w-full cursor-pointer rounded-xl border border-line bg-surface px-3.5 text-[15px] focus:border-link focus:ring-link"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>

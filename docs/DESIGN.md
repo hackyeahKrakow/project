@@ -4,7 +4,7 @@ Właściciel: design. Narzędzia: Claude Design (szybkie warianty), Figma (wersj
 
 ## Kategorie
 
-**Wartości tymczasowe.** Zadanie D1 ustala finalne kolory i ikony do 0:45; po zmianie zaktualizujcie [data/categories.json](../data/categories.json) i `apps/frontend/src/lib/categories.ts`.
+Kolory i ikony kategorii zgodne z [docs/BRAND.md](BRAND.md). Zadanie D1 ustala finalne wartości do 0:45; po zmianie zaktualizujcie [data/categories.json](../data/categories.json) i `apps/frontend/src/lib/categories.ts`.
 
 | id | Nazwa | Kolor (tymczasowy) | Ikona Lucide |
 | --- | --- | --- | --- |

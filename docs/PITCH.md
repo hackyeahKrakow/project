@@ -12,7 +12,7 @@ Aplikacja jest darmowa dla studentów i kół. Płacą instytucje i lokale, któ
 
 ## 10 slajdów
 
-1. Tytuł, zespół, jedno zdanie o rozwiązaniu.
+1. Tytuł: **spootted** — „zmatchuj się z eventami w Krakowie", zespół, jedno zdanie o rozwiązaniu.
 2. Problem: rozproszona informacja + wyniki ankiety ([RESEARCH.md](RESEARCH.md)).
 3. Persona Ola i jej pierwszy tydzień w Krakowie.
 4. Rozwiązanie: mapa + swipe (zrzuty ekranu).

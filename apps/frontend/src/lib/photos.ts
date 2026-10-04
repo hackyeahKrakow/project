@@ -12,9 +12,12 @@ const PHOTOS: Record<CategoryId, string[]> = {
   warsztaty: ['photo-1519389950473-47ba0277781c', 'photo-1544928147-79a2dbc1f389', 'photo-1504384308090-c894fdcc538d'],
 }
 
+// media.krakow.travel photos stay hidden until KBF confirms their licence (docs/LEGAL.md); those events get a stock photo.
+const UNLICENSED = /^https?:\/\/media\.krakow\.travel\//
+
 /** The event's own photo when it has one, else a stable stock photo: same event, same photo on every screen. */
 export function photoUrl(ev: { id: string; category: CategoryId; image_url?: string | null }, width = 800) {
-  if (ev.image_url) return ev.image_url
+  if (ev.image_url && !UNLICENSED.test(ev.image_url)) return ev.image_url
   const list = PHOTOS[ev.category]
   const n = [...ev.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0)
   return `https://images.unsplash.com/${list[n % list.length]}?w=${width}&q=60&auto=format&fit=crop`

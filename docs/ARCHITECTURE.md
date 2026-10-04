@@ -28,7 +28,7 @@ flowchart LR
 | Backend | Python 3.11+, FastAPI, uv | CORS dla `localhost:5173`, grafiki jako pliki statyczne |
 | Baza | SQLite (SQLModel lub SQLAlchemy) | Odległość liczona w Pythonie (haversine), przy kilkuset wydarzeniach wystarczy |
 | AI | Autofill: dowolne LLM API z wyjściem JSON. Rekomendacje: Jev 1.13 (TypeSafe AI) przez OpenCode | Autofill i kategoria oraz wybór 10 kart; klucz `OPENCODE_API_KEY` tylko w `.env` |
-| Design | Claude Design, Figma, Canva | Makiety w Figmie, grafiki wydarzeń w Canvie |
+| Design | Claude Design, Figma, Canva | Makiety w Figmie, grafiki wydarzeń w Canvie, brand w [docs/BRAND.md](BRAND.md) |
 | Organizacja | GitHub Issues + Projects, Discord | Kanał #decyzje jako dziennik ustaleń |
 
 ## Układ katalogów

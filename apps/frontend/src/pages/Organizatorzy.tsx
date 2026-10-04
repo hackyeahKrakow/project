@@ -38,77 +38,79 @@ export default function Organizatorzy({ events, liked }: { events: SpottedEvent[
 
   return (
     <>
-      <Screen title="Organizatorzy" sub="Obserwuj koła, kluby i miejsca, a ich wydarzenia częściej trafią do twojej talii.">
-        <label className="flex h-12 items-center gap-2 rounded-[14px] border border-line bg-surface px-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link">
-          <Search size={20} className="text-muted" aria-hidden />
-          <span className="sr-only">Szukaj organizatora</span>
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Szukaj organizatora"
-            className="h-full flex-1 border-0 bg-transparent p-0 text-base focus:ring-0 focus:outline-none"
-          />
-        </label>
-        <div className="flex gap-2" role="group" aria-label="Pokaż">
-          <button type="button" aria-pressed={!onlyFollowed} onClick={() => setOnlyFollowed(false)} className={chip(!onlyFollowed)}>
-            Wszyscy ({orgs.size})
-          </button>
-          <button type="button" aria-pressed={onlyFollowed} onClick={() => setOnlyFollowed(true)} className={chip(onlyFollowed)}>
-            Obserwowani ({state.follows.length})
-          </button>
-        </div>
-        <p className="sr-only" aria-live="polite">
-          Wyniki: {shown.length}
-        </p>
-        {shown.length === 0 && (
-          <p className={`${card} p-5 text-[15px] text-muted`}>
-            {onlyFollowed && !needle ? 'Nikogo jeszcze nie obserwujesz. Kliknij „Obserwuj” przy organizatorze.' : 'Brak organizatorów dla tego wyszukiwania.'}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <Screen title="Organizatorzy" sub="Obserwuj koła, kluby i miejsca, a ich wydarzenia częściej trafią do twojej talii.">
+          <label className="flex h-12 items-center gap-2 rounded-[14px] border border-line bg-surface px-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-link">
+            <Search size={20} className="text-muted" aria-hidden />
+            <span className="sr-only">Szukaj organizatora</span>
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Szukaj organizatora"
+              className="h-full flex-1 border-0 bg-transparent p-0 text-base focus:ring-0 focus:outline-none"
+            />
+          </label>
+          <div className="flex gap-2" role="group" aria-label="Pokaż">
+            <button type="button" aria-pressed={!onlyFollowed} onClick={() => setOnlyFollowed(false)} className={chip(!onlyFollowed)}>
+              Wszyscy ({orgs.size})
+            </button>
+            <button type="button" aria-pressed={onlyFollowed} onClick={() => setOnlyFollowed(true)} className={chip(onlyFollowed)}>
+              Obserwowani ({state.follows.length})
+            </button>
+          </div>
+          <p className="sr-only" aria-live="polite">
+            Wyniki: {shown.length}
           </p>
-        )}
-        <ul className="flex flex-col gap-3">
-          {shown.map(({ org, upcoming }) => (
-            <li key={org.id} className={`${card} flex flex-col gap-3 p-4`}>
-              <div className="flex flex-wrap items-center gap-3">
-                <span
-                  className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-700"
-                  aria-hidden
-                >
-                  {org.name[0]}
-                </span>
-                <div className="flex min-w-48 flex-1 flex-col">
-                  <h2 className="font-semibold">
-                    <OrganizerLine ev={{ organizer: org }} className="text-[15px] text-fg" />
-                  </h2>
-                  <span className="text-[13px] text-muted">{countLabel(upcoming.length)}</span>
-                  <PersonaLine org={org} />
+          {shown.length === 0 && (
+            <p className={`${card} p-5 text-[15px] text-muted`}>
+              {onlyFollowed && !needle ? 'Nikogo jeszcze nie obserwujesz. Kliknij „Obserwuj” przy organizatorze.' : 'Brak organizatorów dla tego wyszukiwania.'}
+            </p>
+          )}
+          <ul className="flex flex-col gap-3">
+            {shown.map(({ org, upcoming }) => (
+              <li key={org.id} className={`${card} flex flex-col gap-3 p-4`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span
+                    className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-700"
+                    aria-hidden
+                  >
+                    {org.name[0]}
+                  </span>
+                  <div className="flex min-w-48 flex-1 flex-col">
+                    <h2 className="font-semibold">
+                      <OrganizerLine ev={{ organizer: org }} className="text-[15px] text-fg" />
+                    </h2>
+                    <span className="text-[13px] text-muted">{countLabel(upcoming.length)}</span>
+                    <PersonaLine org={org} />
+                  </div>
+                  <FollowButton orgId={org.id} name={org.name} />
                 </div>
-                <FollowButton orgId={org.id} name={org.name} />
-              </div>
-              {upcoming.length > 0 && (
-                <ul className="flex flex-col gap-1" aria-label={`Wydarzenia: ${org.name}`}>
-                  {upcoming.slice(0, 3).map((ev) => (
-                    <li key={ev.id}>
-                      <button
-                        type="button"
-                        onClick={() => setOpenId(ev.id)}
-                        className="flex min-h-11 w-full items-center gap-3 rounded-xl p-1.5 text-left hover:bg-canvas"
-                      >
-                        <Thumb cat={category(ev.category)} iconSize={18} className="h-10 w-10 rounded-lg" photo={photoUrl(ev, 120)} />
-                        <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="truncate text-[15px] font-medium">{ev.event_name}</span>
-                          <span className="text-[13px] text-muted">{formatRange(ev)}</span>
-                        </span>
-                        <ChevronRight size={18} className="text-muted" aria-hidden />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-      </Screen>
+                {upcoming.length > 0 && (
+                  <ul className="flex flex-col gap-1" aria-label={`Wydarzenia: ${org.name}`}>
+                    {upcoming.slice(0, 3).map((ev) => (
+                      <li key={ev.id}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenId(ev.id)}
+                          className="flex min-h-11 w-full items-center gap-3 rounded-xl p-1.5 text-left hover:bg-canvas"
+                        >
+                          <Thumb cat={category(ev.category)} iconSize={18} className="h-10 w-10 rounded-lg" photo={photoUrl(ev, 120)} />
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="truncate text-[15px] font-medium">{ev.event_name}</span>
+                            <span className="text-[13px] text-muted">{formatRange(ev)}</span>
+                          </span>
+                          <ChevronRight size={18} className="text-muted" aria-hidden />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Screen>
+      </div>
       <Sheet open={!!open} onClose={() => setOpenId(undefined)} label={open?.event_name ?? 'Wydarzenie'}>
         {open && <EventCard ev={open} liked={liked.has(open.id)} onLike={() => toggleLike(open.id)} />}
       </Sheet>
