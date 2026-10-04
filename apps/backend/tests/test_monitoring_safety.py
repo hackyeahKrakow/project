@@ -8,13 +8,14 @@ from uuid6 import uuid7
 from app.config import Settings
 from app.jev_client import JevClient, JevError, get_jev_client
 from app.models import Decision
-from app.monitoring import TracedJevClient
+from app.monitoring import TracedJevClient, build_tracing_client
 from tests.conftest import jev_override, make_jev_client
 from tests.monitoring_helpers import (
     PRIVATE_CHOICE,
     QUESTION_IDS,
     STATE,
     FakeLangSmithSession,
+    StubLangSmith,
     captured_traces,
     jev_scores,
     traced_client,
@@ -82,6 +83,39 @@ async def test_odd_states_behave_like_the_plain_client(odd_state):
     traced = await traced_client(jev_scores({"C1": 0.9}), FakeLangSmithSession()).score_interest(odd_state, ["C1"])
 
     assert traced == plain == {"C1": 0.9}
+
+
+@pytest.mark.parametrize("mode", ["ok", "forbidden", "slow"])
+async def test_slow_or_rejecting_langsmith_does_not_slow_the_call(mode):
+    """The production client config (background upload) against a LangSmith that is fine, rejects the key, or is slow."""
+    candidates = [
+        {"id": f"C{i}", "event_name": f"Event {i}", "description": "x" * 150, "price": 25.0, "address": "ul. Długa 12"}
+        for i in range(50)
+    ]
+    state = {"liked": [], "disliked": [], "candidates": candidates}
+    ids = [c["id"] for c in candidates]
+    handler = jev_scores({i: 0.5 for i in ids})
+    stub = StubLangSmith(mode)
+    client = build_tracing_client("ls-test-key", stub.url)
+    plain = _plain(handler)
+    traced = TracedJevClient(
+        api_key="test-key", model="jev-test", url="https://jev.test/systemone", timeout=2.0,
+        transport=httpx.MockTransport(handler), tracing_client=client, environment="dev",
+    )
+
+    async def average_seconds(jev) -> float:
+        started = time.perf_counter()
+        for _ in range(20):
+            assert await jev.score_interest(state, ids) == {i: 0.5 for i in ids}  # always the plain result
+        return (time.perf_counter() - started) / 20
+
+    try:
+        extra = await average_seconds(traced) - await average_seconds(plain)
+    finally:
+        client.cleanup()
+        stub.close()
+
+    assert extra < 0.1
 
 
 def test_off_without_a_key(monkeypatch):

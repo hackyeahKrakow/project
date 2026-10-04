@@ -6,6 +6,9 @@ and as JSON, so a test can read exactly what would have left the service, with n
 """
 
 import json
+import threading
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import httpx
 import requests
@@ -109,3 +112,48 @@ def traced_client(handler, session: FakeLangSmithSession, environment: str | Non
         tracing_client=tracing,
         **options,
     )
+
+
+class StubLangSmith:
+    """A LangSmith API stand-in on a free local port, for the production client config.
+
+    mode `ok` answers 200, `forbidden` rejects the key with 403, `slow` answers after `delay` seconds.
+    It runs in daemon threads, so a request that is still sleeping never keeps the test run waiting.
+    """
+
+    def __init__(self, mode: str = "ok", delay: float = 1.0) -> None:
+        self.mode, self.delay = mode, delay
+        stub = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *args) -> None:  # keep the test output clean
+                pass
+
+            def _reply(self, code: int, body: bytes = b"{}") -> None:
+                self.send_response(code)
+                self.send_header("content-type", "application/json")
+                self.send_header("content-length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_GET(self) -> None:
+                self._reply(200, b'{"version": "0.10.0"}')
+
+            def do_POST(self) -> None:
+                self.rfile.read(int(self.headers.get("content-length", 0)))
+                if stub.mode == "slow":
+                    time.sleep(stub.delay)
+                self._reply(403 if stub.mode == "forbidden" else 200)
+
+            do_PATCH = do_POST
+
+        class Server(ThreadingHTTPServer):
+            daemon_threads = True
+
+        self._server = Server(("127.0.0.1", 0), Handler)
+        self.url = f"http://127.0.0.1:{self._server.server_port}"
+        threading.Thread(target=self._server.serve_forever, daemon=True).start()
+
+    def close(self) -> None:
+        self._server.shutdown()
+        self._server.server_close()

@@ -36,20 +36,21 @@ def scrub_error_text(value: Any) -> Any:
     return value
 
 
+def build_tracing_client(api_key: str, endpoint: str | None = None) -> Client:
+    """The LangSmith client as production uses it: uploads in the background (default batching) with
+    short timeouts, so a slow or unreachable LangSmith cannot hold up a request. Tests build it too."""
+    options = {}
+    if endpoint:  # empty means the SDK default (US)
+        options["api_url"] = endpoint
+    # The key is passed explicitly: the SDK reads only the real environment, not our .env file.
+    return Client(api_key=api_key, timeout_ms=(2_000, 5_000), anonymizer=scrub_error_text, **options)
+
+
 @lru_cache
 def get_tracing_client() -> Client:
-    """One LangSmith client for the whole process. Short timeouts: uploads run in the background."""
+    """One LangSmith client for the whole process."""
     settings = get_settings()
-    options = {}
-    if settings.langsmith_endpoint:  # empty means the SDK default (US)
-        options["api_url"] = settings.langsmith_endpoint
-    # The key is passed explicitly: the SDK reads only the real environment, not our .env file.
-    return Client(
-        api_key=settings.langsmith_api_key.get_secret_value(),
-        timeout_ms=(2_000, 5_000),
-        anonymizer=scrub_error_text,
-        **options,
-    )
+    return build_tracing_client(settings.langsmith_api_key.get_secret_value(), settings.langsmith_endpoint)
 
 
 def _redact_inputs(inputs: dict) -> dict:
