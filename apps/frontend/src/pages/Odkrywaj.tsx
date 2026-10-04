@@ -288,8 +288,8 @@ function SwipeCard({ item, style, like, skip, flipped, moving, reduce }: { item:
         style={{ transform: `rotateY(${flipped ? 180 : 0}deg)`, transition: reduce ? 'none' : 'transform 500ms cubic-bezier(.4,.2,.2,1)' }}
       >
         <div className="absolute inset-0 flex flex-col backface-hidden" aria-hidden={flipped}>
-          {/* Fades out while the card is dragged or flying away, so it never tilts along with the card. */}
-          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center transition-opacity duration-150" style={{ opacity: moving ? 0 : 1 }} aria-hidden>
+          {/* Fades out while the card is dragged or flying away (it would tilt with the card) and once it is flipped (a blurred element can show through the hidden back face, mirrored). */}
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center transition-opacity duration-150" style={{ opacity: moving || flipped ? 0 : 1 }} aria-hidden>
             <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-medium text-white backdrop-blur-sm">Kliknij, aby odwrócić</span>
           </div>
           {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
