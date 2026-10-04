@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     api_key: SecretStr | None = None
     cors_origins: str = "http://localhost:5173"
     opencode_api_key: SecretStr | None = None
+    # LangSmith traces of the Jev calls; monitoring is off without a key (empty endpoint = SDK default, US)
+    langsmith_api_key: SecretStr | None = None
+    langsmith_project: str = "spotted-jev"
+    langsmith_endpoint: str | None = None
     jev_model: str = "jev-1.13-free"
     jev_url: str = "https://opencode.ai/zen/v1/systemone"
     jev_timeout_seconds: float = 8.0

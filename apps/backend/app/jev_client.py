@@ -78,9 +78,17 @@ def _valid_probabilities(answers: object, asked: set[str]) -> dict[str, float]:
 def get_jev_client() -> JevClient:
     settings = get_settings()
     key = settings.opencode_api_key.get_secret_value() if settings.opencode_api_key else None
-    return JevClient(
+    options = dict(
         api_key=key or None,
         model=settings.jev_model,
         url=settings.jev_url,
         timeout=settings.jev_timeout_seconds,
     )
+    if settings.langsmith_api_key:  # monitoring is on only with a key; imported here to avoid a cycle
+        try:
+            from app.monitoring import TracedJevClient
+
+            return TracedJevClient(**options)
+        except Exception as exc:  # a broken monitoring setup must not take recommendations down
+            log.warning("monitoring_disabled", error=type(exc).__name__)
+    return JevClient(**options)
