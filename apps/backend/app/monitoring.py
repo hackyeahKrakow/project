@@ -1,9 +1,10 @@
-"""LangSmith traces of the Jev calls.
+"""LangSmith traces of the Jev calls and of the fallback model's calls.
 
 `TracedJevClient` runs the normal `JevClient.score_interest` inside a trace and changes nothing
-else: the result, the exceptions and the timeouts stay exactly those of the parent class. It is
-only used when a LangSmith key is configured (see `get_jev_client`), so without a key none of this
-code is on the request path.
+else: the result, the exceptions and the timeouts stay exactly those of the parent class.
+`TracedFallbackDecider` does the same for `FallbackDecider.decide`, the second opinion on the cards
+Jev is unsure about. Both are only used when a LangSmith key is configured (see `get_jev_client` and
+`get_fallback_decider`), so without a key none of this code is on the request path.
 """
 
 import re
@@ -14,6 +15,7 @@ from langsmith import Client, traceable, tracing_context
 from langsmith.run_helpers import get_current_run_tree
 
 from app.config import get_settings
+from app.fallback_decider import FallbackDecider, FallbackError
 from app.jev_client import JevClient, JevError
 from app.logger import get_logger
 
@@ -23,13 +25,13 @@ log = get_logger(__name__)
 def scrub_error_text(value: Any) -> Any:
     """Client-side filter for what a trace stores as a run's error (the SDK passes `{"error": text}`).
 
-    The text of a `JevError` is one of our safe reason codes and stays. The text of any other error
+    The text of a `JevError` or `FallbackError` is one of our safe reason codes and stays. The text of any other error
     could quote what the call was handling, for example the user's saved choices, so only its class
     name is kept. Every other value, the inputs, outputs and metadata, passes through unchanged.
     """
     if isinstance(value, dict) and set(value) == {"error"} and isinstance(value["error"], str):
         text = value["error"]
-        if text.startswith("JevError("):
+        if text.startswith(("JevError(", "FallbackError(")):
             return value
         name = re.match(r"\s*([A-Za-z_][\w.]*)", text)
         return {"error": name.group(1) if name else "error"}
@@ -135,3 +137,73 @@ class TracedJevClient(JevClient):
 
         with tracing_context(enabled=True, client=self._tracing_client):
             return await traced(self._model, state, question_ids)
+
+
+def _redact_decider_inputs(inputs: dict) -> dict:
+    """What a trace may show of a fallback request: the cards it was asked about, never the choices.
+
+    Like `_redact_inputs`: the cards as sent, the liked and disliked ones only by id and name, the
+    choices only as a yes or no, and a fixed placeholder when anything goes wrong.
+    """
+    try:
+        state = inputs["state"]
+        brief = lambda cards: [{"id": c["id"], "event_name": c["event_name"]} for c in cards]  # noqa: E731
+        return {
+            "model": inputs["model"],
+            "candidates": state["candidates"],
+            "liked": brief(state["liked"]),
+            "disliked": brief(state["disliked"]),
+            "choices_included": "choices" in state,
+            "routing": inputs["routing"],
+        }
+    except Exception:
+        return {"redaction": "failed"}
+
+
+class TracedFallbackDecider(FallbackDecider):
+    """`FallbackDecider.decide` inside a trace named `fallback.decide`; nothing else changes.
+
+    Metadata: `outcome`, `reason` (on failure), `model`, `reasoning_effort`, the counts of the cards
+    sent, `decided` and `yes` (on success) and the `routing` numbers from the recommender, among them
+    `uncertain_share`: how large a part of the candidates Jev handed over.
+    """
+
+    def __init__(
+        self, *args, tracing_client: Client | None = None, environment: str | None = None, **kwargs
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._tracing_client = tracing_client or get_tracing_client()
+        self._environment = environment or get_settings().environment
+
+    async def decide(self, state: dict, routing: dict | None = None) -> dict[str, bool]:
+        settings = get_settings()
+        parent = super().decide
+
+        @traceable(
+            name="fallback.decide",
+            run_type="chain",
+            client=self._tracing_client,
+            project_name=settings.langsmith_project,
+            tags=[self._environment],
+            process_inputs=_redact_decider_inputs,
+            process_outputs=lambda decisions: {} if decisions is None else {"decisions": decisions},  # None: it failed
+        )
+        async def traced(model: str, state: dict, routing: dict) -> dict[str, bool]:
+            run = get_current_run_tree()
+            _annotate(
+                run,
+                model=model,
+                reasoning_effort=self._reasoning_effort or "default",
+                **_state_counts(state),
+                **{f"routing_{key}": value for key, value in routing.items()},
+            )
+            try:
+                decisions = await parent(state, routing)
+            except Exception as exc:
+                _annotate(run, outcome="failed", reason=str(exc) if isinstance(exc, FallbackError) else "unexpected_error")
+                raise
+            _annotate(run, outcome="success", decided=len(decisions), yes=sum(decisions.values()))
+            return decisions
+
+        with tracing_context(enabled=True, client=self._tracing_client):
+            return await traced(self._model, state, routing or {})

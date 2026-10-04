@@ -53,6 +53,46 @@ The content of the user's saved choices never appears; only `choices_included`.
 3. No user identifier, location, saved-choices content, Jev key or LangSmith key in the body.
 4. A failure of monitoring never raises into the request.
 
+## Trace of the fallback model (one per call, only when Jev handed cards over)
+
+The same `LANGSMITH_*` settings switch it on. It is sent when the recommender asks the fallback model
+(`FALLBACK_MODEL` on DeepInfra) about the cards Jev was unsure about, so a request with only confident
+Jev answers has no such trace. Both traces go to the same project; filter by run name.
+
+| Part | Value |
+|------|-------|
+| Run name | `fallback.decide` |
+| Run type | `chain` |
+| Project, tags | as for the Jev trace |
+
+**Inputs**: `model`, `candidates` (the cards as the recommender holds them, with their real ids, not
+the short keys the model sees), `liked` and `disliked` by id and name only, `choices_included`
+(yes or no, never the content) and `routing`.
+
+**Outputs**: success `{"decisions": {"<card id>": true, ...}}`; failure none, and the run carries
+`FallbackError('<reason>')`.
+
+**Metadata**
+
+| Key | Values |
+|-----|--------|
+| `outcome` | `success` or `failed` |
+| `reason` | only on failure: `timeout`, `http_<status>`, `network_error`, `invalid_response` (also for an empty or cut-off answer) or `unexpected_error` |
+| `model`, `reasoning_effort` | the fallback model name; `none`, `high`, ... or `default` when the setting is empty |
+| `candidates`, `liked`, `disliked`, `has_choices` | what was sent |
+| `decided`, `yes` | on success: cards the model answered for, and how many of them with yes |
+| `routing_candidates_total`, `routing_scored_by_jev` | all candidates, and those Jev scored |
+| `routing_uncertain_share` | part of the candidates handed over, 0 to 1; the number to watch when tuning `JEV_MIN_CONFIDENCE` |
+| `routing_min_confidence` | the threshold in force |
+
+`decided` below `candidates` means the model skipped cards; those keep their Jev scores.
+
+**Guarantees (tested in `tests/test_monitoring_fallback.py`)**: one trace per call and none when the
+fallback is not asked; the caller gets the same result or exception as without monitoring; no user
+identifier, saved-choices content, DeepInfra key or LangSmith key in the body; a down, slow or
+key-rejecting LangSmith never slows or fails the request; error text other than our reason codes is
+reduced to its class name.
+
 ## Settings
 
 | Setting (environment variable) | Required | Notes |

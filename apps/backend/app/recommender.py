@@ -82,7 +82,13 @@ async def _apply_fallback(
     if not uncertain:
         return scores
     try:
-        decisions = await fallback.decide({**state, "candidates": uncertain})
+        routing = {
+            "candidates_total": len(state["candidates"]),
+            "scored_by_jev": len(scores),
+            "uncertain_share": round(len(uncertain) / len(state["candidates"]), 2),
+            "min_confidence": min_confidence,
+        }
+        decisions = await fallback.decide({**state, "candidates": uncertain}, routing)
     except FallbackError as exc:
         log.warning("fallback_failed", reason=str(exc), uncertain=len(uncertain))
         return scores

@@ -45,8 +45,11 @@ class FallbackDecider:
         self._timeout = timeout
         self._transport = transport
 
-    async def decide(self, state: dict) -> dict[str, bool]:
+    async def decide(self, state: dict, routing: dict | None = None) -> dict[str, bool]:
         """Return a yes (True) or no (False) for each candidate of `state` the model answered for.
+
+        `routing` says why these cards were handed over (counts, the threshold). It does not change
+        the call; the traced subclass in `app.monitoring` shows it next to the trace.
 
         The model sees short keys ("1", "2", ...) instead of the long card ids: it copies them back
         more reliably, and they cost fewer tokens.
@@ -111,10 +114,18 @@ def get_fallback_decider() -> FallbackDecider | None:
     key = settings.deepinfra_api_key.get_secret_value() if settings.deepinfra_api_key else None
     if not key:
         return None
-    return FallbackDecider(
+    options = dict(
         api_key=key,
         model=settings.fallback_model,
         url=settings.deepinfra_url,
         timeout=settings.fallback_timeout_seconds,
         reasoning_effort=settings.fallback_reasoning_effort or None,
     )
+    if settings.langsmith_api_key:  # same switch as for Jev; imported here to avoid a cycle
+        try:
+            from app.monitoring import TracedFallbackDecider
+
+            return TracedFallbackDecider(**options)
+        except Exception as exc:  # a broken monitoring setup must not take recommendations down
+            log.warning("monitoring_disabled", error=type(exc).__name__)
+    return FallbackDecider(**options)

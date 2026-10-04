@@ -14,7 +14,7 @@ import httpx
 import requests
 from langsmith import Client
 
-from app.monitoring import TracedJevClient, scrub_error_text
+from app.monitoring import TracedFallbackDecider, TracedJevClient, scrub_error_text
 
 # A state shaped like the one the recommender builds, with choices that must never reach a trace.
 PRIVATE_CHOICE = "MARKER-PRIVATE-CHOICE"
@@ -108,6 +108,43 @@ def traced_client(handler, session: FakeLangSmithSession, environment: str | Non
         model="jev-test",
         url="https://jev.test/systemone",
         timeout=2.0,
+        transport=httpx.MockTransport(handler),
+        tracing_client=tracing,
+        **options,
+    )
+
+
+ROUTING = {"candidates_total": 10, "scored_by_jev": 10, "uncertain_share": 0.2, "min_confidence": 0.2}
+
+
+def decisions_by_position(*answers: bool):
+    """A fallback model stand-in that answers yes or no for the candidates "1", "2", ... in order."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        content = json.dumps({"decisions": {str(n): yes for n, yes in enumerate(answers, start=1)}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    return handler
+
+
+def traced_decider(
+    handler, session: FakeLangSmithSession, environment: str | None = None, reasoning_effort: str | None = "none"
+) -> TracedFallbackDecider:
+    """A TracedFallbackDecider whose model goes to `handler` and whose traces go to `session`."""
+    tracing = Client(
+        api_url="http://langsmith.test",
+        api_key="ls-test-key",
+        session=session,
+        auto_batch_tracing=False,
+        anonymizer=scrub_error_text,  # the same filter the real client has
+    )
+    options = {} if environment is None else {"environment": environment}
+    return TracedFallbackDecider(
+        api_key="di-test-key",
+        model="fallback-test",
+        url="https://deepinfra.test/chat",
+        timeout=2.0,
+        reasoning_effort=reasoning_effort,
         transport=httpx.MockTransport(handler),
         tracing_client=tracing,
         **options,
