@@ -85,7 +85,7 @@ outside the repository.
   - Overhead of a traced call with background upload: about 1 ms (10.2 ms plain against 11.2 to
     11.4 ms traced, with the Jev call stubbed at 10 ms).
   - Endpoint unreachable: the call returned in 12 ms with no exception; the SDK logs a warning from
-    the `langsmith.client` logger per failed upload, with the key masked (`lsv2_******xx`).
+    the `langsmith.client` logger per failed upload, with the key masked (only its last characters are shown).
   - Endpoint accepts but never answers: the call itself still returned in 13 ms.
   - `client.flush()` on an unreachable endpoint blocked for about 9 to 12 seconds (its retries), so it
     must never be called without a time limit.
