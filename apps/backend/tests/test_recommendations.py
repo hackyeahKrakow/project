@@ -341,6 +341,7 @@ def decider_override(handler):
         model="deepseek-ai/DeepSeek-V4.1-Flash",
         url="https://deepinfra.test/chat",
         timeout=2.0,
+        reasoning_effort="none",
         transport=httpx.MockTransport(handler),
     )
     app.dependency_overrides[get_fallback_decider] = lambda: decider
@@ -383,6 +384,8 @@ async def test_low_confidence_cards_are_decided_by_the_fallback_model(session_fa
     assert sent and all(not c["event_name"].startswith(("Music", "Sport")) for c in sent)
     assert all(c["id"].isdigit() for c in sent)  # short keys, not the card ids
     assert router.bodies[0]["model"] == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert router.bodies[0]["reasoning_effort"] == "none"  # no thinking: fast, and max_tokens is for the answer
+    assert router.bodies[0]["response_format"] == {"type": "json_object"}
     assert router.requests[0].headers["authorization"] == "Bearer di-key"
     assert str(user) not in json.dumps(router.bodies[0])
 
@@ -413,6 +416,13 @@ async def test_fallback_failures_keep_jevs_scores(session_factory, db_client):
             200, json={"choices": [{"message": {"content": '{"decisions": "yes"}'}}]}
         ),
         "timeout": timeout,
+        # a thinking model that used up max_tokens: no content, or JSON cut off in the middle
+        "null_content": lambda r: httpx.Response(
+            200, json={"choices": [{"message": {"content": None, "reasoning_content": "hmm"}, "finish_reason": "length"}]}
+        ),
+        "truncated_json": lambda r: httpx.Response(
+            200, json={"choices": [{"message": {"content": '{"decisions": {"1": tr'}, "finish_reason": "length"}]}
+        ),
     }
     for name, handler in broken.items():
         decider_override(FakeFallbackModel(reply=handler))
@@ -437,6 +447,39 @@ async def test_threshold_zero_turns_the_fallback_off(session_factory, db_client,
 
     assert response.status_code == 200
     assert router.bodies == []
+
+
+async def test_reasoning_effort_is_sent_only_when_set():
+    from app.fallback_decider import FallbackDecider
+
+    seen = []
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        content = json.dumps({"decisions": {"1": True}})
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    state = {"candidates": [{"id": "card-1", "event_name": "x"}]}
+    for effort in ("none", "high", None):
+        decider = FallbackDecider("k", "m", "https://deepinfra.test/chat", 2.0, reasoning_effort=effort, transport=httpx.MockTransport(handler))
+        assert await decider.decide(state) == {"card-1": True}
+    assert [b.get("reasoning_effort") for b in seen] == ["none", "high", None]
+    assert "reasoning_effort" not in seen[2]
+
+
+async def test_decider_settings_come_from_the_environment(monkeypatch):
+    from app.config import get_settings
+    from app.fallback_decider import get_fallback_decider
+
+    monkeypatch.setenv("DEEPINFRA_API_KEY", "di-key")
+    get_settings.cache_clear()
+    decider = get_fallback_decider()
+    assert decider._model == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert decider._url == "https://api.deepinfra.com/v1/openai/chat/completions"
+    assert decider._reasoning_effort == "none"
+    monkeypatch.setenv("FALLBACK_REASONING_EFFORT", "")
+    get_settings.cache_clear()
+    assert get_fallback_decider()._reasoning_effort is None
 
 
 async def test_no_deepinfra_key_means_no_fallback(monkeypatch):

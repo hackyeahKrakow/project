@@ -35,8 +35,10 @@ class FallbackDecider:
         model: str,
         url: str,
         timeout: float,
+        reasoning_effort: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
+        self._reasoning_effort = reasoning_effort
         self._api_key = api_key
         self._model = model
         self._url = url
@@ -64,6 +66,8 @@ class FallbackDecider:
                 {"role": "user", "content": json.dumps(shown, ensure_ascii=False)},
             ],
         }
+        if self._reasoning_effort:  # a thinking model would spend max_tokens on reasoning, not on the answer
+            body["reasoning_effort"] = self._reasoning_effort
         try:
             async with httpx.AsyncClient(timeout=self._timeout, transport=self._transport) as client:
                 response = await client.post(
@@ -112,4 +116,5 @@ def get_fallback_decider() -> FallbackDecider | None:
         model=settings.fallback_model,
         url=settings.deepinfra_url,
         timeout=settings.fallback_timeout_seconds,
+        reasoning_effort=settings.fallback_reasoning_effort or None,
     )
