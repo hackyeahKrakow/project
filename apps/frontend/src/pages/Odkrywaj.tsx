@@ -227,6 +227,7 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
               item={x}
               style={style(k)}
               flipped={!k && flippedId === x.ev.id}
+              moving={!k && (drag || flying)}
               reduce={reduce}
               like={k ? 0 : Math.max(0, Math.min(pos.x / 110, 1))}
               skip={k ? 0 : Math.max(0, Math.min(-pos.x / 110, 1))}
@@ -271,7 +272,7 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   )
 }
 
-function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored; style: CSSProperties; like: number; skip: number; flipped: boolean; reduce: boolean }) {
+function SwipeCard({ item, style, like, skip, flipped, moving, reduce }: { item: Scored; style: CSSProperties; like: number; skip: number; flipped: boolean; moving: boolean; reduce: boolean }) {
   const { ev, reason } = item
   const c = category(ev.category)
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
@@ -287,7 +288,8 @@ function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored;
         style={{ transform: `rotateY(${flipped ? 180 : 0}deg)`, transition: reduce ? 'none' : 'transform 500ms cubic-bezier(.4,.2,.2,1)' }}
       >
         <div className="absolute inset-0 flex flex-col backface-hidden" aria-hidden={flipped}>
-          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center" aria-hidden>
+          {/* Fades out while the card is dragged or flying away, so it never tilts along with the card. */}
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center transition-opacity duration-150" style={{ opacity: moving ? 0 : 1 }} aria-hidden>
             <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-medium text-white backdrop-blur-sm">Kliknij, aby odwrócić</span>
           </div>
           {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
