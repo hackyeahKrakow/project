@@ -257,7 +257,8 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
             <h1 className="text-[28px] leading-tight font-semibold tracking-[-0.02em]">Twoje dane, twoje zasady</h1>
             <ul className="flex flex-col gap-3 text-[15px] leading-snug">
               <Li>Nie mamy twojego maila ani numeru telefonu.</Li>
-              <Li>Odpowiedzi z pytań i lokalizacja zostają na tym telefonie.</Li>
+              <Li>Odpowiedzi z pytań zostają na tym telefonie.</Li>
+              <Li>Lokalizację wysyłamy tylko, gdy klikniesz „Zaplanuj dojazd”: idzie do planera tras Transitous (z opcją „bez barier”, jeśli ją włączysz) i nigdzie jej nie zapisujemy.</Li>
               <Li>Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.</Li>
               <Li>Każda karta mówi, dlaczego ją widzisz („Bo lubisz…”).</Li>
               <Li>Wyczyścisz przeglądarkę albo zmienisz telefon? Zaczynasz od nowa. Dane usuniesz też w zakładce Konto.</Li>
