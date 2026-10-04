@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode 
 import { parseEvent, searchAddress, type Draft, type Place } from '@/lib/api'
 import { CATEGORIES, type CategoryId } from '@/lib/categories'
 import { ORG_PLAN, SAMPLE_POST, demoDraft } from '@/lib/demo'
-import { DISTRICTS, LIBRARY, at, daysFromToday, km, warsawDay, type Size, type SpottedEvent, type Wheelchair } from '@/lib/events'
+import { DISTRICTS, LIBRARY, ACCESS_FIELD_LABEL, at, daysFromToday, km, warsawDay, type AccessField, type Accessibility, type Size, type SpottedEvent, type Tri, type Wheelchair } from '@/lib/events'
 import { myPersona } from '@/lib/persona'
 import { useStore } from '@/lib/store'
 import { Toggle, btnOutline, btnPrimary, btnSpark, card } from '@/ui'
@@ -49,6 +49,9 @@ const FIELD_OF: Record<string, Key> = {
   size: 'size',
   description: 'description',
 }
+
+// Organizers declare these by hand; the AI never guesses accessibility (docs/SPEC.md).
+const ACCESS_FORM: AccessField[] = ['step_free_entry', 'ramp', 'lift', 'threshold', 'accessible_toilet', 'disabled_parking', 'rest_places']
 
 /** Next Friday 20:00 in Warsaw, for the demo answer to SAMPLE_POST ("w piątek od 20:00"). */
 const nextFriday = () => {
@@ -109,6 +112,7 @@ export default function Dodaj() {
   const [showType, setShowType] = useState(false) // publishing the type is the student's choice, off by default
   const me = myPersona(state)
   const [coords, setCoords] = useState<[number, number] | null>(null) // from a picked address suggestion
+  const [access, setAccess] = useState<Partial<Record<AccessField, Tri>>>({})
 
   if (!account) {
     return (
@@ -180,6 +184,17 @@ export default function Dodaj() {
       category: form.category,
       size: form.size,
       ...(form.wheelchair && { wheelchair: form.wheelchair }),
+      ...(org && form.wheelchair && {
+        accessibility: {
+          status: form.wheelchair,
+          fields: access,
+          source: 'organizer',
+          source_label: 'Organizator wydarzenia',
+          updated_at: warsawDay(new Date().toISOString()),
+          reliability: 'reported',
+          note: 'Dane zadeklarowane przez organizatora; niepotwierdzone przez użytkowników.',
+        } satisfies Accessibility,
+      }),
       district,
       organizer:
         org && account.org === LIBRARY.name
@@ -324,6 +339,26 @@ export default function Dodaj() {
             <option value="no">Z barierami (schody, brak windy)</option>
           </select>
         ))}
+        {org && (
+          <fieldset className="flex flex-col gap-2.5 rounded-2xl border border-line p-3.5">
+            <legend className="px-1 text-sm font-medium text-muted">Dostępność dla osób na wózku — szczegóły (opcjonalnie)</legend>
+            <p className="text-[13px] text-muted">Zaznacz, co wiesz o miejscu. Brak odpowiedzi to „brak danych” — nie traktujemy tego jako dostępne.</p>
+            {ACCESS_FORM.map((f) => (
+              <label key={f} className="flex items-center justify-between gap-3 text-[15px]">
+                {ACCESS_FIELD_LABEL[f]}
+                <select
+                  className="h-10 w-36 flex-none rounded-lg border border-line bg-surface px-2 text-[15px]"
+                  value={access[f] ?? 'unknown'}
+                  onChange={(e) => setAccess({ ...access, [f]: e.target.value as Tri })}
+                >
+                  <option value="unknown">Nie wiem</option>
+                  <option value="yes">Tak</option>
+                  <option value="no">Nie</option>
+                </select>
+              </label>
+            ))}
+          </fieldset>
+        )}
         {field('description', 'Opis', (cls) => (
           <textarea className={`${cls} h-28 py-3`} value={form.description} onChange={(e) => set('description', e.target.value)} />
         ))}
