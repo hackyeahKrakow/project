@@ -33,11 +33,11 @@ Narracja jest krótka; kluczowe zdania pojawiają się też jako napisy i tekst 
 
 ## Automatyzacja nagrania (Playwright)
 
-Skrypt `scripts/record-demo.mjs` (Playwright, Chromium) przechodzi tę samą ścieżkę na wersji demo:
+Skrypt `scripts/record-demo.mjs` (Playwright, Chromium) przechodzi tę samą ścieżkę i nagrywa ją w 1280×720 (16:9), tempo dopasowane do napisów (2:45). Osobne zrzuty telefonu (390×844) robimy do decku.
 
-1. viewport 390×844 (telefon) + osobne ujęcia desktop,
+1. viewport 1280×720, tempo zsynchronizowane z napisami PL,
 2. wejście na ekran powitalny, otwarcie „Ułatwień dostępu", włączenie trybu bez barier,
-3. onboarding (4 kroki),
+3. onboarding (4 kroki) i ekran zgody,
 4. kilka swipe'ów w prawo,
 5. mapa + chip „Potwierdzone bez barier",
 6. karta TAURON Arena → rozwinięcie „Szczegóły dostępności",
@@ -46,7 +46,7 @@ Skrypt `scripts/record-demo.mjs` (Playwright, Chromium) przechodzi tę samą śc
 9. sekcja „Autem",
 10. zrzut końcowy z logo.
 
-Nagranie zapisujemy jako `docs/submissions/krakow-bez-barier/raw/*.webm`, a montaż (napisy, przejścia, muzyka) robimy w ffmpeg. Jeśli automat nie zdąży, scenariusz pozwala nagrać telefonem ręcznie — napisy i tak są wymagane.
+Uruchomienie: `BASE=https://spootted.dawidm.com node scripts/record-demo.mjs`. Nagranie zapisuje się jako `docs/submissions/krakow-bez-barier/raw/*.webm`, a montaż (napisy, skala 1920×1080, H.264) robimy w ffmpeg (polecenie w komentarzu skryptu).
 
 ## Uwagi
 

@@ -11,6 +11,8 @@ Zespół **The Spoots** ponosi pełną odpowiedzialność za całość rozwiąza
 | **Jev 1.13** (System One) | TypeSafe AI, przez OpenCode Zen (`POST /v1/systemone`, model `jev-1.13-free`) | Ranking do 10 kart w talii: model ocenia kandydatów na podstawie wcześniejszych swipe'ów i zwraca prawdopodobieństwa „tak" | Backend (`app/jev_client.py`, `app/recommender.py`) | Rekomendacje są wyjaśnione na karcie („Bo lubisz…"); przy awarii modelu backend zwraca losowych kandydatów, nie błąd |
 | **Model czatu** `minimax-m2.5-free` | OpenCode Zen (`POST /v1/chat/completions`) | Autouzupełnianie formularza wydarzenia z tekstu posta organizatora (tytuł, data, adres, kategoria, cena, wielkość) | Backend (`app/event_parser.py`, endpoint `POST /events/parse`) | **Człowiek zatwierdza**: AI tylko proponuje; pola niepewne trafiają do `missing_fields` i są podświetlone „Sprawdź"; nic nie trafia na mapę bez publikacji przez organizatora. AI **nie zgaduje** dostępności dla osób z niepełnosprawnością |
 
+Nazwa modelu autouzupełniania jest konfigurowalna przez `PARSE_MODEL` (domyślnie `minimax-m2.5-free`). Modele działają przez jedno API OpenCode Zen; nie uruchamiamy własnych modeli. Wywołania Jev można opcjonalnie śledzić w **LangSmith** (patrz sekcja 3) — to narzędzie obserwowalności, nie kolejny model AI; bez klucza `LANGSMITH_API_KEY` monitoring jest wyłączony.
+
 Klucz API (`OPENCODE_API_KEY`) jest wyłącznie w `apps/backend/.env` (ignorowany przez git) i w zmiennych środowiskowych Vercela. Nigdy we frontendzie ani w repozytorium. Bez klucza aplikacja działa: rekomendacje są losowe, a autouzupełnianie pokazuje jawnie oznaczoną przykładową odpowiedź.
 
 ## 2. AI użyte do budowy projektu (poza produktem)
@@ -39,6 +41,8 @@ Zgodnie z regulaminem nie podajemy historii promptów ani proporcji kodu wygener
 | Overpass API | OpenStreetMap | Parkingi i miejsca dla osób z niepełnosprawnością (`GET /parking/near`) | Dane OSM (ODbL) |
 | Unsplash | Unsplash | Poglądowe zdjęcia w kartach | Licencja Unsplash (bez Unsplash+) |
 | **Deklaracje dostępności obiektów** | TAURON Arena Kraków, ICE Kraków, Nowohuckie Centrum Kultury | Szczegółowe dane o barierach (Kraków bez barier) | Informacje publiczne obiektów; podane źródło i data |
+| **LangSmith** | LangChain | Opcjonalny monitoring i śledzenie wywołań Jev (obserwowalność, nie model AI) | Klucz tylko w `.env`/zmiennych Vercela; bez klucza wyłączony |
+| **Turso (libSQL)** | Turso | Produkcyjna baza danych (SQLite/libSQL) na Vercelu | Token tylko w `.env`/zmiennych Vercela |
 
 ## 4. Biblioteki i frameworki
 

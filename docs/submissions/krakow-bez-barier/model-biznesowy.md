@@ -12,7 +12,7 @@ Uzupełnienie zgłoszenia Kraków bez barier. Model biznesowy to 20% oceny wyzwa
 
 | Pakiet | Cena | Co zawiera |
 | --- | --- | --- |
-| **Iskra** | 19 zł/mc | 1 wydarzenie z AI, statystyki wyświetleń |
+| **Iskra** | 10 zł/mc | 1 wydarzenie z AI, statystyki wyświetleń |
 | **Płomień** | 99 zł/mc | do 10 wydarzeń z AI, statystyki (wyświetlenia, prawo/lewo/pominięte), wyróżnienie w talii i na mapie, opinie uczestników |
 | **Ognisko** | 299 zł/mc | bez limitu wydarzeń z AI, mocniejsze wyróżnienie, demografia zainteresowań, priorytet wsparcia |
 | **Uczelnie i koła studenckie** | 0 zł | pakiet darmowy — buduje podaż treści (koło zamachowe) |
