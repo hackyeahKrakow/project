@@ -63,3 +63,22 @@ project, deploy a preview, and repeat scenario 2 against it.
 
 Expected: the trace appears with the tag `production`. If traces are missing there, apply the bounded
 flush from research R7 and test again.
+
+## Results of the first run (2026-10-04)
+
+Done against the real LangSmith and Jev with the keys passed only as environment variables.
+
+- **Region**: the supplied key belongs to the EU region. On the default US endpoint every request was
+  rejected with 403; with `LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com` it works. That
+  variable must also be set in `.env` and in Vercel.
+- **Scenario 2 (real trace)**: one trace `jev.score_interest`, status success, tag `dev`, metadata
+  (4 candidates, 1 liked, 1 disliked, `has_choices`), scores as outputs. A made-up private marker put
+  into the saved choices, the Jev key and the LangSmith key were all absent from the stored trace.
+- **Scenario 3 (failed Jev call)**: with a wrong Jev key the caller got `JevError: http_401`, and the
+  trace had status error, `outcome=failed`, `reason=http_401`. Filtering by the metadata key
+  `outcome` found both traces.
+- **Scenario 4 (LangSmith rejecting or unreachable)**: while the key was still on the wrong region
+  every upload failed with 403, and the Jev call still answered normally (922 ms), with only warning
+  lines in the log.
+- **Scenario 5 (off)** is covered by `test_off_without_a_key`.
+- **Scenario 6 (Vercel preview)** is not done yet (task T028).

@@ -121,7 +121,7 @@ project by tag and by outcome.
 ### Implementation for User Story 3
 
 - [X] T023 [US3] In `app/monitoring.py` give `TracedJevClient.__init__` an `environment` keyword (default `get_settings().environment`) and pass `tags=[self._environment]` to the `traceable` decorator of T012, so tests can set it and production traffic is told apart from development
-- [ ] T024 [US3] Manual check, quickstart scenarios 2 and 3: in the LangSmith project filter by the tag and by metadata `outcome = failed`, and confirm the failed call from a wrong Jev key is listed with `reason = http_401` (needs the key in the environment, see T027)
+- [X] T024 [US3] Manual check, quickstart scenarios 2 and 3: in the LangSmith project filter by the tag and by metadata `outcome = failed`, and confirm the failed call from a wrong Jev key is listed with `reason = http_401` (needs the key in the environment, see T027). Done on 2026-10-04 through the LangSmith API: the tag and the `outcome` metadata filter both returned the expected runs
 
 **Checkpoint**: All three user stories work independently.
 
@@ -131,7 +131,7 @@ project by tag and by outcome.
 
 - [X] T025 Run `uv run pytest` and `uv run ruff check app tests` in `apps/backend` and fix everything they report
 - [X] T026 Prove that no backend logic changed: `git diff origin/main -- app/recommender.py app/routes.py app/models.py` must be empty, and the diff of `app/jev_client.py` must touch only `get_jev_client()` (and its import); run the existing recommendation and Jev tests (`tests/test_recommendations.py`, `tests/test_jev_client.py`) unchanged
-- [ ] T027 Manual, needs the real key: run quickstart.md scenarios 2 to 5 with `LANGSMITH_API_KEY` exported in the shell only (never written to a file), note which region the key belongs to (set `LANGSMITH_ENDPOINT` if it is the EU one), and record the results in a short note at the end of quickstart.md
+- [X] T027 Manual, needs the real key: run quickstart.md scenarios 2 to 5 with `LANGSMITH_API_KEY` exported in the shell only (never written to a file), note which region the key belongs to (set `LANGSMITH_ENDPOINT` if it is the EU one), and record the results in a short note at the end of quickstart.md
 - [ ] T028 Manual, Vercel: set `LANGSMITH_API_KEY` (Sensitive), `LANGSMITH_PROJECT` and `ENVIRONMENT=production` in the Vercel project, deploy a preview and run quickstart.md scenario 6; if traces do not arrive, add the bounded flush from research R7 as a new task with its own test and repeat
 - [ ] T029 Manual, security: rotate the LangSmith key that was pasted into the chat, put the new one only in `.env` and in Vercel, and check `git grep -n "lsv2_"` returns nothing
 
