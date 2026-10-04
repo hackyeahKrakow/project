@@ -54,6 +54,21 @@ def _redact_inputs(inputs: dict) -> dict:
         return {"redaction": "failed"}
 
 
+def _state_counts(state: Any) -> dict[str, Any]:
+    """The counts shown as trace metadata. An odd state gives fewer entries, never an error."""
+    counts: dict[str, Any] = {}
+    for key in ("candidates", "liked", "disliked"):
+        try:
+            counts[key] = len(state[key])
+        except Exception:
+            pass
+    try:
+        counts["has_choices"] = "choices" in state
+    except Exception:
+        pass
+    return counts
+
+
 def _annotate(run: Any, **metadata: Any) -> None:
     """Add metadata to the current run. Tracing is off when `run` is None, and nothing here may raise."""
     if run is None:
@@ -87,18 +102,12 @@ class TracedJevClient(JevClient):
         )
         async def traced(model: str, state: dict, question_ids: list[str]) -> dict[str, float]:
             run = get_current_run_tree()
-            _annotate(
-                run,
-                model=model,
-                candidates=len(state["candidates"]),
-                liked=len(state["liked"]),
-                disliked=len(state["disliked"]),
-                has_choices="choices" in state,
-            )
+            _annotate(run, model=model, **_state_counts(state))
             try:
                 scores = await parent(state, question_ids)
-            except JevError as exc:
-                _annotate(run, outcome="failed", reason=str(exc))
+            except Exception as exc:
+                # JevError messages are safe reason codes; any other error gets a fixed text
+                _annotate(run, outcome="failed", reason=str(exc) if isinstance(exc, JevError) else "unexpected_error")
                 raise
             _annotate(run, outcome="success")
             return scores

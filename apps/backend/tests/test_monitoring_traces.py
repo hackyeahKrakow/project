@@ -1,3 +1,5 @@
+import asyncio
+
 import httpx
 import pytest
 from uuid6 import uuid7
@@ -105,3 +107,31 @@ async def test_one_trace_per_jev_call_and_none_for_cold_start(db_client, session
 
     assert (await db_client.get(f"/card/recommendations/{user_with_swipes}")).status_code == 200
     assert len(captured_traces(session)) == 1
+
+
+async def test_concurrent_calls_get_their_own_traces():
+    session = FakeLangSmithSession()
+    clients = [traced_client(jev_scores({"C1": n / 100}), session) for n in range(20)]
+
+    results = await asyncio.gather(*(client.score_interest(STATE, QUESTION_IDS) for client in clients))
+
+    traces = captured_traces(session)
+    assert len(traces) == 20
+    returned = sorted(result["C1"] for result in results)
+    assert returned == [n / 100 for n in range(20)]
+    assert sorted(trace["outputs"]["scores"]["C1"] for trace in traces) == returned  # none mixed up
+
+
+async def test_failed_jev_call_still_gives_fallback_cards_and_one_trace(db_client, session_factory):
+    session = FakeLangSmithSession()
+    jev_override(traced_client(lambda request: httpx.Response(500, json={}), session))
+    user = uuid7()
+    await answer(session_factory, user, (await seeded_cards(session_factory))[:2], Decision.RIGHT)
+
+    response = await db_client.get(f"/card/recommendations/{user}")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 10  # the usual random fallback
+    [trace] = captured_traces(session)
+    assert trace["metadata"]["outcome"] == "failed"
+    assert trace["metadata"]["reason"] == "http_500"

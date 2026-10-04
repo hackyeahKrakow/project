@@ -61,3 +61,18 @@ async def test_a_successful_run_has_no_reason():
     [trace] = captured_traces(session)
     assert trace["metadata"]["outcome"] == "success"
     assert "reason" not in trace["metadata"]
+
+
+async def test_an_unexpected_error_is_labelled_as_a_failure(monkeypatch):
+    async def explode(self, state, question_ids):
+        raise RuntimeError("something else broke: secret detail")
+
+    monkeypatch.setattr("app.jev_client.JevClient.score_interest", explode)
+    session = FakeLangSmithSession()
+
+    with pytest.raises(RuntimeError, match="something else broke"):  # the caller gets the very same error
+        await traced_client(jev_scores({}), session).score_interest(STATE, QUESTION_IDS)
+
+    [trace] = captured_traces(session)
+    assert trace["metadata"]["outcome"] == "failed"
+    assert trace["metadata"]["reason"] == "unexpected_error"  # a fixed text, never the exception's own

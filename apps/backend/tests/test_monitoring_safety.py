@@ -73,14 +73,31 @@ async def test_broken_monitoring_does_not_affect_the_call():
         await failing.score_interest(STATE, QUESTION_IDS)
 
 
+@pytest.mark.parametrize("odd_state", [{}, {"candidates": [], "disliked": []}, {"liked": "not a list"}])
+async def test_odd_states_behave_like_the_plain_client(odd_state):
+    plain = await _plain(jev_scores({"C1": 0.9})).score_interest(odd_state, ["C1"])
+
+    traced = await traced_client(jev_scores({"C1": 0.9}), FakeLangSmithSession()).score_interest(odd_state, ["C1"])
+
+    assert traced == plain == {"C1": 0.9}
+
+
 def test_off_without_a_key(monkeypatch):
-    monkeypatch.setattr("app.jev_client.get_settings", lambda: Settings(_env_file=None))
+    without_key = Settings(_env_file=None, langsmith_api_key=None)  # None beats an env var of the same name
+    monkeypatch.setattr("app.jev_client.get_settings", lambda: without_key)
     assert type(get_jev_client()) is JevClient
 
     with_key = Settings(_env_file=None, langsmith_api_key="ls-test-key")
     monkeypatch.setattr("app.jev_client.get_settings", lambda: with_key)
     monkeypatch.setattr("app.monitoring.get_tracing_client", lambda: object())  # no real client, no network
     assert type(get_jev_client()) is TracedJevClient
+
+
+def test_empty_key_means_off(monkeypatch):
+    # what copying .env.example gives: LANGSMITH_API_KEY= with nothing after it
+    monkeypatch.setattr("app.jev_client.get_settings", lambda: Settings(_env_file=None, langsmith_api_key=""))
+
+    assert type(get_jev_client()) is JevClient
 
 
 async def test_missing_run_tree_is_harmless(monkeypatch):

@@ -41,7 +41,7 @@ The content of the user's saved choices never appears; only `choices_included`.
 | Key | Values |
 |-----|--------|
 | `outcome` | `success` or `failed` |
-| `reason` | only on failure: `timeout`, `http_<status>`, `network_error`, `invalid_response` or `missing_api_key` |
+| `reason` | only on failure: `timeout`, `http_<status>`, `network_error`, `invalid_response`, `missing_api_key` or `unexpected_error` (any error that is not a `JevError`; the run's own error field still shows it as the SDK records it) |
 | `model` | the Jev model name |
 | `candidates`, `liked`, `disliked` | integers |
 | `has_choices` | boolean |
