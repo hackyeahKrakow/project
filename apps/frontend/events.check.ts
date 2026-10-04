@@ -65,7 +65,8 @@ assert.ok(cal.includes('BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H')) // th
 assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
 // Following an organizer lifts its events and is named in the reason.
 const lib = events.find((e) => e.id === 'evt_ksiazka')!
-const plain = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50).findIndex((x) => x.ev.id === lib.id)
+const plainAt = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50).findIndex((x) => x.ev.id === lib.id)
+const plain = plainAt < 0 ? Infinity : plainAt // outside the 50-card deck ranks below all of it
 const followedDeck = recommend(events, { ...profile, interests: [...profile.interests] }, {}, new Set(), 50, undefined, new Set([lib.organizer.id]))
 const followed = followedDeck.findIndex((x) => x.ev.id === lib.id)
 assert.ok(followed < plain, `${followed} < ${plain}`)
@@ -93,7 +94,7 @@ const { readFileSync } = await import('node:fs')
 const read = (f: string) => JSON.parse(readFileSync(new URL(f, import.meta.url), 'utf8'))
 assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_oneoff.json'))
 const { CARDS, STARTER } = await import('./src/lib/events.ts')
-assert.equal(CARDS.length, 61)
+assert.equal(CARDS.length, 124)
 assert.deepEqual(STARTER, CARDS.slice(0, 6))
 // The app shows only the 20 backend cards; the demo events stay in demoCatalog().
 assert.deepEqual(catalog(), CARDS)

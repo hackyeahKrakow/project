@@ -17,8 +17,8 @@ def test_seed_file_matches_the_shared_data_file():
 
 
 def test_catalog_has_unique_ids_and_real_times():
-    assert len(SEED_CARDS) == 61
-    assert len({card.id for card in SEED_CARDS}) == 61
+    assert len(SEED_CARDS) == 124
+    assert len({card.id for card in SEED_CARDS}) == 124
     # every event has a real start time from its listing, not a midnight placeholder
     assert all((c.starts_at.hour, c.starts_at.minute) != (0, 0) for c in SEED_CARDS)
 
