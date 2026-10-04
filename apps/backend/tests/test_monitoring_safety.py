@@ -11,9 +11,11 @@ from app.models import Decision
 from app.monitoring import TracedJevClient
 from tests.conftest import jev_override, make_jev_client
 from tests.monitoring_helpers import (
+    PRIVATE_CHOICE,
     QUESTION_IDS,
     STATE,
     FakeLangSmithSession,
+    captured_traces,
     jev_scores,
     traced_client,
 )
@@ -121,6 +123,32 @@ async def test_failing_metadata_update_is_harmless(monkeypatch):
         await traced_client(lambda request: httpx.Response(500, json={}), FakeLangSmithSession()).score_interest(
             STATE, QUESTION_IDS
         )
+
+
+async def test_unexpected_error_text_is_not_stored(monkeypatch):
+    async def explode(self, state, question_ids):
+        raise RuntimeError(f"bad value in {state['choices']}")  # an error that quotes the saved choices
+
+    monkeypatch.setattr("app.jev_client.JevClient.score_interest", explode)
+    session = FakeLangSmithSession()
+
+    with pytest.raises(RuntimeError, match=PRIVATE_CHOICE):  # the caller still gets the very same error
+        await traced_client(jev_scores({}), session).score_interest(STATE, QUESTION_IDS)
+
+    assert PRIVATE_CHOICE not in session.everything_sent()
+    [trace] = captured_traces(session)
+    assert trace["error"].startswith("RuntimeError")
+    assert "bad value" not in trace["error"]  # only the class name is kept
+
+
+async def test_a_jev_error_still_shows_its_reason_in_the_trace():
+    session = FakeLangSmithSession()
+
+    with pytest.raises(JevError, match="http_500"):
+        await traced_client(lambda request: httpx.Response(500, json={}), session).score_interest(STATE, QUESTION_IDS)
+
+    [trace] = captured_traces(session)
+    assert "JevError('http_500')" in trace["error"]  # a safe reason code, so it stays readable
 
 
 def test_factory_survives_a_broken_tracing_client(monkeypatch):

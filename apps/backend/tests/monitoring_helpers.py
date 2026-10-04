@@ -11,7 +11,7 @@ import httpx
 import requests
 from langsmith import Client
 
-from app.monitoring import TracedJevClient
+from app.monitoring import TracedJevClient, scrub_error_text
 
 # A state shaped like the one the recommender builds, with choices that must never reach a trace.
 PRIVATE_CHOICE = "MARKER-PRIVATE-CHOICE"
@@ -93,7 +93,11 @@ def jev_scores(scores: dict[str, float]):
 def traced_client(handler, session: FakeLangSmithSession, environment: str | None = None) -> TracedJevClient:
     """A TracedJevClient whose Jev goes to `handler` and whose traces go to `session`."""
     tracing = Client(
-        api_url="http://langsmith.test", api_key="ls-test-key", session=session, auto_batch_tracing=False
+        api_url="http://langsmith.test",
+        api_key="ls-test-key",
+        session=session,
+        auto_batch_tracing=False,
+        anonymizer=scrub_error_text,  # the same filter the real client has
     )
     options = {} if environment is None else {"environment": environment}
     return TracedJevClient(

@@ -6,6 +6,7 @@ only used when a LangSmith key is configured (see `get_jev_client`), so without 
 code is on the request path.
 """
 
+import re
 from functools import lru_cache
 from typing import Any
 
@@ -19,6 +20,22 @@ from app.logger import get_logger
 log = get_logger(__name__)
 
 
+def scrub_error_text(value: Any) -> Any:
+    """Client-side filter for what a trace stores as a run's error (the SDK passes `{"error": text}`).
+
+    The text of a `JevError` is one of our safe reason codes and stays. The text of any other error
+    could quote what the call was handling, for example the user's saved choices, so only its class
+    name is kept. Every other value, the inputs, outputs and metadata, passes through unchanged.
+    """
+    if isinstance(value, dict) and set(value) == {"error"} and isinstance(value["error"], str):
+        text = value["error"]
+        if text.startswith("JevError("):
+            return value
+        name = re.match(r"\s*([A-Za-z_][\w.]*)", text)
+        return {"error": name.group(1) if name else "error"}
+    return value
+
+
 @lru_cache
 def get_tracing_client() -> Client:
     """One LangSmith client for the whole process. Short timeouts: uploads run in the background."""
@@ -28,7 +45,10 @@ def get_tracing_client() -> Client:
         options["api_url"] = settings.langsmith_endpoint
     # The key is passed explicitly: the SDK reads only the real environment, not our .env file.
     return Client(
-        api_key=settings.langsmith_api_key.get_secret_value(), timeout_ms=(2_000, 5_000), **options
+        api_key=settings.langsmith_api_key.get_secret_value(),
+        timeout_ms=(2_000, 5_000),
+        anonymizer=scrub_error_text,
+        **options,
     )
 
 
