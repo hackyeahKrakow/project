@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,10 +31,8 @@
 
 ## Notes
 
-- One item is open: FR-004 still has a [NEEDS CLARIFICATION] marker (what a trace may contain:
-  the user's saved choices and card texts, or only counts, ids, scores and timings). It is a privacy
-  decision, so it is left to the team rather than guessed. Resolve it before `/speckit-clarify` or
-  `/speckit-plan`.
+- FR-004 was resolved on 2026-10-04 with option B: traces may hold card names and descriptions, never the
+  user's saved choices.
 - "LangSmith" and "Jev" are named because the request names them; the spec says nothing about how
   they are integrated.
 - The existing `POST /info/{user_id}` is mentioned only to say which user data FR-004 is about.

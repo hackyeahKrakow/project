@@ -95,7 +95,8 @@ filter the LangSmith project by environment and by outcome.
 - A user with a long history: the trace stays a reasonable size and does not make requests slower.
 - Many recommendation requests at once: every Jev call gets its own trace and none are mixed up.
 - Secrets: neither the Jev key nor the LangSmith key ever appears in a trace or a log line.
-- The user's identifier and location never appear in a trace (the same rule as for Jev itself).
+- The user's identifier, location and saved choices never appear in a trace (the saved choices stay
+  out even though Jev itself receives them).
 
 ## Requirements *(mandatory)*
 
@@ -109,9 +110,9 @@ filter the LangSmith project by environment and by outcome.
   score returned for each candidate card.
 - **FR-003**: A trace MUST NOT contain the user's identifier, the user's location, or any secret
   (the Jev key, the LangSmith key).
-- **FR-004**: [NEEDS CLARIFICATION: should traces also contain the user's own saved choices (the JSON
-  sent to POST /info/{user_id}) and the card texts sent to Jev, or only counts, ids, scores and
-  timings?]
+- **FR-004**: A trace MAY contain the names and descriptions of the cards sent to Jev, but MUST NOT
+  contain the user's own saved choices (the JSON sent to POST /info/{user_id}); the trace only says
+  whether choices were included.
 - **FR-005**: Monitoring MUST NOT change any behavior of the service: the same cards in the same
   order, the same status codes, the same response shapes, the same Jev timeout and the same random
   fallback on failure.
@@ -130,8 +131,9 @@ filter the LangSmith project by environment and by outcome.
 
 - **Jev call trace**: one record per Jev call made for recommendations. It holds the time and
   duration, the model, the outcome and failure reason, the counts of candidate, liked and disliked
-  cards, whether saved choices were included, the score per candidate card, and the environment
-  label. It never holds the user's identifier, location or any secret.
+  cards, the names and descriptions of those cards, whether saved choices were included (never their
+  content), the score per candidate card, and the environment label. It never holds the user's
+  identifier, location, saved choices or any secret.
 
 ## Success Criteria *(mandatory)*
 
@@ -145,7 +147,8 @@ filter the LangSmith project by environment and by outcome.
   more than 0.1 second longer than with monitoring off.
 - **SC-004**: The team can list every failed Jev call of the last day, with reasons, in under
   1 minute.
-- **SC-005**: In a check of 20 traces, none contains a user identifier, a location or a secret.
+- **SC-005**: In a check of 20 traces, none contains a user identifier, a location, the content of a
+  user's saved choices or a secret.
 
 ## Assumptions
 
