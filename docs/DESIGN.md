@@ -20,7 +20,7 @@ Wymagania: kontrast pinu min. 3:1 względem podkładu mapy, kolory rozróżnialn
 
 ## Karta wydarzenia
 
-Kolejność od góry: grafika 16:9 → tytuł → badge kategorii (kolor + ikona) → data i godzina („czw., 8 paź, 19:00”) → adres → cena („Za darmo” albo „15 zł”) → organizator ze znaczkiem „zweryfikowane” → opis (rozwijany).
+Kolejność od góry: grafika 16:9 → tytuł → badge kategorii (kolor + ikona) → data i godzina („czw., 8 paź, 19:00”) → adres → cena („Za darmo” albo „15 zł”) → organizator ze znaczkiem „zweryfikowane” → dostępność dla wózka (status z ikoną, szczegóły rozwijane, źródło danych, „brak informacji” jako jawny stan) → opis (rozwijany).
 
 Brak grafiki: tło w kolorze kategorii z dużą ikoną.
 

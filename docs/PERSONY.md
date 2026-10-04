@@ -55,6 +55,17 @@ Uzasadnienie wyboru profili organizacji w [SPEC.md](SPEC.md#konta-i-organizacje)
 | **Frustracje** | Płatne formy dotarcia, jak reklama w komunikacji miejskiej, są drogie i trudno zmierzyć ich efekt. |
 | **Czego oczekuje** | Tańszy i bardziej precyzyjny kanał do studentów oraz informacji, ile osób zainteresował wydarzenie. |
 
+### 5. Tomek, 23 lata, 1. rok magisterki na UJ (osoba poruszająca się na wózku)
+
+| | |
+| --- | --- |
+| **Sytuacja** | Porusza się na wózku aktywnym, mieszka w Krakowie od licencjatu. Wie, że wiele budynków, sal i lokali jest nieprzystosowanych, więc przed każdym wyjściem sprawdza dojazd i dostęp. |
+| **Cel** | Chodzić na wydarzenia studenckie tak jak inni, bez dzwonienia do organizatora i bez ryzyka, że na miejscu okaże się, że sala jest na pierwszym piętrze bez windy. |
+| **Frustracje** | Informacja o dostępności prawie nigdy nie jest w opisie wydarzenia. Hasło „wejście od podwórka” albo „sala 12” nic mu nie mówi. Kilka razy dojechał na miejsce i musiał zawrócić. |
+| **Czego potrzebuje** | Konkretnych informacji dla osób na wózku przy wydarzeniu i miejscu: wejście bez schodów lub podjazd, winda i jej wymiary, szerokość drzwi, toaleta dostosowana, miejsce parkingowe, dojazd i przystanek z niską podłogą. Do tego jasne „nie wiadomo”, gdy organizator nie podał danych. |
+| **Czego oczekuje** | Filtr „dostępne dla wózka”, informacja o dostępności już na karcie i na mapie oraz możliwość zgłoszenia, że opis nie zgadza się z rzeczywistością. |
+| **Etap** | Gość z włączonym filtrem dostępności od pierwszego uruchomienia. Konto zakłada, żeby potwierdzać dostępność miejsc, które sam sprawdził. |
+
 ## User stories
 
 Format: **Jako** [rola] **chcę** [cel], **żeby** [korzyść]. Priorytet: **Must** = rdzeń MVP, **Should** = „jeśli starczy czasu”, **Could** = roadmapa.
@@ -112,14 +123,31 @@ Format: **Jako** [rola] **chcę** [cel], **żeby** [korzyść]. Priorytet: **Mus
 | US-32 | Jako Pani Anna chcę nadawać członkom zespołu role w profilu uczelni, żeby redaktorzy dodawali wydarzenia, a ja je zatwierdzałam. | Role: administrator, redaktor; redaktor może przygotować wydarzenie, administrator publikuje. | Could |
 | US-33 | Jako Pani Anna chcę zobaczyć statystyki wydarzenia, żeby ocenić zwrot z promocji. | Liczba polubień, odrzuceń i wyświetleń wydarzenia. | Could |
 
+### Tomek: dostępność dla osób na wózku
+
+Dostępność dotyczy wydarzenia i miejsca, w którym się odbywa. Kolejne numery dopisano na końcu, żeby nie zmieniać istniejących.
+
+| ID | Story | Kryteria akceptacji | Priorytet |
+| --- | --- | --- | --- |
+| US-34 | Jako Tomek chcę już przy pierwszym uruchomieniu zaznaczyć, że potrzebuję dostępności dla wózka, żeby aplikacja od razu pokazywała mi tylko wydarzenia, na które wjadę. | Opcja „Dostępność dla wózka” w kroku 4 personalizacji, włącza filtr domyślny. Wydarzenia bez danych są oznaczone „brak informacji”, a nie ukrywane po cichu (można je dołączyć przełącznikiem). | Must |
+| US-35 | Jako Tomek chcę widzieć na karcie wydarzenia sekcję dostępności, żeby ocenić, czy dojadę i wejdę. | Sekcja z ogólnym statusem (dostępne / częściowo / niedostępne / brak informacji) oraz szczegółami: wejście bez schodów lub podjazd, winda, szerokość drzwi, toaleta dostosowana, miejsce parkingowe, dojazd. Przy każdym szczególe widać źródło danych (organizator, OpenStreetMap, zgłoszenie użytkowników). | Must |
+| US-36 | Jako Tomek chcę filtrować mapę i talię po dostępności dla wózka, żeby nie przeglądać wydarzeń, na które nie wjadę. | Filtr „dostępne dla wózka” obok filtrów daty, kategorii i ceny, działa na mapie i w talii swipe. | Must |
+| US-37 | Jako Tomek chcę rozpoznać dostępność wydarzenia już na pinie i na karcie w talii, żeby nie otwierać każdego wydarzenia. | Ikona dostępności obok koloru kategorii, status nie jest przekazywany samym kolorem. | Should |
+| US-38 | Jako Kuba chcę uzupełnić informacje o dostępności podczas dodawania wydarzenia, żeby studenci na wózkach wiedzieli, czy mogą przyjść. | Pole dostępności w formularzu, AI autofill proponuje wartości z tekstu posta (np. „sala na parterze, winda”), autor sprawdza i zatwierdza, brak danych zapisuje się jako „brak informacji”. | Must |
+| US-39 | Jako Pan Marek chcę opisać dostępność budynku raz w profilu biblioteki, żeby dziedziczyły ją wszystkie jej wydarzenia. | Dostępność miejsca zapisana w profilu organizacji, wydarzenia w tym miejscu domyślnie ją dziedziczą, organizator może nadpisać dla konkretnej sali. | Should |
+| US-40 | Jako Tomek chcę, żeby dla miejsc bez danych od organizatora aplikacja korzystała z danych otwartych, żeby miał jakąkolwiek informację. | Wykorzystanie znacznika `wheelchair` z OpenStreetMap (yes / limited / no) dla miejsc, z oznaczeniem źródła. | Should |
+| US-41 | Jako Tomek chcę zgłosić, że opis dostępności nie zgadza się z rzeczywistością, albo go potwierdzić, żeby kolejne osoby miały wiarygodne dane. | Przyciski „Potwierdzam” i „To się nie zgadza” (wymaga konta), zgłoszenia trafiają do organizatora, a status pokazuje liczbę potwierdzeń. | Could |
+| US-42 | Jako Tomek chcę otworzyć wydarzenie w Google Maps, żeby sprawdzić trasę i dojazd. | Link z lat/lng (patrz US-11), z informacją o dostępności przystanków w opisie dojazdu, jeśli jest znana. | Should |
+
 ## Użycie w prezentacji
 
 | Slajd w PITCH.md | Co pokazać |
 | --- | --- |
 | 2. Problem | Rozproszone źródła, które widzi Ola i Kuba. |
 | 3. Persona Ola | Karta persony Ola i jej pierwszy tydzień: personalizacja → swipe → mapa → karta wydarzenia → założenie konta (US-01…US-09, US-15). |
-| 4. Rozwiązanie | Trzy poziomy dostępu: gość, użytkownik, organizacja. |
+| 4. Rozwiązanie | Trzy poziomy dostępu: gość, użytkownik, organizacja. Dostępność dla osób na wózku jako element karty i filtr (US-34…US-37). |
 | 6. Rola AI | Kuba wkleja post, AI wypełnia, człowiek zatwierdza (US-21, US-22). |
+| 5. Demo / dostępność | Tomek włącza filtr dostępności i widzi, które wydarzenia są dostępne, a które nie (US-34…US-36, US-38). |
 | 9. Model biznesowy | Profile organizacji (Pan Marek, Pani Anna) jako strona, która płaci, koło zamachowe (US-28…US-33). |
 
 **Kolejność w demo:** US-01 (personalizacja) → US-03 → US-06 → US-08, a potem US-21 jako druga strona rynku (Kuba w imieniu profilu koła).
