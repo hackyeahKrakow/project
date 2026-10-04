@@ -239,11 +239,27 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
 /** Bottom sheet on phones, floating side panel from tablet up. Focus moves in on open and back to the opener on close. */
 export function Sheet({ open, onClose, label, children }: { open: boolean; onClose: () => void; label: string; children: ReactNode }) {
   const close = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
     const opener = document.activeElement as HTMLElement | null
     close.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'Tab' && panel.current) {
+        const focusables = panel.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        if (!focusables.length) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)
@@ -253,7 +269,9 @@ export function Sheet({ open, onClose, label, children }: { open: boolean; onClo
   if (!open) return null
   return (
     <div
+      ref={panel}
       role="dialog"
+      aria-modal="true"
       aria-label={label}
       className="absolute inset-x-0 bottom-0 z-30 max-h-[78%] animate-in overflow-y-auto rounded-t-[22px] bg-surface duration-250 ease-out fade-in slide-in-from-bottom-10 sm:slide-in-from-right-10 sm:slide-in-from-bottom-0 shadow-[0_-12px_32px_rgba(10,31,68,.22)] sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-4 sm:max-h-none sm:w-[400px] sm:rounded-[22px] sm:shadow-[0_12px_32px_rgba(10,31,68,.22)]"
     >

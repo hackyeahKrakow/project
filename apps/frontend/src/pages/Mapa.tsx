@@ -24,7 +24,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
   const needsStepFree = !!state.profile.stepFree // same rule as the deck: venues with barriers never show, unknown ones do
   const [selectedId, setSelectedId] = useState<string>()
   const [openList, setOpenList] = useState(false)
-  const [legendOpen, setLegendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
+  const [legendOpen] = useState(() => window.matchMedia('(min-width: 56.25rem)').matches) // open on laptops
 
   const shown = useMemo(
     () =>
@@ -136,13 +136,7 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
 
         {/* Legend: what pin colors and badges mean (color is never the only carrier, so each row has the icon too). */}
         <details className="group absolute bottom-20 left-3 z-10 max-w-[240px] rounded-2xl bg-surface/95 text-sm shadow-lg md:bottom-4" open={legendOpen}>
-          <summary
-            className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 font-semibold"
-            onClick={(e) => {
-              e.preventDefault()
-              setLegendOpen(!legendOpen)
-            }}
-          >
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 font-semibold">
             <Info size={18} aria-hidden />
             Legenda
             <ChevronDown size={16} className="ml-auto transition-transform group-open:rotate-180" aria-hidden />

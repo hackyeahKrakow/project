@@ -31,7 +31,7 @@ Nie scrapujemy. Wydarzenia dodają ich właściciele (koła, samorządy, uczelni
 
 | Narzędzie / zasób | Do czego |
 | --- | --- |
-| Claude (claude.ai) | Research rynku, specyfikacja, dokumentacja |
+| Claude (claude.ai) | Research rynku, specyfikacja, dokumentacja, brand |
 | Claude Code + spec-kit | Wsparcie przy kodzie backendu |
 | Claude Design | Warianty makiet |
 | LLM API (który?) | Autofill formularza w aplikacji |

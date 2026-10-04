@@ -151,18 +151,19 @@ export default function Onboarding({ privacyOnly = false }: { privacyOnly?: bool
               </button>
             ))}
           </Group>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-muted">Gdzie mieszkasz albo studiujesz?</span>
+          <div className="flex flex-col gap-1.5">
+            <span id="district-label" className="text-sm font-medium text-muted">Gdzie mieszkasz albo studiujesz?</span>
             <select
               value={p.district}
               onChange={(e) => set({ district: e.target.value })}
+              aria-labelledby="district-label"
               className="h-12 rounded-xl border-line bg-surface text-[15px] focus:border-link focus:ring-link"
             >
               {Object.keys(DISTRICTS).map((d) => (
                 <option key={d}>{d}</option>
               ))}
             </select>
-          </label>
+          </div>
           <Group label="Jak daleko dojedziesz?">
             {DISTANCES.map(([d, label, Icon]) => (
               <button key={d} type="button" aria-pressed={p.distanceKm === d} onClick={() => set({ distanceKm: d })} className={chip(p.distanceKm === d)}>
