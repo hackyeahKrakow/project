@@ -121,9 +121,10 @@ export default function Logowanie() {
             </label>
           </>
         )}
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-muted">E-mail</span>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="login-email" className="text-sm font-medium text-muted">E-mail</label>
           <input
+            id="login-email"
             className={input}
             type="text"
             inputMode="email"
@@ -134,10 +135,11 @@ export default function Logowanie() {
             autoComplete="username"
             placeholder="ola@demo"
           />
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-muted">Hasło</span>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="login-password" className="text-sm font-medium text-muted">Hasło</label>
           <input
+            id="login-password"
             className={input}
             type="password"
             aria-invalid={!!error}
@@ -146,7 +148,7 @@ export default function Logowanie() {
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           />
-        </label>
+        </div>
         {error && (
           <div id="login-error" role="alert" className="flex items-start gap-2 rounded-xl border border-spark-500 bg-spark-50 px-3.5 py-2.5 text-sm">
             <CircleAlert size={18} className="flex-none" aria-hidden />

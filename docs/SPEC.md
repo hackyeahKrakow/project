@@ -4,7 +4,7 @@
 
 ## Rozwiązanie w jednym zdaniu
 
-Aplikacja webowa (PWA) dla studentów w Krakowie: mapa pokazująca wyłącznie wydarzenia i miejsca dla studentów oraz „swipe” jak w Tinderze, który uczy się, co cię interesuje, i wyróżnia to na twojej mapie.
+**spootted** — zmatchuj się z eventami w Krakowie. Aplikacja webowa (PWA) dla studentów w Krakowie: mapa pokazująca wyłącznie wydarzenia i miejsca dla studentów oraz „swipe” jak w Tinderze, który uczy się, co cię interesuje, i wyróżnia to na twojej mapie.
 
 ## Problem
 

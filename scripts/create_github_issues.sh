@@ -115,9 +115,7 @@ Szablon w Canvie 16:9 (np. 1200×675) z wariantem na kategorię, eksport WebP, n
 
 **Gotowe, gdy:** min. 15 grafik w \`apps/backend/static/img/\`."
 
-issue "D4 · Nazwa i logo robocze" "design,pitch" "Termin: 3:00, razem z PM.
-
-**Gotowe, gdy:** nazwa w README i plik SVG logo w repo."
+issue "D4 · Nazwa i logo robocze" "design,pitch" "GOTOWE: nazwa „spootted" w README, motto „zmatchuj się z eventami w Krakowie", logo SVG w apps/frontend/public/logo.svg, docs/BRAND.md."
 
 issue "P1 · Organizacja: tablica i Discord" "pm,must" "Termin: 0:30.
 

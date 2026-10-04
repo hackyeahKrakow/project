@@ -6,7 +6,7 @@ Sync Impact Report
 - Added sections: Ograniczenia technologiczne, Sposób pracy
 - Templates: plan/spec/tasks templates do not require changes
 -->
-# Studencka mapa wydarzeń — Constitution
+# spootted — Constitution
 
 Projekt hackathonowy (HackYeah 2026, Smart City), 24 godziny, 4 osoby. Pełny kontekst produktu: `docs/SPEC.md` w katalogu głównym repo.
 
