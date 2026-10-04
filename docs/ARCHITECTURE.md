@@ -60,13 +60,15 @@ To propozycja zgodna z plikami, które już są w `apps/backend/app/`. Zmiany st
 | `categories` | `id` TEXT PK, `name`, `color`, `icon` |
 | `organizers` | `id` TEXT PK, `name`, `type` (kolo / samorzad / uczelnia / instytucja / lokal / uzytkownik), `university`, `verified` BOOL. Wydawca wydarzeń: profil organizacji albo konto użytkownika (`uzytkownik`) |
 | `organization_members` | `organizer_id`, `user_id`, `role` (admin / editor); PK (`organizer_id`, `user_id`). Na MVP jeden admin z danych seed |
-| `events` | `id` TEXT PK, `title`, `description`, `category` FK, `image_url`, `starts_at`, `ends_at`, `address`, `lat` REAL, `lng` REAL, `price` REAL, `type` (official = organizacja / grassroots = użytkownik), `capacity`, `size` (small <30 / medium 30–100 / large >100, liczone z `capacity`, brak = medium), `organizer_id` FK, `created_at` |
+| `events` | `id` TEXT PK, `title`, `description`, `category` FK, `image_url`, `starts_at`, `ends_at`, `address`, `lat` REAL, `lng` REAL, `price` REAL, `type` (official = organizacja / grassroots = użytkownik), `capacity`, `size` (small <30 / medium 30–100 / large >100, liczone z `capacity`, brak = medium), `accessibility` JSON (patrz niżej), `organizer_id` FK, `created_at` |
 | `users` | `id` TEXT PK (UUID z frontendu), `email` (tylko konta), `display_name`, `created_at`. Gość nie musi mieć wiersza (patrz „Konta i dane lokalne”) |
 | `swipes` | `user_id`, `event_id`, `direction` (like / skip), `created_at`; PK (`user_id`, `event_id`) |
 | `follows` | `user_id`, `organizer_id`; PK oba. Obserwować można organizację albo użytkownika |
 | `recommendations` | `from_user_id`, `event_id`, `to_user_id`, `created_at`; polecenia wydarzeń obserwującym (roadmapa) |
 | `reports` | `event_id`, `reporter_id`, `reason`, `created_at`; zgłoszenia nadużyć |
 | `attendees` | `event_id`, `user_id`; PK oba |
+
+`accessibility` (wydarzenie, a domyślnie miejsce/organizacja): `status` (accessible / partial / inaccessible / unknown), `step_free_entry`, `lift`, `door_width_cm`, `accessible_toilet`, `parking`, `transit_note`; każde pole `yes` / `no` / `unknown` plus `source` (organizer / osm / users). Dostępność miejsca z profilu organizacji jest dziedziczona, a pole wydarzenia ją nadpisuje. Dane OSM pochodzą ze znacznika `wheelchair` (yes / limited / no).
 
 Wydarzenia „wygasają” przez filtr w zapytaniu (`ends_at` lub `starts_at` w przeszłości), bez usuwania z bazy.
 
@@ -90,6 +92,7 @@ Odpowiedzi z personalizacji przy pierwszym uruchomieniu ([SPEC.md](SPEC.md#perso
 
 - **Twarde filtry przy losowaniu kandydatów (krok 1 powyżej):** budżet (tylko darmowe / do 20 zł), promień odległości (gdy znana lokalizacja) i pora (po zajęciach / wieczory / weekendy). Użytkownik może je zdjąć w filtrach.
 - **Kontekst dla Jev (krok 3):** do stanu dochodzi krótki opis preferencji użytkownika: wybrane kategorie, preferowana skala wydarzeń, cele („poznać ludzi”, „nauczyć się czegoś” itd.). Dzięki temu pierwsza talia jest trafna, zanim użytkownik zrobi pierwszy swipe.
+- **Dostępność:** filtr „dostępne dla wózka” z personalizacji jest twardym filtrem przy losowaniu kandydatów: dopuszcza `accessible` i `partial`, a `unknown` tylko po jawnym włączeniu przez użytkownika.
 - **Skala wydarzenia:** karta ma pole `size` (small <30 / medium 30–100 / large >100, liczone z `capacity`, brak = medium), żeby model mógł dopasować wielkość.
 - **Uzasadnienie na karcie:** backend składa je z odpowiedzi użytkownika i danych wydarzenia, np. „Twój match: kameralne · planszówki · za darmo”.
 - **Brak odpowiedzi** nie blokuje działania: kandydaci losowani są bez filtrów, a Jev dostaje tylko decyzje ze swipe'ów.
