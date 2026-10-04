@@ -38,8 +38,8 @@ unreachable (SC-003); measured overhead of a traced call is about 1 ms
 (FR-006); off unless a key is set (FR-007); no user id, location, saved-choices content or secret in a
 trace (FR-003, FR-004); keep the flat `app/` layout; no new endpoint, table or migration
 
-**Scale/Scope**: 1 new module, 3 optional settings, 1 dependency, 1 test file, a 3-line change to the
-`get_jev_client()` factory
+**Scale/Scope**: 1 new module, 3 optional settings, 1 dependency, 3 test files and a test helper, a small
+change to the `get_jev_client()` factory
 
 ## Constitution Check
 
@@ -83,7 +83,10 @@ apps/backend/
 │   ├── jev_client.py     # get_jev_client() picks TracedJevClient when a key is set; nothing else changes
 │   └── config.py         # + langsmith_api_key, langsmith_project, langsmith_endpoint
 ├── tests/
-│   └── test_monitoring.py  # NEW: trace content, redaction, same result, failure isolation, off by default
+│   ├── monitoring_helpers.py       # NEW: fake HTTP session for the tracing client, traced-client builder
+│   ├── test_monitoring_traces.py   # NEW (US1): trace content, failures, redaction, one trace per call
+│   ├── test_monitoring_safety.py   # NEW (US2): same result, failure isolation, off by default
+│   └── test_monitoring_labels.py   # NEW (US3): environment tag, reason codes
 ├── .env.example          # + empty LANGSMITH_* placeholders
 ├── pyproject.toml        # + langsmith (uv add langsmith updates uv.lock)
 └── specs/005-jev-langsmith-monitoring/

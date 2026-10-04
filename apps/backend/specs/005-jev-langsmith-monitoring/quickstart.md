@@ -8,7 +8,7 @@ file that is committed.
 ## 1. Automated checks (no network, no key)
 
 ```bash
-uv run pytest tests/test_monitoring.py
+uv run pytest tests/test_monitoring_traces.py tests/test_monitoring_safety.py tests/test_monitoring_labels.py
 uv run pytest            # the whole suite still passes on the plain Jev client
 ```
 
