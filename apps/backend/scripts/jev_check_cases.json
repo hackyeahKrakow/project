@@ -1,0 +1,132 @@
+[
+  {
+    "name": "metal fan picks the concert",
+    "liked": [
+      {"name": "Korn tribute night", "description": "Metal covers in a loud club"},
+      {"name": "Iron Maiden fan party", "description": "Heavy metal classics and headbanging"}
+    ],
+    "disliked": [
+      {"name": "Quiet poetry evening", "description": "Soft poems read in a cafe"},
+      {"name": "Morning yoga in the park", "description": "Slow stretching on the grass"}
+    ],
+    "candidates": [
+      {"name": "Thrash metal night", "description": "Loud bands play fast heavy metal on stage"},
+      {"name": "Book fair", "description": "Stalls with books, tea and calm music"}
+    ],
+    "expected": "Thrash metal night"
+  },
+  {
+    "name": "jazz fan picks the quartet",
+    "liked": [
+      {"name": "Blue Note jam session", "description": "Live jazz trio in a cellar"},
+      {"name": "Swing dance evening", "description": "Big band swing music and dancing"}
+    ],
+    "disliked": [
+      {"name": "Techno rave", "description": "All-night electronic dance party"},
+      {"name": "Roast battle", "description": "Loud insult comedy contest"}
+    ],
+    "candidates": [
+      {"name": "Saxophone quartet concert", "description": "Smooth jazz standards played live"},
+      {"name": "Hip-hop battle", "description": "Rap freestyle competition on a street stage"},
+      {"name": "Pottery workshop", "description": "Learn to shape clay on a wheel"}
+    ],
+    "expected": "Saxophone quartet concert"
+  },
+  {
+    "name": "family with kids picks the science show",
+    "liked": [
+      {"name": "Puppet theatre for kids", "description": "Marionette show for ages 3 to 8"},
+      {"name": "Zoo family day", "description": "Feeding animals and a petting corner"}
+    ],
+    "disliked": [
+      {"name": "Wine tasting", "description": "Wines from three regions, adults only"},
+      {"name": "Late night club party", "description": "DJ sets until 4 am, 18 and over"}
+    ],
+    "candidates": [
+      {"name": "Children's science show", "description": "Safe experiments and giant bubbles for kids and parents"},
+      {"name": "Whisky masterclass", "description": "Adults only tasting of single malts"}
+    ],
+    "expected": "Children's science show"
+  },
+  {
+    "name": "student on a budget picks the free walk",
+    "liked": [
+      {"name": "Free open-air film", "description": "Outdoor movie screening, free entry"},
+      {"name": "Student pub quiz", "description": "Team quiz, free, bring your friends"}
+    ],
+    "disliked": [
+      {"name": "Gala dinner", "description": "Black-tie dinner, tickets 400 zloty"},
+      {"name": "Private golf lesson", "description": "One-to-one coaching, 250 zloty per hour"}
+    ],
+    "candidates": [
+      {"name": "Free city history walk", "description": "Guided walk for students, free entry, no booking"},
+      {"name": "Luxury spa day", "description": "Massages and sauna, 500 zloty per person"}
+    ],
+    "expected": "Free city history walk"
+  },
+  {
+    "name": "sports fan picks the derby",
+    "liked": [
+      {"name": "Basketball league match", "description": "Local derby in a sports hall"},
+      {"name": "5K park run", "description": "Weekly timed run for everyone"}
+    ],
+    "disliked": [
+      {"name": "Chess for beginners", "description": "Quiet lesson about openings"},
+      {"name": "Pottery for adults", "description": "Shaping clay at a slow pace"}
+    ],
+    "candidates": [
+      {"name": "Football derby", "description": "Two city clubs play at the stadium"},
+      {"name": "Knitting circle", "description": "Relaxed meeting with yarn and tea"},
+      {"name": "Opera gala", "description": "Famous arias in the concert hall"}
+    ],
+    "expected": "Football derby"
+  },
+  {
+    "name": "art lover picks the exhibition",
+    "liked": [
+      {"name": "Modern art gallery opening", "description": "New paintings and sculptures, with the artists"},
+      {"name": "Photography exhibition", "description": "Black and white street photographs"}
+    ],
+    "disliked": [
+      {"name": "Monster truck show", "description": "Loud engines and crushed cars"},
+      {"name": "Burger eating contest", "description": "Eat as many burgers as you can"}
+    ],
+    "candidates": [
+      {"name": "Contemporary painting exhibition", "description": "Large canvases by young Polish painters"},
+      {"name": "Go-kart race", "description": "Fast racing on an indoor track"}
+    ],
+    "expected": "Contemporary painting exhibition"
+  },
+  {
+    "name": "quiet board gamer picks the meetup",
+    "liked": [
+      {"name": "Board game library evening", "description": "Calm tables with strategy games and tea"},
+      {"name": "Quiet reading club", "description": "Reading in silence, then a short chat"}
+    ],
+    "disliked": [
+      {"name": "Open-air rock festival", "description": "Thousands of people, very loud, all day"},
+      {"name": "Karaoke night", "description": "Loud singing with a crowd in a bar"}
+    ],
+    "candidates": [
+      {"name": "Cooperative board games meetup", "description": "Small tables, friendly strangers, rules explained"},
+      {"name": "Mosh pit concert", "description": "Crowded standing hall with loud punk bands"}
+    ],
+    "expected": "Cooperative board games meetup"
+  },
+  {
+    "name": "outdoor lover picks the cycling tour",
+    "liked": [
+      {"name": "Sunrise hike in the Tatras", "description": "Mountain trail with a guide"},
+      {"name": "Kayak trip on the Vistula", "description": "Paddling through the city on a sunny day"}
+    ],
+    "disliked": [
+      {"name": "Indoor escape room", "description": "Locked room puzzle in a basement"},
+      {"name": "Cinema marathon", "description": "Eight films in a dark hall"}
+    ],
+    "candidates": [
+      {"name": "Forest cycling tour", "description": "Easy ride through woods and meadows"},
+      {"name": "Shopping mall night", "description": "Late opening of indoor shops"}
+    ],
+    "expected": "Forest cycling tour"
+  }
+]
