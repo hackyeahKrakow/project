@@ -18,12 +18,16 @@ Koncepcja: pinezka mapowa z iskra w środku — „spotted" = wykryte wydarzenie
 
 | Rola | Kolor | HEX | Użycie |
 | --- | --- | --- | --- |
-| Primary | Orange | `#EA580C` | Logo, przyciski CTA, akcenty |
-| Secondary | Blue | `#2563EB` | Linki, akcenty drugoplanowe |
-| Dark | `#141413` | Tekst główny, tło ciemne |
-| Light | `#FAF9F5` | Tło jasne |
-| Mid Gray | `#B0AEA5` | Tekst drugorzędny |
-| Light Gray | `#E8E6DC` | Tła sekcji, karty |
+| Ink 900 | Navy | `#0A1F44` | Tekst główny, tło ciemne |
+| Brand 600 | Blue | `#1D5CFF` | Przyciski CTA, linki, akcenty |
+| Brand 700 | Dark Blue | `#174BD9` | Tekst na jasnoniebieskim tle (5.9:1) |
+| Spark 500 | Orange | `#FF8A3D` | CTA „Dodaj wydarzenie", promowane |
+| Sky 300 | Light Blue | `#7DB8FF` | Liczniki na powitaniu |
+| Violet 600 | Purple | `#6B4EE6` | Typ użytkownika, elementy AI |
+| Surface | White/Navy | `#FFFFFF` / `#12264B` | Tło kart (jasny/ciemny) |
+| Canvas | Light Blue | `#F3F7FF` | Tło strony |
+| Muted | Gray | `#4A5B7D` | Tekst drugorzędny (6.3:1) |
+| Line | Light Gray | `#D9E2F2` | Obramowania |
 
 ### Kolory kategorii (znaczniki na mapie)
 
@@ -41,9 +45,7 @@ Wymagania: kontrast pinu min. 3:1 względem podkładu mapy, kolory rozróżnialn
 
 ## Typografia
 
-- **Nagłówki:** Poppins (fallback: Arial)
-- **Tekst:** Lora (fallback: Georgia)
-- **Interfejs:** Inter lub systemowy stack (Tailwind default)
+- **Interfejs:** Outfit Variable (font-sans, Tailwind default)
 
 ## Ton głosu
 
@@ -56,8 +58,8 @@ Wymagania: kontrast pinu min. 3:1 względem podkładu mapy, kolory rozróżnialn
 
 - Mobile-first, szerokość 390 px
 - Kolor nigdy nie jest jedynym nośnikiem informacji (kategorie mają też ikony)
-- Ikony z `lucide-react` (shadcn/ui)
-- Komponenty: shadcn/ui + Tailwind CSS
+- Ikony z `lucide-react` (Preline UI)
+- Komponenty: Preline UI + Tailwind CSS
 - Mapa: MapLibre GL JS + kafelki OSM, ukryte warstwy POI
 
 ## Pliki zasobów
