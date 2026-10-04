@@ -194,9 +194,9 @@
   60% { transform: translateY(6px); opacity: 1; }
   100% { transform: translateY(0); opacity: 1; }
 }
-.pin-drop { animation: pin-drop .6s ease-out both; }
+.pin-drop, .pin-drop-map .maplibregl-marker > button { animation: pin-drop .6s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
-  .pin-drop { animation: none; }
+  .pin-drop, .pin-drop-map .maplibregl-marker > button { animation: none; }
 }
 
 /* WCAG 2.4.7: one clearly visible focus ring for every control (shadcn's base sets a faint 50% gray outline). */
