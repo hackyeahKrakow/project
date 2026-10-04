@@ -18,6 +18,8 @@ import Statystyki from '@/pages/Statystyki'
 
 const routeFromHash = () => location.hash.replace(/^#\/?/, '')
 const NO_NAV = new Set(['start', 'onboarding', 'zgoda', 'logowanie'])
+// These pages scroll inside themselves, so a Sheet (absolute in <main>) stays in view and the list keeps its place.
+const OWN_SCROLL = new Set(['mapa', 'odkrywaj', 'moje', 'organizatorzy'])
 const TITLES: Record<string, string> = {
   start: 'Zmatchuj się z eventami',
   onboarding: 'Twoje zainteresowania',
@@ -115,7 +117,7 @@ export default function App() {
           id="tresc"
           tabIndex={-1}
           key={r}
-          className={`relative min-h-0 flex-1 animate-in duration-200 ease-out outline-none fade-in ${r === 'mapa' || r === 'odkrywaj' ? 'flex flex-col' : 'overflow-y-auto'}`}
+          className={`relative min-h-0 min-w-0 flex-1 animate-in duration-200 ease-out outline-none fade-in ${OWN_SCROLL.has(r) ? 'flex flex-col' : 'overflow-y-auto'}`}
         >
           {page}
         </main>

@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { GeolocateControl, Map as MapLibre, Marker, setWorkerUrl } from 'maplibre-gl'
+import { GeolocateControl, LngLatBounds, Map as MapLibre, Marker, setWorkerUrl } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import iconUrl from '@/assets/icon.svg'
 import logoUrl from '@/assets/logo-full.svg'
@@ -43,9 +43,9 @@ export const btnSpark = `${btn} bg-spark-500 text-ink-900 hover:bg-spark-500/90`
 export const btnOutline = `${btn} border border-line bg-surface text-fg hover:bg-canvas`
 // Preline "Card".
 export const card = 'rounded-[20px] border border-line bg-surface'
-// Pill chip for filters and onboarding answers (min. 44 px).
+// Pill chip for filters and onboarding answers (min. 44 px); a long answer wraps inside it on a 320 px screen.
 export const chip = (on: boolean) =>
-  `flex min-h-11 flex-none items-center gap-1.5 rounded-full border px-4 text-[15px] font-medium ${
+  `flex min-h-11 max-w-full flex-none items-center gap-1.5 rounded-full border px-4 py-1.5 text-[15px] font-medium ${
     on ? 'border-fg bg-fg text-surface' : 'border-line bg-surface text-fg'
   }`
 
@@ -206,18 +206,19 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
         <PersonaLine org={ev.organizer} />
         <p className="text-sm leading-relaxed text-muted">{ev.description}</p>
         <Dojazd ev={ev} />
-        <div className="flex gap-2">
+        {/* Below 360 px the icons go so the three buttons stay on one line; wrapping is the last resort, never sideways scroll. */}
+        <div className="flex flex-wrap gap-2">
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${ev.lat},${ev.lng}&travelmode=transit`}
             target="_blank"
             rel="noreferrer"
             className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}
           >
-            <MapPin size={18} strokeWidth={2.2} aria-hidden />
+            <MapPin size={18} strokeWidth={2.2} className="max-[22.5rem]:hidden" aria-hidden />
             Nawiguj
           </a>
           <button type="button" onClick={() => downloadIcs([ev], `${ev.id}.ics`)} className={`${btnOutline} h-12 flex-1 px-3 text-[15px]`}>
-            <CalendarPlus size={18} strokeWidth={2.2} aria-hidden />
+            <CalendarPlus size={18} strokeWidth={2.2} className="max-[22.5rem]:hidden" aria-hidden />
             Kalendarz
           </button>
           <button
@@ -542,6 +543,14 @@ export function EventMap({
     }
     rerender()
   }, [events, liked, selectedId, mapVersion])
+
+  // A new map starts with every pin in view (at the default zoom a phone shows only the city center); filters keep the person's view.
+  useEffect(() => {
+    if (!interactive || !events.length) return
+    const bounds = new LngLatBounds()
+    for (const ev of events) bounds.extend([ev.lng, ev.lat])
+    map.current!.fitBounds(bounds, { padding: { top: 72, right: 32, bottom: 136, left: 32 }, maxZoom: 14, duration: 0 }) // clear of the chips, legend and "Lista"
+  }, [mapVersion]) // eslint-disable-line react-hooks/exhaustive-deps -- once per map
 
   useEffect(() => {
     const ev = events.find((e) => e.id === selectedId)

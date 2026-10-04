@@ -5,6 +5,7 @@ import { fold, ics } from './src/lib/ics.ts'
 import { describe, persona } from './src/lib/persona.ts'
 import { recommend, weights } from './src/lib/recommend.ts'
 import { inKrakow } from './src/lib/geo.ts'
+import { photoUrl } from './src/lib/photos.ts'
 import { EMPTY_PROFILE, uuid7 } from './src/lib/store.ts'
 
 assert.equal(formatDate('2026-10-08T19:00:00+02:00'), 'czw., 8 paź, 19:00')
@@ -125,3 +126,6 @@ assert.equal(unfiltered.length, Math.min(50, CARDS.length))
 // A fix far from Kraków (e.g. a laptop located by IP) is not used as the start of a trip.
 assert.ok(inKrakow([50.0647, 19.9232]) && !inKrakow([52.2297, 21.0122]))
 console.log('accessibility checks ok')
+
+// No krakow.travel photo is shown until KBF confirms the licence (docs/LEGAL.md).
+assert.ok(catalog().every((e) => !photoUrl(e).includes('krakow.travel')))

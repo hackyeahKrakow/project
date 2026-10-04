@@ -258,21 +258,23 @@ function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProper
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
   return (
     <article
-      className="absolute inset-0 flex flex-col justify-end overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] will-change-transform"
+      className="absolute inset-0 flex flex-col overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] will-change-transform"
       style={{ background: c.color, ...style }}
       aria-hidden={style.zIndex !== 3}
     >
-      <div className="absolute inset-x-0 top-0 bottom-[48%] flex items-center justify-center">
+      {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
         <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
+        <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
       </div>
-      <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
       <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
         WCHODZĘ
       </div>
       <div className={`${stamp} right-4 rotate-10 border-ink-900 text-ink-900`} style={{ opacity: skip }}>
         NIE DLA MNIE
       </div>
-      <div className="relative flex flex-col gap-2 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_62%,rgba(10,31,68,0)_100%)] px-4 pt-12 pb-4 text-white">
+      {/* The fade is the top 4rem (-mt-16), all of it over the photo; if the text is taller than the card, the reason line is cut, never the title. */}
+      <div className="relative -mt-16 flex flex-none flex-col gap-2 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_calc(100%_-_4rem),rgba(10,31,68,0)_100%)] px-4 pt-16 pb-4 text-white">
         <div className="flex flex-wrap items-center gap-2">
           <CategoryBadge cat={c} onDark className="text-[13px]" />
           {ev.promoted && <PromotedTag />}
