@@ -2,13 +2,13 @@
 
 **Date**: 2026-10-04 | **Spec**: [spec.md](spec.md)
 
-This is a developer interface, not an API endpoint. Run from `apps/backend`.
+This is a developer interface, not an API endpoint. Run from `apps/backend`, as a module (`python scripts/jev_check.py` cannot find the `app` package, because Python puts the script's folder on the path, not the current one).
 
 ## Command
 
 ```bash
-uv run python scripts/jev_check.py            # run all situations against the real Jev
-uv run python scripts/jev_check.py --dry-run  # validate the file and list the situations, send nothing
+uv run python -m scripts.jev_check            # run all situations against the real Jev
+uv run python -m scripts.jev_check --dry-run  # validate the file and list the situations, send nothing
 ```
 
 ## Environment (read through the existing settings, from `.env` or the shell)
@@ -27,9 +27,9 @@ uv run python scripts/jev_check.py --dry-run  # validate the file and list the s
 One line per situation, then a summary, then where to look:
 
 ```text
- PASS  metal fan picks the concert        Korn 0.91  Spacer 0.08
- FAIL  student picks the free event       top was Gala (tie 0.50)
- ERROR walk lover and the gallery         http_429
+ PASS  metal fan picks the concert   Thrash metal night 0.91  Book fair 0.08
+ FAIL  student picks the free walk   tie at 0.50 between Free city history walk and Luxury spa day  [Free city history walk 0.50  Luxury spa day 0.50]
+ ERROR outdoor lover picks the tour  http_429
 passed 1 of 2 (1 error)
 LangSmith experiment: jev-check-3f9a1c2e (dataset spotted-jev-checks)
 ```
