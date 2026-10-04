@@ -90,7 +90,7 @@ async def card_new(
         "model using the user's earlier right (interested) and left (not interested) answers, "
         "and returns the 10 best matches in ranked order. Returns fewer cards when fewer "
         "candidates exist and an empty list when none exist. Cards Jev is not confident about "
-        "(confidence below JEV_MIN_CONFIDENCE, 50% by default) are decided by the fallback model on "
+        "(confidence below JEV_MIN_CONFIDENCE, 20% by default, i.e. Jev's probability between 40% and 60%) are decided by the fallback model on "
         "OpenRouter when OPENROUTER_API_KEY is set. If the AI is unavailable the result is up to "
         "10 random candidates."
     ),
