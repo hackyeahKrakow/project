@@ -44,7 +44,7 @@ Cztery pytania z [SPEC.md](SPEC.md#personalizacja-przy-pierwszym-uruchomieniu):
 
 Po pytaniach są zgody opcjonalne na lokalizację i powiadomienia. Można je pominąć.
 
-Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Odpowiedzi z pytań i lokalizacja zostają na tym telefonie. Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
+Ostatni ekran mówi: „Nie mamy twojego maila ani numeru. Odpowiedzi z pytań zostają na tym telefonie. Lokalizację wysyłamy tylko, gdy klikniesz „Zaplanuj dojazd”: idzie do planera tras Transitous (z opcją „bez barier”, jeśli ją włączysz) i nigdzie jej nie zapisujemy. Swipe'y kart startowych zapisujemy pod losowym, anonimowym identyfikatorem, bez danych osobowych.” Pod spodem jest przycisk **„Rozumiem, zaczynam”**.
 
 Zgoda to wyraźny przycisk, a nie „pierwszy swipe”. Prawo UE wymaga przy zgodzie jednoznacznego działania. Przycisk kosztuje jeden ekran i zamyka temat, zanim jury o niego zapyta.
 
