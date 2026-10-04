@@ -287,6 +287,9 @@ function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored;
         style={{ transform: `rotateY(${flipped ? 180 : 0}deg)`, transition: reduce ? 'none' : 'transform 500ms cubic-bezier(.4,.2,.2,1)' }}
       >
         <div className="absolute inset-0 flex flex-col backface-hidden" aria-hidden={flipped}>
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center" aria-hidden>
+            <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-medium text-white backdrop-blur-sm">Kliknij, aby odwrócić</span>
+          </div>
           {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
             <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
@@ -325,20 +328,33 @@ function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored;
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 flex rotate-y-180 flex-col gap-3 bg-ink-900 p-5 text-white backface-hidden" aria-hidden={!flipped}>
-          <div className="h-1.5 w-12 flex-none rounded-full" style={{ background: c.color }} aria-hidden />
+        <div className="absolute inset-0 flex rotate-y-180 flex-col gap-3 bg-ink-900 px-5 pt-12 pb-5 text-white backface-hidden" aria-hidden={!flipped}>
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center" aria-hidden>
+            <span className="rounded-full bg-white/15 px-3 py-1 text-[13px] font-medium text-white backdrop-blur-sm">Kliknij, aby odwrócić</span>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <CategoryBadge cat={c} onDark className="text-[13px]" />
             {ev.promoted && <PromotedTag />}
           </div>
-          <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
+          <h2 className="text-[28px] leading-[1.15] font-semibold">{ev.event_name}</h2>
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <p className="text-[13px] font-semibold tracking-[.06em] text-[#E6EEFF] uppercase">Opis</p>
-            <p className="mt-1.5 text-[17px] leading-relaxed text-white">{ev.description || 'Organizator nie dodał jeszcze szczegółowego opisu.'}</p>
+            <p className="text-[14px] font-semibold tracking-[.06em] text-[#E6EEFF] uppercase">Opis</p>
+            <p className="mt-1.5 text-[20px] leading-relaxed text-white">{ev.description || 'Organizator nie dodał jeszcze szczegółowego opisu.'}</p>
           </div>
-          <p className="flex-none text-center text-[13px] text-[#E6EEFF]">Kliknij kartę, żeby wrócić</p>
+          <div className="flex flex-none flex-col gap-2">
+            <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
+              <Calendar size={18} aria-hidden />
+              {formatRange(ev)}
+            </div>
+            <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
+              <MapPin size={18} aria-hidden />
+              {ev.address}
+            </div>
+          </div>
         </div>
       </div>
+      {/* Dark theme only: a thin Spark-orange edge, drawn over both faces and not turning with them. */}
+      <div className="pointer-events-none absolute inset-0 z-20 hidden rounded-3xl ring-[1.5px] ring-spark-500/60 ring-inset dark:block" aria-hidden />
     </article>
   )
 }
