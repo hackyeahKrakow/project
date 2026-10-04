@@ -1,7 +1,7 @@
-"""Make the cards table hold exactly the catalog from app/seed_events.json.
+"""Make the cards table match the catalog in app/seed_events.json.
 
-Deletes cards that are not in the catalog (the old demo cards) and inserts the missing ones.
-Refuses to delete a card somebody has already answered. Uses DATABASE_URL / DATABASE_AUTH_TOKEN.
+Inserts missing cards, updates the ones that changed (times, places, categories) and deletes cards that left the
+catalog. A card somebody already answered is kept, so no swipe loses its card. Uses DATABASE_URL / DATABASE_AUTH_TOKEN.
 
     uv run python scripts/replace_cards.py --dry-run
     uv run python scripts/replace_cards.py
@@ -14,30 +14,27 @@ from sqlalchemy import delete, func, select
 
 from app.database import engine, session_factory
 from app.models import Card, CardSwipe
-from app.seed import SEED_CARDS, seed_cards
+from app.seed import SEED_CARDS, _copy
 
 
 async def main(dry_run: bool) -> int:
     keep = {card.id for card in SEED_CARDS}
     async with session_factory() as session:
         stale = list((await session.scalars(select(Card).where(Card.id.not_in(keep)))).all())
-        answered = await session.scalar(
-            select(func.count()).select_from(CardSwipe).where(CardSwipe.card_id.not_in(keep))
-        )
+        answered = set(await session.scalars(select(CardSwipe.card_id).where(CardSwipe.card_id.not_in(keep))))
+        drop = [c for c in stale if c.id not in answered]
         have = set(await session.scalars(select(Card.id).where(Card.id.in_(keep))))
         print(f"cards in the database: {await session.scalar(select(func.count()).select_from(Card))}")
-        print(f"to delete (not in the catalog): {[c.event_name for c in stale]}")
-        print(f"to insert (missing from the database): {len(keep - have)}")
-        if answered:
-            print(f"ABORT: {answered} swipe(s) refer to cards that would be deleted")
-            return 1
+        print(f"to delete (not in the catalog): {[c.event_name for c in drop]}")
+        print(f"kept (not in the catalog, but answered): {[c.event_name for c in stale if c.id in answered]}")
+        print(f"to insert: {len(keep - have)}, to update to the catalog: {len(have)}")
         if dry_run:
             print("dry run, nothing changed")
             return 0
-        await session.execute(delete(Card).where(Card.id.not_in(keep)))
+        await session.execute(delete(Card).where(Card.id.in_([c.id for c in drop])))
+        for card in SEED_CARDS:
+            await session.merge(_copy(card))  # insert or overwrite with the catalog values
         await session.commit()
-        added = await seed_cards(session)
-        print(f"deleted {len(stale)}, inserted {added}")
         print(f"cards in the database now: {await session.scalar(select(func.count()).select_from(Card))}")
     await engine.dispose()
     return 0

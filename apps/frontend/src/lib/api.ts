@@ -20,28 +20,21 @@ const write = (k: string) => {
   }
 }
 
-type Card = Pick<SpottedEvent, 'id' | 'event_name' | 'description' | 'starts_at' | 'address' | 'lat' | 'lng' | 'price'>
-
-/** The six fixed starter cards: local copies (category, organizer) updated with what GET /card/new/{user_id} returns. */
+/**
+ * The six fixed starter cards. The local copies are the same file as the backend catalog (npm run check compares them), so
+ * they are the source of truth; GET /card/new/{user_id} is called only to move the user's progress on the server, once per user
+ * (Vercel Hobby: each request is a function invocation), and a stale database row can never overwrite a corrected time.
+ */
 export async function starterDeck(userId: string): Promise<SpottedEvent[]> {
-  // The local copies are the same file as the backend seed, so the backend is asked once per user, not on every visit
-  // (Vercel Hobby: each request is a function invocation).
   const done = `spootted:starter:${userId}`
   if (!API || read(done)) return STARTER
-  const fromApi = new Map<string, Card>()
   try {
-    for (let i = 0; i < STARTER.length; i++) {
-      const res = await fetch(`${API}/card/new/${userId}`)
-      if (!res.ok) break // 404 = this user already got all six
-      const card = (await res.json()) as Card
-      // null = not known yet in the backend (coordinates, price), keep the local value
-      fromApi.set(card.id, Object.fromEntries(Object.entries(card).filter(([, v]) => v !== null)) as Card)
-    }
+    for (let i = 0; i < STARTER.length; i++) if (!(await fetch(`${API}/card/new/${userId}`)).ok) break // 404 = all six served
     write(done) // only after the loop finished: a half-done sync is retried next time
   } catch {
-    /* offline: local copies only */
+    /* offline: try again next visit */
   }
-  return STARTER.map((e) => ({ ...e, ...fromApi.get(e.id) }))
+  return STARTER
 }
 
 /** Saves a swipe with POST /card/{user_id}. Only the 20 backend cards exist there; demo events stay local. */
