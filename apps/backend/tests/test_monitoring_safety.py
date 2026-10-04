@@ -44,10 +44,7 @@ async def test_same_result_with_and_without_monitoring():
 
 async def test_same_recommendations_with_and_without_monitoring(db_client, session_factory):
     user = uuid7()
-    cards = await seeded_cards(session_factory)
-    await answer(session_factory, user, cards[:3], Decision.RIGHT)
-    # Leave 40 unanswered: fewer than the 50 drawn at random, so both calls see the same candidates.
-    await answer(session_factory, user, cards[3:-40], Decision.LEFT)
+    await answer(session_factory, user, (await seeded_cards(session_factory))[:3], Decision.RIGHT)
 
     jev_override(_plain(_by_position))
     plain = (await db_client.get(f"/card/recommendations/{user}")).json()

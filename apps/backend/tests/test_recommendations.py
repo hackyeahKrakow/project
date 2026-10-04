@@ -47,8 +47,7 @@ async def seeded_cards(factory):
 async def test_ten_best_of_fifty_using_history(session_factory, db_client):
     fake = FakeJev()
     jev_override(make_jev_client(fake))
-    # Many Music cards next to the real catalog, so a random draw of 50 always holds well over 10 of them.
-    await add_cards(session_factory, 400)
+    await add_cards(session_factory, 60)
     user = uuid7()
     seeded = await seeded_cards(session_factory)
     seeded = [c for c in seeded if not c.event_name.startswith(("Music", "Sport"))]

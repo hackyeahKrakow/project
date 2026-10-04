@@ -265,8 +265,7 @@ export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
   category: e.category as CategoryId,
   size: 'medium',
   district: nearest(e.lat, e.lng),
-  // Fictional demo events name their (fictional, "(demo)") student association; real ones have no organizer field.
-  organizer: 'organizer' in e && e.organizer ? o(`org_${e.organizer}`, e.organizer) : ORGANIZER_TBD,
+  organizer: ORGANIZER_TBD,
   ...(venueAccess(e.address) && { accessibility: venueAccess(e.address), wheelchair: venueAccess(e.address)!.status }),
 }))
 export const CARD_IDS = new Set(CARDS.map((e) => e.id))
