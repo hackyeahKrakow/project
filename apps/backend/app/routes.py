@@ -15,6 +15,7 @@ from app.event_parser import (
     get_event_parser,
     warsaw_today,
 )
+from app.fallback_decider import FallbackDecider, get_fallback_decider
 from app.geocode import GeocodeError, Geocoder, Place, get_geocoder
 from app.info_service import MAX_INFO_CHARS, InfoTooLargeError, save_info
 from app.jev_client import JevClient, get_jev_client
@@ -88,8 +89,10 @@ async def card_new(
         "Draws up to 50 random cards the user has not answered, evaluates them with the Jev "
         "model using the user's earlier right (interested) and left (not interested) answers, "
         "and returns the 10 best matches in ranked order. Returns fewer cards when fewer "
-        "candidates exist and an empty list when none exist. If the AI is unavailable the "
-        "result is up to 10 random candidates."
+        "candidates exist and an empty list when none exist. Cards Jev is not confident about "
+        "(confidence below JEV_MIN_CONFIDENCE, 50% by default) are decided by the fallback model on "
+        "OpenRouter when OPENROUTER_API_KEY is set. If the AI is unavailable the result is up to "
+        "10 random candidates."
     ),
     response_model=list[CardFetchResponse],
     responses={422: {"model": ErrorResponse, "description": "Invalid request"}},
@@ -98,8 +101,9 @@ async def card_recommendations(
     user_id: UserId,
     session: Annotated[AsyncSession, Depends(get_session)],
     jev: Annotated[JevClient, Depends(get_jev_client)],
+    fallback: Annotated[FallbackDecider | None, Depends(get_fallback_decider)],
 ) -> list[CardFetchResponse]:
-    cards = await get_recommendations(session, jev, user_id)
+    cards = await get_recommendations(session, jev, user_id, fallback)
     return [CardFetchResponse.model_validate(card) for card in cards]
 
 

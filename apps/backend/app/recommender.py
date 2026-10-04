@@ -6,6 +6,8 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
+from app.fallback_decider import FallbackDecider, FallbackError
 from app.info_service import load_info
 from app.jev_client import INSTRUCTIONS, JevClient, JevError
 from app.logger import get_logger
@@ -22,9 +24,15 @@ QUESTION_OVERHEAD_CHARS = len(INSTRUCTIONS) + 60
 
 
 async def get_recommendations(
-    session: AsyncSession, jev: JevClient, user_id: uuid.UUID
+    session: AsyncSession,
+    jev: JevClient,
+    user_id: uuid.UUID,
+    fallback: FallbackDecider | None = None,
 ) -> list[Card]:
-    """Return up to 10 cards for the user, chosen by Jev from up to 50 random unanswered cards."""
+    """Return up to 10 cards for the user, chosen by Jev from up to 50 random unanswered cards.
+
+    Cards Jev is unsure about are decided by the `fallback` model instead (see `_apply_fallback`).
+    """
     candidates = await _candidates(session, user_id)
     if not candidates:
         return []
@@ -49,7 +57,38 @@ async def get_recommendations(
         has_choices="choices" in state,
         scored=len(scores),
     )
+    if fallback is not None:
+        scores = await _apply_fallback(fallback, state, scores, get_settings().jev_min_confidence)
     return _rank(candidates, scores)
+
+
+def _confidence(probability: float | None) -> float:
+    """0 when Jev has no answer or says 50/50, 1 when it is certain either way."""
+    return 0.0 if probability is None else abs(probability - 0.5) * 2
+
+
+async def _apply_fallback(
+    fallback: FallbackDecider, state: dict, scores: dict[str, float], min_confidence: float
+) -> dict[str, float]:
+    """Let the fallback model decide the candidates Jev is not confident about.
+
+    A yes scores 0.5 + min_confidence / 2 and a no 0.5 - min_confidence / 2: the edges of the band
+    Jev was unsure in, so a decided card ranks below every confident yes of Jev and above every
+    confident no. Without an answer from the fallback model, the Jev score (if any) stays.
+    """
+    uncertain = [
+        card for card in state["candidates"] if _confidence(scores.get(card["id"])) < min_confidence
+    ]
+    if not uncertain:
+        return scores
+    try:
+        decisions = await fallback.decide({**state, "candidates": uncertain})
+    except FallbackError as exc:
+        log.warning("fallback_failed", reason=str(exc), uncertain=len(uncertain))
+        return scores
+    log.info("fallback_decided", uncertain=len(uncertain), decided=len(decisions))
+    edge = min_confidence / 2
+    return {**scores, **{card_id: 0.5 + edge if yes else 0.5 - edge for card_id, yes in decisions.items()}}
 
 
 async def _candidates(session: AsyncSession, user_id: uuid.UUID) -> list[Card]:

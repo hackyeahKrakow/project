@@ -26,6 +26,7 @@ def _monitoring_off(monkeypatch: pytest.MonkeyPatch):
     for name in [n for n in os.environ if n.startswith("LANGSMITH_")]:
         monkeypatch.delenv(name)
     monkeypatch.setenv("LANGSMITH_API_KEY", "")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "")  # the fallback model is off unless a test turns it on
     get_settings.cache_clear()
     get_tracing_client.cache_clear()
     yield
