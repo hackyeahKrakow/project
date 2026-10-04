@@ -32,8 +32,9 @@ export type SpottedEvent = {
 }
 
 // The same values as OpenStreetMap's wheelchair=* tag (and Wheelmap), so venue data can be taken from OSM later.
-export type Wheelchair = 'yes' | 'limited' | 'no'
-export const WHEELCHAIR_LABEL: Record<Wheelchair, string> = { yes: 'Bez barier', limited: 'Częściowo bez barier', no: 'Z barierami' }
+// "unknown" is a real state: no source found, or only an unverified report (docs/LEGAL.md).
+export type Wheelchair = 'yes' | 'limited' | 'no' | 'unknown'
+export const WHEELCHAIR_LABEL: Record<Wheelchair, string> = { yes: 'Bez barier', limited: 'Częściowo bez barier', no: 'Z barierami', unknown: 'Dostępność nieznana' }
 
 // Detailed accessibility for people in wheelchairs (Cracow without barriers). Every value can be "unknown":
 // the app shows what it knows and never treats a missing answer as "accessible" (docs/ACCESSIBILITY.md).
@@ -236,8 +237,9 @@ const VENUE_ACCESS: Record<string, Accessibility> = {
     note: '8 miejsc parkingowych dla osób z niepełnosprawnością, winda w budynku A, dwa stopnie z pochylnią między budynkami A i C.',
   },
   // A user report we could not confirm: shown separately from official statements, never as a guarantee.
+  // The overall status stays "unknown" (docs/LEGAL.md): Klub Studio has no official source.
   'Klub Studio': {
-    status: 'limited',
+    status: 'unknown',
     fields: {
       step_free_entry: 'yes',
       ramp: 'unknown',
