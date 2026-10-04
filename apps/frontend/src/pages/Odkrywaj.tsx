@@ -328,10 +328,7 @@ function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored;
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 flex rotate-y-180 flex-col gap-3 bg-ink-900 px-5 pt-12 pb-5 text-white backface-hidden" aria-hidden={!flipped}>
-          <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center" aria-hidden>
-            <span className="rounded-full bg-white/15 px-3 py-1 text-[13px] font-medium text-white backdrop-blur-sm">Kliknij, aby odwrócić</span>
-          </div>
+        <div className="absolute inset-0 flex rotate-y-180 flex-col gap-3 bg-ink-900 p-5 text-white backface-hidden" aria-hidden={!flipped}>
           <div className="flex flex-wrap items-center gap-2">
             <CategoryBadge cat={c} onDark className="text-[13px]" />
             {ev.promoted && <PromotedTag />}
