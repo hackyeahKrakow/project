@@ -129,3 +129,6 @@ console.log('accessibility checks ok')
 
 // No krakow.travel photo is shown until KBF confirms the licence (docs/LEGAL.md).
 assert.ok(catalog().every((e) => !photoUrl(e).includes('krakow.travel')))
+// No two cards show the same photo, and every card without its own photo got one of the CC0 stock photos (not the shared hash fallback).
+const shown = catalog().map((e) => photoUrl(e))
+assert.equal(new Set(shown).size, catalog().length)
