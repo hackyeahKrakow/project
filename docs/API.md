@@ -72,7 +72,7 @@ Zwraca następną z sześciu predefiniowanych kart (numerowanych 1–6) dla uży
 
 ### GET /card/recommendations/{user_id} — `card_recommendations`
 
-Zwraca do 10 poleconych kart. Serwer losuje do 50 kart, na które użytkownik jeszcze nie odpowiedział, ocenia je modelem Jev (TypeSafe AI, przez OpenCode) na podstawie wcześniejszych odpowiedzi `right` i `left` i zwraca 10 najlepszych w kolejności rankingu. Gdy jest mniej kandydatów, zwraca mniej kart albo pustą listę. Karty, w których pewność Jev jest poniżej `JEV_MIN_CONFIDENCE` (domyślnie 20%, czyli `tak` Jev między 40% a 60%), ocenia zamiast niego model `openai/gpt-4o-mini` z OpenRouter (wymaga `OPENROUTER_API_KEY`). Gdy AI jest niedostępne, zwraca do 10 losowych kandydatów zamiast błędu.
+Zwraca do 10 poleconych kart. Serwer losuje do 50 kart, na które użytkownik jeszcze nie odpowiedział, ocenia je modelem Jev (TypeSafe AI, przez OpenCode) na podstawie wcześniejszych odpowiedzi `right` i `left` i zwraca 10 najlepszych w kolejności rankingu. Gdy jest mniej kandydatów, zwraca mniej kart albo pustą listę. Karty, w których pewność Jev jest poniżej `JEV_MIN_CONFIDENCE` (domyślnie 20%, czyli `tak` Jev między 40% a 60%), ocenia zamiast niego model `deepseek-ai/DeepSeek-V4.1-Flash` z DeepInfra (wymaga `DEEPINFRA_API_KEY`). Gdy AI jest niedostępne, zwraca do 10 losowych kandydatów zamiast błędu.
 
 - **Ścieżka**: `user_id` (UUID7)
 - **Przykładowe żądanie**: `GET /card/recommendations/018f3b5e-7c1a-7d2b-9a4e-3f6c2b1d5e90`

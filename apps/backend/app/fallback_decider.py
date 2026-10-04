@@ -1,7 +1,7 @@
 """Second opinion on the cards Jev is unsure about.
 
 Jev answers each question with the probability of "yes". A probability near 0.5 means Jev cannot
-tell, so the recommender hands exactly those cards to a chat model on OpenRouter (gpt-4o-mini by
+tell, so the recommender hands exactly those cards to a chat model on DeepInfra (DeepSeek V4.1 Flash by
 default), which answers yes or no for each of them. See `recommender.get_recommendations`.
 """
 
@@ -102,14 +102,14 @@ def _valid_decisions(content: object, asked: set[str]) -> dict[str, bool]:
 
 
 def get_fallback_decider() -> FallbackDecider | None:
-    """The fallback model, or None (Jev alone decides) when no OpenRouter key is configured."""
+    """The fallback model, or None (Jev alone decides) when no DeepInfra key is configured."""
     settings = get_settings()
-    key = settings.openrouter_api_key.get_secret_value() if settings.openrouter_api_key else None
+    key = settings.deepinfra_api_key.get_secret_value() if settings.deepinfra_api_key else None
     if not key:
         return None
     return FallbackDecider(
         api_key=key,
         model=settings.fallback_model,
-        url=settings.openrouter_url,
+        url=settings.deepinfra_url,
         timeout=settings.fallback_timeout_seconds,
     )

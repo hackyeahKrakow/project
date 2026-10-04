@@ -291,7 +291,7 @@ async def test_answers_posted_through_the_api_drive_recommendations(session_fact
     assert [item["id"] for item in state["disliked"]] == [str(disliked_card.id)]
 
 
-# --- Fallback model: Jev's low-confidence cards are decided by gpt-4o-mini on OpenRouter ---
+# --- Fallback model: Jev's low-confidence cards are decided by DeepSeek V4.1 Flash on DeepInfra ---
 
 
 class UncertainJev:
@@ -311,7 +311,7 @@ class UncertainJev:
         return httpx.Response(200, json={"answers": answers})
 
 
-class FakeOpenRouter:
+class FakeFallbackModel:
     """Says yes to candidates with "Pick" in the name; records requests."""
 
     def __init__(self, reply=None):
@@ -337,9 +337,9 @@ def decider_override(handler):
     from app.main import app
 
     decider = FallbackDecider(
-        api_key="or-key",
-        model="openai/gpt-4o-mini",
-        url="https://openrouter.test/chat",
+        api_key="di-key",
+        model="deepseek-ai/DeepSeek-V4.1-Flash",
+        url="https://deepinfra.test/chat",
         timeout=2.0,
         transport=httpx.MockTransport(handler),
     )
@@ -365,7 +365,7 @@ async def uncertain_setup(session_factory):
 
 async def test_low_confidence_cards_are_decided_by_the_fallback_model(session_factory, db_client):
     jev_override(make_jev_client(UncertainJev()))
-    router = FakeOpenRouter()
+    router = FakeFallbackModel()
     decider_override(router)
     user = await uncertain_setup(session_factory)
 
@@ -382,14 +382,14 @@ async def test_low_confidence_cards_are_decided_by_the_fallback_model(session_fa
     sent = json.loads(router.bodies[0]["messages"][1]["content"])["candidates"]
     assert sent and all(not c["event_name"].startswith(("Music", "Sport")) for c in sent)
     assert all(c["id"].isdigit() for c in sent)  # short keys, not the card ids
-    assert router.bodies[0]["model"] == "openai/gpt-4o-mini"
-    assert router.requests[0].headers["authorization"] == "Bearer or-key"
+    assert router.bodies[0]["model"] == "deepseek-ai/DeepSeek-V4.1-Flash"
+    assert router.requests[0].headers["authorization"] == "Bearer di-key"
     assert str(user) not in json.dumps(router.bodies[0])
 
 
 async def test_confident_jev_does_not_call_the_fallback_model(session_factory, db_client):
     jev_override(make_jev_client(FakeJev()))
-    router = FakeOpenRouter()
+    router = FakeFallbackModel()
     decider_override(router)
     user = await history_for(session_factory)
 
@@ -415,7 +415,7 @@ async def test_fallback_failures_keep_jevs_scores(session_factory, db_client):
         "timeout": timeout,
     }
     for name, handler in broken.items():
-        decider_override(FakeOpenRouter(reply=handler))
+        decider_override(FakeFallbackModel(reply=handler))
         response = await db_client.get(f"/card/recommendations/{user}")
         assert response.status_code == 200, name
         names = [c["event_name"] for c in response.json()]
@@ -429,7 +429,7 @@ async def test_threshold_zero_turns_the_fallback_off(session_factory, db_client,
     monkeypatch.setenv("JEV_MIN_CONFIDENCE", "0")
     get_settings.cache_clear()
     jev_override(make_jev_client(UncertainJev()))
-    router = FakeOpenRouter()
+    router = FakeFallbackModel()
     decider_override(router)
     user = await uncertain_setup(session_factory)
 
@@ -439,11 +439,11 @@ async def test_threshold_zero_turns_the_fallback_off(session_factory, db_client,
     assert router.bodies == []
 
 
-async def test_no_openrouter_key_means_no_fallback(monkeypatch):
+async def test_no_deepinfra_key_means_no_fallback(monkeypatch):
     from app.config import get_settings
     from app.fallback_decider import get_fallback_decider
 
-    assert get_fallback_decider() is None  # conftest sets OPENROUTER_API_KEY to empty
-    monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")
+    assert get_fallback_decider() is None  # conftest sets DEEPINFRA_API_KEY to empty
+    monkeypatch.setenv("DEEPINFRA_API_KEY", "di-key")
     get_settings.cache_clear()
     assert get_fallback_decider() is not None
