@@ -381,6 +381,7 @@ async def test_low_confidence_cards_are_decided_by_the_fallback_model(session_fa
     assert len(router.bodies) == 1
     sent = json.loads(router.bodies[0]["messages"][1]["content"])["candidates"]
     assert sent and all(not c["event_name"].startswith(("Music", "Sport")) for c in sent)
+    assert all(c["id"].isdigit() for c in sent)  # short keys, not the card ids
     assert router.bodies[0]["model"] == "openai/gpt-4o-mini"
     assert router.requests[0].headers["authorization"] == "Bearer or-key"
     assert str(user) not in json.dumps(router.bodies[0])

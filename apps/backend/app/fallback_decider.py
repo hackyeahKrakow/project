@@ -21,7 +21,7 @@ For every candidate decide whether this user will be interested in it, judging b
 liked and disliked before.
 Answer with exactly one JSON object and nothing else, in the form
 {"decisions": {"<candidate id>": true or false, ...}}
-with one entry for every candidate id."""
+with one entry for every candidate id. Copy the ids exactly."""
 
 
 class FallbackError(Exception):
@@ -44,7 +44,16 @@ class FallbackDecider:
         self._transport = transport
 
     async def decide(self, state: dict) -> dict[str, bool]:
-        """Return a yes (True) or no (False) for each candidate of `state` the model answered for."""
+        """Return a yes (True) or no (False) for each candidate of `state` the model answered for.
+
+        The model sees short keys ("1", "2", ...) instead of the long card ids: it copies them back
+        more reliably, and they cost fewer tokens.
+        """
+        keys = {str(n): card["id"] for n, card in enumerate(state["candidates"], start=1)}
+        shown = {
+            **state,
+            "candidates": [{**card, "id": key} for key, card in zip(keys, state["candidates"])],
+        }
         body = {
             "model": self._model,
             "temperature": 0,
@@ -52,7 +61,7 @@ class FallbackDecider:
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": PROMPT},
-                {"role": "user", "content": json.dumps(state, ensure_ascii=False)},
+                {"role": "user", "content": json.dumps(shown, ensure_ascii=False)},
             ],
         }
         try:
@@ -71,7 +80,8 @@ class FallbackDecider:
         except (ValueError, KeyError, IndexError, TypeError) as exc:
             raise FallbackError("invalid_response") from exc
 
-        return _valid_decisions(content, {card["id"] for card in state["candidates"]})
+        decisions = _valid_decisions(content, set(keys))
+        return {keys[key]: yes for key, yes in decisions.items()}
 
 
 def _valid_decisions(content: object, asked: set[str]) -> dict[str, bool]:
