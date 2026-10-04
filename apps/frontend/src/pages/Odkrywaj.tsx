@@ -180,6 +180,7 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
       if (t.closest('input, textarea, select, [role=dialog]')) return
       if (e.key === 'ArrowRight') fly(1)
       if (e.key === 'ArrowLeft') fly(-1)
+      if (e.key === 'Escape') setFlippedId(null) // back to the front, like every closeable panel (docs/ACCESSIBILITY.md)
       if ((e.key === 'Enter' || e.key === ' ') && !t.closest('button, a')) {
         e.preventDefault()
         flip()
