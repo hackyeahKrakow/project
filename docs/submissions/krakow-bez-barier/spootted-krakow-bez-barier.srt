@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:12,000
+Kraków. Wydarzenia, do których wjedziesz.
+
+2
+00:00:12,000 --> 00:00:25,000
+Ustawiasz raz. Aplikacja robi resztę.
+
+3
+00:00:25,000 --> 00:00:40,000
+Bez konta. Ustawienia zostają na telefonie.
+
+4
+00:00:40,000 --> 00:01:00,000
+Miejsca z potwierdzonymi barierami nie trafiają do talii.
+
+5
+00:01:00,000 --> 00:01:18,000
+Chip „Potwierdzone bez barier" zawęża mapę.
+
+6
+00:01:18,000 --> 00:01:45,000
+Źródło, data, wiarygodność. Bez zgadywania.
+
+7
+00:01:45,000 --> 00:02:00,000
+Czego nie wiemy, mówimy wprost.
+
+8
+00:02:00,000 --> 00:02:25,000
+Trasa bez schodów, tramwaj niskopodłogowy, na miejscu na czas.
+
+9
+00:02:25,000 --> 00:02:35,000
+Parkingi z miejscami dla osób z niepełnosprawnością.
+
+10
+00:02:35,000 --> 00:02:45,000
+spootted — zmatchuj się z eventami. Demo: spootted.dawidm.com
