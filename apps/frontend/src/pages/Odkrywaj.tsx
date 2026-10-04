@@ -92,7 +92,7 @@ export default function Odkrywaj({ events }: { events: SpottedEvent[] }) {
           ))}
         </div>
         <p className="text-[13px] leading-snug text-muted">
-          Przeciągnij kartę w prawo, żeby polubić, w lewo, żeby pominąć. Na klawiaturze: strzałka w prawo i w lewo.
+          Przeciągnij kartę w prawo, żeby polubić, w lewo, żeby pominąć. Na klawiaturze: strzałka w prawo i w lewo. Kliknij kartę (na klawiaturze: Enter), żeby zobaczyć opis.
         </p>
       </aside>
     </div>
@@ -104,9 +104,15 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   const [pos, setPos] = useState({ x: 0, y: 0, tilt: 1 })
   const [drag, setDrag] = useState(false)
   const [flying, setFlying] = useState(false)
+  // Which card shows its back (the description). Keyed by id, so the next card always starts on its front.
+  const [flippedId, setFlippedId] = useState<string | null>(null)
   // Gesture bookkeeping that must not re-render: active pointer, start point, last sample for velocity.
   const g = useRef({ id: -1, x0: 0, y0: 0, t: 0, x: 0, y: 0, vx: 0, vy: 0 })
   const done = !deck.length
+  const flip = () => {
+    if (flying || done) return
+    setFlippedId((id) => (id === deck[0].ev.id ? null : deck[0].ev.id))
+  }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const fly = (dir: 1 | -1, vy = 0) => {
@@ -156,6 +162,12 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
     c.id = -1
     setDrag(false)
     const dx = decide ? c.x - c.x0 : 0
+    // A tap, not a drag: turn the card over instead of swiping it.
+    if (decide && Math.hypot(dx, c.y - c.y0) < 8) {
+      flip()
+      setPos((p) => ({ ...p, x: 0, y: 0 }))
+      return
+    }
     const flick = Math.abs(c.vx) > 0.5 && Math.abs(dx) > 30 && Math.sign(c.vx) === Math.sign(dx)
     if (dx > THRESHOLD || (flick && dx > 0)) fly(1, c.vy)
     else if (dx < -THRESHOLD || (flick && dx < 0)) fly(-1, c.vy)
@@ -168,6 +180,11 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
       if (t.closest('input, textarea, select, [role=dialog]')) return
       if (e.key === 'ArrowRight') fly(1)
       if (e.key === 'ArrowLeft') fly(-1)
+      if (e.key === 'Escape') setFlippedId(null) // back to the front, like every closeable panel (docs/ACCESSIBILITY.md)
+      if ((e.key === 'Enter' || e.key === ' ') && !t.closest('button, a')) {
+        e.preventDefault()
+        flip()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -209,6 +226,8 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
               key={x.ev.id}
               item={x}
               style={style(k)}
+              flipped={!k && flippedId === x.ev.id}
+              reduce={reduce}
               like={k ? 0 : Math.max(0, Math.min(pos.x / 110, 1))}
               skip={k ? 0 : Math.max(0, Math.min(-pos.x / 110, 1))}
             />
@@ -252,51 +271,72 @@ function Deck({ deck, onDecide }: { deck: Scored[]; onDecide: (d: Decision) => v
   )
 }
 
-function SwipeCard({ item, style, like, skip }: { item: Scored; style: CSSProperties; like: number; skip: number }) {
+function SwipeCard({ item, style, like, skip, flipped, reduce }: { item: Scored; style: CSSProperties; like: number; skip: number; flipped: boolean; reduce: boolean }) {
   const { ev, reason } = item
   const c = category(ev.category)
   const stamp = 'absolute top-4 rounded-[10px] border-[3px] bg-white px-3 py-1 text-xl font-semibold tracking-[.06em]'
   return (
     <article
-      className="absolute inset-0 flex flex-col overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] will-change-transform"
+      className="absolute inset-0 overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(10,31,68,.22)] [perspective:1400px] will-change-transform"
       style={{ background: c.color, ...style }}
       aria-hidden={style.zIndex !== 3}
     >
-      {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-        <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
-        <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
-      </div>
-      <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
-        WCHODZĘ
-      </div>
-      <div className={`${stamp} right-4 rotate-10 border-ink-900 text-ink-900`} style={{ opacity: skip }}>
-        NIE DLA MNIE
-      </div>
-      {/* The fade is the top 4rem (-mt-16), all of it over the photo; if the text is taller than the card, the reason line is cut, never the title. */}
-      <div className="relative -mt-16 flex flex-none flex-col gap-2 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_calc(100%_-_4rem),rgba(10,31,68,0)_100%)] px-4 pt-16 pb-4 text-white">
-        <div className="flex flex-wrap items-center gap-2">
-          <CategoryBadge cat={c} onDark className="text-[13px]" />
-          {ev.promoted && <PromotedTag />}
+      {/* The two faces turn together; each hides its own back, so only one is ever visible. */}
+      <div
+        className="absolute inset-0 transform-3d"
+        style={{ transform: `rotateY(${flipped ? 180 : 0}deg)`, transition: reduce ? 'none' : 'transform 500ms cubic-bezier(.4,.2,.2,1)' }}
+      >
+        <div className="absolute inset-0 flex flex-col backface-hidden" aria-hidden={flipped}>
+          {/* The photo gets the space above the text, so it is cropped to what shows instead of hiding under the panel. */}
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+            <c.Icon size={96} color="#fff" strokeWidth={1.6} aria-hidden />
+            <Photo src={photoUrl(ev, 640)} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+          </div>
+          <div className={`${stamp} left-4 -rotate-10 border-brand-600 text-brand-600`} style={{ opacity: like }}>
+            WCHODZĘ
+          </div>
+          <div className={`${stamp} right-4 rotate-10 border-ink-900 text-ink-900`} style={{ opacity: skip }}>
+            NIE DLA MNIE
+          </div>
+          {/* The fade is the top 4rem (-mt-16), all of it over the photo; if the text is taller than the card, the reason line is cut, never the title. */}
+          <div className="relative -mt-16 flex flex-none flex-col gap-2 bg-[linear-gradient(to_top,rgba(10,31,68,.97)_0%,rgba(10,31,68,.92)_calc(100%_-_4rem),rgba(10,31,68,0)_100%)] px-4 pt-16 pb-4 text-white">
+            <div className="flex flex-wrap items-center gap-2">
+              <CategoryBadge cat={c} onDark className="text-[13px]" />
+              {ev.promoted && <PromotedTag />}
+            </div>
+            <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
+            <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
+              <Calendar size={18} aria-hidden />
+              {formatRange(ev)}
+            </div>
+            <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
+              <MapPin size={18} aria-hidden />
+              {ev.address}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>
+                {formatPrice(ev.price)}
+              </span>
+              <OrganizerLine ev={ev} className="text-[13px] text-[#E6EEFF]" />
+            </div>
+            <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-fg">
+              <Sparkles size={18} className="mt-px flex-none text-violet-600" aria-hidden />
+              {reason}
+            </div>
+          </div>
         </div>
-        <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
-        <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
-          <Calendar size={18} aria-hidden />
-          {formatRange(ev)}
-        </div>
-        <div className="flex items-center gap-2 text-[15px] text-[#E6EEFF]">
-          <MapPin size={18} aria-hidden />
-          {ev.address}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className={`rounded-lg px-2.5 py-0.5 text-sm font-semibold text-ink-900 ${ev.price ? 'bg-spark-500' : 'bg-white'}`}>
-            {formatPrice(ev.price)}
-          </span>
-          <OrganizerLine ev={ev} className="text-[13px] text-[#E6EEFF]" />
-        </div>
-        <div className="flex items-start gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-fg">
-          <Sparkles size={18} className="mt-px flex-none text-violet-600" aria-hidden />
-          {reason}
+        <div className="absolute inset-0 flex rotate-y-180 flex-col gap-3 bg-ink-900 p-5 text-white backface-hidden" aria-hidden={!flipped}>
+          <div className="h-1.5 w-12 flex-none rounded-full" style={{ background: c.color }} aria-hidden />
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryBadge cat={c} onDark className="text-[13px]" />
+            {ev.promoted && <PromotedTag />}
+          </div>
+          <h2 className="text-[24px] leading-[1.15] font-semibold">{ev.event_name}</h2>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <p className="text-[13px] font-semibold tracking-[.06em] text-[#E6EEFF] uppercase">Opis</p>
+            <p className="mt-1.5 text-[17px] leading-relaxed text-white">{ev.description || 'Organizator nie dodał jeszcze szczegółowego opisu.'}</p>
+          </div>
+          <p className="flex-none text-center text-[13px] text-[#E6EEFF]">Kliknij kartę, żeby wrócić</p>
         </div>
       </div>
     </article>

@@ -73,7 +73,7 @@ Wszystkie 16 problemów jest poprawionych w tym PR (punkt 16 zgłosił review Co
 | Lista wydarzeń na mapie | Przed mapą (laptop) | Otwiera panel wydarzenia | – | – |
 | Piny na mapie | Po filtrach | Otwiera panel wydarzenia | – | – |
 | Panel wydarzenia | Fokus na „Zamknij” | Akcje w karcie | Zamyka, fokus wraca | – |
-| Talia Odkrywaj | Przyciski ✕ i ♥ | Pomiń / polub | – | ← pomiń, → polub |
+| Talia Odkrywaj | Przyciski ✕ i ♥ | Pomiń / polub | Zamyka opis (rewers karty) | ← pomiń, → polub, Enter / spacja odwraca kartę |
 | Onboarding | Wstecz, Pomiń, odpowiedzi, Dalej | Wybór odpowiedzi | – | – |
 | Formularze | Kolejność pól | Wysyłka | – | Natywne `select`, `date`, `time` |
 
