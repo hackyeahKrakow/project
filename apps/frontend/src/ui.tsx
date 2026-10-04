@@ -428,6 +428,7 @@ function Pin({ ev, liked, selected, onClick }: { ev: SpottedEvent; liked: boolea
       type="button"
       onClick={onClick}
       tabIndex={onClick ? 0 : -1}
+      aria-hidden={!onClick || undefined} // a backdrop pin (welcome screen) is decoration
       aria-label={`${ev.event_name}${liked ? ' (polubione)' : ''}${ev.promoted ? ' (promowane)' : ''}`}
       aria-pressed={onClick ? selected : undefined}
       className="flex min-h-11 min-w-11 items-center justify-center rounded-full"
