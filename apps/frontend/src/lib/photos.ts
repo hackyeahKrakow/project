@@ -14,7 +14,7 @@ const PHOTOS: Record<CategoryId, string[]> = {
 
 /** The event's own photo when it has one, else a stable stock photo: same event, same photo on every screen. */
 export function photoUrl(ev: { id: string; category: CategoryId; image_url?: string | null }, width = 800) {
-  if (ev.image_url) return ev.image_url
+  if (ev.image_url) return ev.image_url.replace(/^http:/, 'https:') // the catalog has http:// krakow.travel photos: mixed content on https
   const list = PHOTOS[ev.category]
   const n = [...ev.id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 0)
   return `https://images.unsplash.com/${list[n % list.length]}?w=${width}&q=60&auto=format&fit=crop`

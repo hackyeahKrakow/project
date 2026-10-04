@@ -94,7 +94,12 @@ export default function Mapa({ events, liked }: { events: SpottedEvent[]; liked:
       <div className="relative flex min-h-0 flex-1 flex-col">
         <EventMap events={shown} liked={liked} selectedId={selectedId} onSelect={setSelectedId} locate={state.location} className="min-h-0 flex-1" />
 
-        <div className="absolute inset-x-0 top-0 z-10 flex gap-2 overflow-x-auto px-3 pt-3 pb-2 [scrollbar-width:none]" role="group" aria-label="Filtry">
+        {/* From sm up the sheet is a 400 px panel on the right: the chips end before it instead of hiding under it. */}
+        <div
+          className={`absolute inset-x-0 top-0 z-10 flex gap-2 overflow-x-auto px-3 pt-3 pb-2 [scrollbar-width:none] ${selected || openList ? 'sm:right-[424px]' : ''}`}
+          role="group"
+          aria-label="Filtry"
+        >
           {WHEN.map(([w, label]) => (
             <button key={w} type="button" aria-pressed={when === w} className={`${chip(when === w)} shadow-sm`} onClick={() => setWhen(w)}>
               {label}
