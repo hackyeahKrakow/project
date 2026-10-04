@@ -5,7 +5,7 @@ Dokumentacja generowana automatycznie: `/docs` (OpenAPI).
 
 ## Obiekt: Card (karta wydarzenia)
 
-Katalog to 36 wydarzeń z [data/events_oneoff.json](../data/events_oneoff.json); pierwsze 6 to stała talia startowa. Frontend trzyma kopię tego pliku (`apps/frontend/src/lib/events_oneoff.json`, sprawdzana przez `npm run check`), bo backend nie zwraca kategorii, a `null` z API nie nadpisuje wartości lokalnych.
+Katalog to 48 wydarzeń z [data/events_oneoff.json](../data/events_oneoff.json); pierwsze 6 to stała talia startowa. Frontend trzyma kopię tego pliku (`apps/frontend/src/lib/events_oneoff.json`, sprawdzana przez `npm run check`), bo backend nie zwraca kategorii, a `null` z API nie nadpisuje wartości lokalnych.
 
 | Pole | Typ | Opis |
 |------|-----|------|

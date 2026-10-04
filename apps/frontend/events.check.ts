@@ -92,7 +92,7 @@ const { readFileSync } = await import('node:fs')
 const read = (f: string) => JSON.parse(readFileSync(new URL(f, import.meta.url), 'utf8'))
 assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_oneoff.json'))
 const { CARDS, STARTER } = await import('./src/lib/events.ts')
-assert.equal(CARDS.length, 36)
+assert.equal(CARDS.length, 48)
 assert.deepEqual(STARTER, CARDS.slice(0, 6))
 // The app shows only the 20 backend cards; the demo events stay in demoCatalog().
 assert.deepEqual(catalog(), CARDS)
