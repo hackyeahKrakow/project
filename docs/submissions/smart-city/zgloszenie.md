@@ -59,7 +59,7 @@ Okładka 16:9: mapa Krakowa z kolorowymi pinami + karta w trakcie swipe'a z napi
 
 **Przed wydarzeniem (do 3.10.2026, 11:00):** założyliśmy repozytorium, spisaliśmy zasady pracy zespołu (konwencje commitów i pull requestów), dodaliśmy README oraz dokumentację produktu (`docs/`: specyfikacja, architektura, kontrakt API, research rynku, checklista prawna, plan 24h). **Nie powstał żaden kod aplikacji.**
 
-**W trakcie HackYeah (3–4.10.2026):** cała aplikacja — backend (FastAPI + SQLite), frontend (Vite + React + TypeScript + Tailwind + Preline UI + MapLibre GL), dane (124 wydarzenia), integracje (ZTP GTFS/GTFS-Realtime, Transitous, Overpass, Photon), rekomendacje z modelem Jev, autouzupełnianie formularza AI, pełny audyt dostępności WCAG 2.2 AA, wdrożenie na Vercel.
+**W trakcie HackYeah (3–4.10.2026):** cała aplikacja — backend (FastAPI + SQLite), frontend (Vite + React + TypeScript + Tailwind + Preline UI + MapLibre GL), dane (48 wydarzeń), integracje (ZTP GTFS/GTFS-Realtime, Transitous, Overpass, Photon), rekomendacje z modelem Jev, autouzupełnianie formularza AI, pełny audyt dostępności WCAG 2.2 AA, wdrożenie na Vercel.
 
 **Cel osiągnięty:** działający przepływ end-to-end — ekran powitalny → onboarding → swipe → mapa → kalendarz z eksportem `.ics`, dodawanie wydarzeń (student ręcznie, organizacja z AI), statystyki i pakiety sponsora, panel dostępności.
 
