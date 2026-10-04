@@ -1,10 +1,10 @@
-// Records the Kraków bez barier demo walkthrough from the running app.
+// Records the Kraków bez barier demo walkthrough from the running app, paced to the PL subtitles.
 //
 // Usage:
-//   BASE=https://spootted.dawidm.com OUT=./docs/submissions/krakow-bez-barier/raw node scripts/record-demo.mjs
+//   BASE=https://spootted.dawidm.com node scripts/record-demo.mjs
 //
 // Requires Playwright: `npm i -D playwright && npx playwright install chromium`
-// Produces WebM file(s) in OUT. Convert + burn subtitles (ffmpeg):
+// Produces WebM in docs/submissions/krakow-bez-barier/raw. Convert + burn subtitles (ffmpeg):
 //   ffmpeg -i raw/*.webm -i spootted-krakow-bez-barier.srt \
 //     -vf "scale=1920:1080,subtitles=spootted-krakow-bez-barier.srt:force_style='FontName=Outfit,FontSize=22,OutlineColour=&H80000000,BorderStyle=3'" \
 //     -c:v libx264 -pix_fmt yuv420p -c:a aac spootted-krakow-bez-barier.mp4
@@ -13,26 +13,21 @@ import { chromium } from 'playwright'
 import fs from 'node:fs'
 
 const BASE = process.env.BASE || 'http://127.0.0.1:4173'
-const OUT = process.env.OUT || './docs/submissions/krakow-bez-barier/raw'
+const OUT = process.env.OUT || 'docs/submissions/krakow-bez-barier/raw'
 fs.mkdirSync(OUT, { recursive: true })
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-
-const profile = {
-  interests: ['gry', 'muzyka', 'nauka'],
-  sizes: ['small', 'medium'],
-  goals: ['ludzie', 'zabawa'],
-  budget: 'any',
-  distanceKm: 0,
-  times: [],
-  district: 'Stare Miasto',
-  stepFree: true,
+const t0 = Date.now()
+const pace = async (sec) => {
+  const dt = sec * 1000 - (Date.now() - t0)
+  if (dt > 0) await sleep(dt)
 }
+
 const seed = {
   userId: '01930000-0000-7000-8000-000000000009',
   onboarded: true,
   consent: true,
-  profile,
+  profile: { interests: ['gry', 'muzyka', 'nauka'], sizes: ['small', 'medium'], goals: ['ludzie', 'zabawa'], budget: 'any', distanceKm: 0, times: [], district: 'Stare Miasto', stepFree: true },
   swipes: {},
   follows: [],
   location: false,
@@ -53,59 +48,70 @@ const context = await browser.newContext({
 })
 await context.addInitScript((s) => localStorage.setItem('spootted:v1', JSON.stringify(s)), seed)
 const page = await context.newPage()
+const click = (locator) => locator.click({ timeout: 6000 }).catch(() => {})
 
 try {
-  // 1. Welcome + accessibility options
+  // 0:00–0:12 Welcome + accessibility options
   await page.goto(`${BASE}/#/start`)
-  await sleep(2500)
-  await page.getByText('Ułatwienia dostępu').click()
-  await sleep(2500)
+  await sleep(1500)
+  await click(page.getByText('Ułatwienia dostępu'))
+  await pace(12)
 
-  // 2-3. Onboarding (4 steps) + consent
+  // 0:12–0:25 Onboarding
   await page.goto(`${BASE}/#/onboarding`)
-  await sleep(3000)
+  await pace(25)
 
-  // 4. Swipe a few events
+  // 0:25–0:40 Consent
+  await page.goto(`${BASE}/#/zgoda`)
+  await pace(40)
+
+  // 0:40–1:00 Swipe
   await page.goto(`${BASE}/#/odkrywaj`)
+  await sleep(1800)
+  await click(page.getByRole('button', { name: /Zapisz w Moje/ }).first())
   await sleep(2500)
-  for (let i = 0; i < 3; i++) {
-    const like = page.getByRole('button', { name: /Zapisz w Moje|Lubię|w prawo|♥/ }).first()
-    if (await like.count()) await like.click()
-    await sleep(1200)
-  }
+  await click(page.getByRole('button', { name: /Zapisz w Moje/ }).first())
+  await pace(60)
 
-  // 5. Map + "Potwierdzone bez barier"
+  // 1:00–1:18 Map + confirmed step-free
   await page.goto(`${BASE}/#/mapa`)
-  await sleep(3000)
-  await page.getByRole('button', { name: 'Wszystkie', exact: true }).click().catch(() => {})
-  await sleep(1000)
-  await page.getByRole('button', { name: 'Potwierdzone bez barier' }).click().catch(() => {})
-  await sleep(2000)
+  await sleep(2200)
+  await click(page.getByRole('button', { name: 'Wszystkie', exact: true }))
+  await sleep(700)
+  await click(page.getByRole('button', { name: 'Potwierdzone bez barier' }))
+  await pace(78)
 
-  // 6. Accessible venue card + details
-  const item = page.locator('aside button').filter({ hasText: 'Harlem Globetrotters' }).first()
-  if (await item.count()) {
-    await item.click()
-    await sleep(1500)
-    await page.getByText('Szczegóły dostępności').first().click().catch(() => {})
-    await sleep(3000)
+  // 1:18–1:45 Accessible venue card + details (TAURON Arena)
+  const tauron = page.locator('aside button').filter({ hasText: 'Harlem Globetrotters' }).first()
+  if (await tauron.count()) {
+    await click(tauron)
+    await sleep(1200)
+    await click(page.getByText('Szczegóły dostępności').first())
   }
+  await pace(105)
 
-  // 7. Unverified example (Klub Studio)
+  // 1:45–2:00 Unverified example (Klub Studio)
   await page.keyboard.press('Escape').catch(() => {})
   await sleep(500)
+  const studio = page.locator('aside button').filter({ hasText: 'Carpenter Brut' }).first()
+  if (await studio.count()) {
+    await click(studio)
+    await sleep(1200)
+    await click(page.getByText('Szczegóły dostępności').first())
+  }
+  await pace(120)
 
-  // 8. Route planning
-  await page.getByText('Zaplanuj dojazd').first().click().catch(() => {})
-  await sleep(3000)
+  // 2:00–2:25 Route planning
+  await click(page.getByText('Zaplanuj dojazd').first())
+  await pace(145)
 
-  // 9. Car / parking section
-  await page.getByText(/Autem/).first().click().catch(() => {})
-  await sleep(2500)
+  // 2:25–2:35 Car / parking
+  await click(page.getByText(/Autem/).first())
+  await pace(155)
 
-  // 10. Closing
+  // 2:35–2:45 Closing
   await page.goto(`${BASE}/#/start`)
-  await sleep(3000)
+  await pace(166)
 } finally {
   await context.close()
   await browser.close()
