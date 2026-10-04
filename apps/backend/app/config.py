@@ -18,6 +18,24 @@ class Settings(BaseSettings):
     jev_model: str = "jev-1.13-free"
     jev_url: str = "https://opencode.ai/zen/v1/systemone"
     jev_timeout_seconds: float = 8.0
+    # POST /events/parse: OpenAI-compatible chat model on OpenCode Zen, same OPENCODE_API_KEY
+    parse_model: str = "minimax-m2.5-free"
+    parse_url: str = "https://opencode.ai/zen/v1/chat/completions"
+    parse_timeout_seconds: float = 20.0
+    # GET /geocode: address suggestions from Photon (OpenStreetMap), identified by our User-Agent
+    geocode_url: str = "https://photon.komoot.io/api/"
+    # The same User-Agent identifies us to Photon, Transitous and Overpass; Transitous asks for contact details in it.
+    geocode_user_agent: str = "spootted/0.1 (HackYeah 2026 demo; https://github.com/hackyeahKrakow/project)"
+    geocode_timeout_seconds: float = 6.0
+    # GET /transit/near: stops (GTFS) and disruptions (GTFS-Realtime ServiceAlerts) from ZTP Kraków open data
+    gtfs_url: str = "https://gtfs.ztp.krakow.pl/"
+    gtfs_timeout_seconds: float = 20.0
+    # GET /route: journeys from Transitous (MOTIS over the ZTP GTFS); free for non-commercial, open-source projects
+    route_url: str = "https://api.transitous.org/api/v5/plan"
+    route_timeout_seconds: float = 15.0
+    # GET /parking/near: car parks and spaces for people with disabilities from OpenStreetMap through Overpass
+    overpass_url: str = "https://overpass-api.de/api/interpreter"
+    overpass_timeout_seconds: float = 25.0
 
     @property
     def cors_origin_list(self) -> list[str]:

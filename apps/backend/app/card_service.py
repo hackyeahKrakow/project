@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.logger import get_logger
 from app.models import Card, CardSwipe, Decision, UserCardProgress
-from app.seed import SEED_CARDS
+from app.seed import STARTER_CARDS
 
 log = get_logger(__name__)
 
@@ -23,7 +23,7 @@ async def get_next_card(session: AsyncSession, user_id: uuid.UUID) -> Card | Non
         update(UserCardProgress)
         .where(
             UserCardProgress.user_id == user_id,
-            UserCardProgress.cards_served < len(SEED_CARDS),
+            UserCardProgress.cards_served < len(STARTER_CARDS),
         )
         .values(cards_served=UserCardProgress.cards_served + 1)
         .returning(UserCardProgress.cards_served)
@@ -34,7 +34,7 @@ async def get_next_card(session: AsyncSession, user_id: uuid.UUID) -> Card | Non
         log.info("no_more_cards", user_id=str(user_id))
         return None
 
-    card = await session.get(Card, SEED_CARDS[served - 1].id)
+    card = await session.get(Card, STARTER_CARDS[served - 1].id)
     await session.commit()
     log.info("card_served", user_id=str(user_id), card_number=served)
     return card

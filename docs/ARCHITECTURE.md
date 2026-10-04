@@ -10,13 +10,13 @@ flowchart LR
   DB[("SQLite")]
   LLM["LLM API<br/>autofill + kategoria"]
   JEV["Jev (TypeSafe) przez OpenCode<br/>wybór 10 kart"]
-  GEO["Nominatim (OSM)<br/>adres → współrzędne"]
+  GEO["Photon (dane OSM)<br/>podpowiedzi adresu → współrzędne"]
   FE -- kafelki --> TILES
   FE -- "HTTP / JSON" --> API
   API -- SQL --> DB
   API -- "tylko przy dodawaniu" --> LLM
   API -- "rekomendacje" --> JEV
-  API -- geokodowanie --> GEO
+  API -- "GET /geocode, maks. 1/s, cache" --> GEO
 ```
 
 ## Stack

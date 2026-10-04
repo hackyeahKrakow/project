@@ -6,15 +6,15 @@ Wersja robocza formularza „Add Project”. Pola **[PÓŹNIEJ]** uzupełniamy p
 
 ## Project Name
 
-**spotted student — zmatchuj się z eventami**
+**spootted — zmatchuj się z eventami**
 
-W polu nazwy wpisujemy „spotted student”, a motto dajemy jako pierwsze zdanie w Solution i na okładce.
+W polu nazwy wpisujemy „spootted”, a motto dajemy jako pierwsze zdanie w Solution i na okładce.
 
-Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]”, więc nazwa od razu brzmi swojsko. Zamiast anonimowych wpisów pokazujemy wydarzenia na mapie, a motto mówi wprost, jak to działa: swipe i dopasowanie.
+Jak to sprzedać: każdy student w Polsce zna fanpage'e „Spotted: [uczelnia]”, więc nazwa brzmi swojsko. Podwójne „oo” to dwoje oczu w logo: aplikacja „wypatruje” dla ciebie wydarzeń. Zamiast anonimowych wpisów pokazujemy wydarzenia na mapie, a motto mówi wprost, jak to działa: swipe i dopasowanie.
 
 Do pilnowania:
-- **Domeny:** `spottedstudent.app` (14 USD) i `spottedstudent.com` (ok. 11 USD) są wolne, a `spottedstudent.pl` jest zajęta. Kupujemy `.app` albo `.com` od razu.
-- **Kolizje:** „spotted” to słowo pospolite, a Spotted.de to aplikacja randkowa w UE. Dlatego zawsze piszemy pełną nazwę „spotted student”, nigdy samo „spotted”. Po hackathonie sprawdzamy znak w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
+- **Domeny (3.10.2026):** `spootted.com` (ok. 11 USD) i `spootted.app` (14 USD) są wolne, a `spootted.pl` i `spootted.eu` są zajęte. Kupujemy `.app` albo `.com` od razu.
+- **Kolizje:** pisownia „spootted” odróżnia nas od pospolitego „spotted” i od Spotted.de (aplikacja randkowa w UE). Zawsze piszemy przez dwa „o”. Nazwę zmieniliśmy z „spotted student” na „spootted” (decyzja zespołu z 3.10), więc wcześniejsze ustalenia dotyczące znaku nie obowiązują. Przed komercjalizacją trzeba osobno sprawdzić znak „spootted” w [TMview](https://www.tmdn.org/tmview/) w klasach 9, 41 i 42.
 
 ## Problem
 
@@ -30,7 +30,7 @@ W Polsce studiuje **1,28 mln osób na 352 uczelniach** (GUS, rok akademicki 2024
 
 ## Solution
 
-***Zmatchuj się z eventami.*** spotted student działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Kilka pytań i kilka swipe'ów wystarczy, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
+***Zmatchuj się z eventami.*** spootted działa jak aplikacja randkowa, tylko zamiast ludzi dopasowuje studentom wydarzenia. Kilka pytań i kilka swipe'ów wystarczy, żeby aplikacja wiedziała, co cię kręci. Po minucie masz własną mapę miasta z wydarzeniami dla siebie.
 
 ### 1. Swipe: decyzja w sekundę
 
@@ -64,7 +64,15 @@ Kto chce tworzyć wydarzenia, zakłada konto: studenta albo organizacji (koło, 
 
 Formularz, który zajmował 10 minut, zajmuje 30 sekund. Organizator nie przepisuje tego samego posta do kolejnego narzędzia, więc chętniej dodaje każde wydarzenie. Obok oficjalnych wydarzeń pojawiają się też oddolne mikro-wydarzenia dodane przez samych studentów, a tego nie ma nikt inny.
 
-### 6. Model biznesowy: pakiety dla organizatorów
+### 6. Miasto pod ręką: dojazd, utrudnienia, dostępność
+
+- **Jak dojechać.** Karta wydarzenia pokazuje najbliższy przystanek tramwajowy i autobusowy z otwartych danych ZTP Kraków (GTFS). „Zaplanuj dojazd” liczy trasę z twojej lokalizacji tak, żebyś był na miejscu 10 minut przed startem i wyszedł jak najpóźniej, i mówi wprost, czym dziś najlepiej jechać („Najlepiej: tramwaj 4”). Przy każdym tramwaju widać, czy jest niskopodłogowy. Trasy liczy Transitous na rozkładach ZTP z opóźnieniami na żywo.
+- **Autem.** Parkingi w promieniu 800 m z liczbą miejsc, w tym dla osób z niepełnosprawnością, i miejsca dla osób z niepełnosprawnością przy ulicy (OpenStreetMap), plus link do miejskiej mapy ZDMK.
+- **Utrudnienia na żywo.** Jeśli przy wydarzeniu jest nieczynny przystanek albo objazd, karta pokazuje komunikat ZTP (GTFS-Realtime, odświeżany co 2 minuty), zanim wyjdziesz z domu.
+- **Bez barier.** Potrzebę dostępności ustawiasz raz, już na ekranie powitalnym. Potem talia pomija miejsca z barierami, mapa pomija miejsca z barierami (chip „Potwierdzone bez barier” zawęża ją do miejsc z potwierdzoną dostępnością), trasy omijają schody i stawiają na tramwaje niskopodłogowe, a parkingi z miejscami dla osób z niepełnosprawnością są na górze. Dla wydarzeń z Krakowa dostępność bierzemy z deklaracji dostępności miejsc (TAURON Arena, ICE Kraków, Nowohuckie Centrum Kultury), a przy nowym wydarzeniu zaznacza ją organizator (tak / częściowo / nie). Wartości są takie same jak w OpenStreetMap i Wheelmap.
+- **Dane dla instytucji.** Miejska biblioteka widzi zbiorcze, anonimowe statystyki i opinie po wydarzeniach, więc wie, czego studenci potrzebują (np. czytelni otwartej wieczorem).
+
+### 7. Model biznesowy: pakiety dla organizatorów
 
 Dla studentów aplikacja jest darmowa. Organizacje kupują pakiety od 10 zł w górę, a każdy wyższy pakiet daje więcej:
 - więcej wydarzeń z funkcjami AI;
@@ -77,11 +85,11 @@ Plakat wisi w jednym miejscu, a my docieramy do studentów, którzy już interes
 **Korzyści:**
 - **Student:** w minutę wie, co dzieje się dziś blisko niego i pasuje do jego zainteresowań. Łatwiej mu wyjść z pokoju i poznać ludzi.
 - **Organizator:** dociera do dokładnie tych studentów, którzy interesują się jego tematem. Z funkcjami AI dodaje wydarzenie w 30 sekund, a ze statystyk wie, co działa.
-- **Miasto i uczelnie:** zyskują lepszą komunikację z mieszkańcami i lepiej wykorzystane przestrzenie publiczne. Studenci, którzy się angażują, rzadziej rezygnują ze studiów.
+- **Miasto i uczelnie:** instytucje miejskie (biblioteki, domy kultury) docierają do studentów bez reklam w tramwajach i z anonimowych statystyk wiedzą, czego studenci chcą. Studenci łatwiej korzystają z komunikacji miejskiej i miejsc bez barier. Ci, którzy się angażują, rzadziej rezygnują ze studiów. To wpisuje się w Strategię Rozwoju Krakowa 2030, opartą na koncepcji smart city.
 
 Pilotaż: Kraków (ok. 152 tys. studentów na uczelniach w Małopolsce). Aplikacja jest gotowa do uruchomienia w kolejnych miastach akademickich. Dane dodają ich właściciele, nie scrapujemy cudzych stron.
 
-**Źródła:** GUS „Szkolnictwo wyższe w roku akademickim 2024/2025”; CBOS „Kto jest najbardziej narażony na samotność?” (2024); PAP Nauka w Polsce, badanie samotności pokolenia Z; Sprout Social Q2 2025 Pulse Survey; McKinsey „The value of getting personalization right—or wrong—is multiplying”; Kulp i in. 2021, „Types of Extracurricular Campus Activities and First-Year Students' Academic Success”.
+**Źródła:** ZTP Kraków, otwarte dane GTFS i GTFS-Realtime (gtfs.ztp.krakow.pl); Strategia Rozwoju Krakowa „Tu chcę żyć. Kraków 2030” (strategia.krakow.pl); GUS „Szkolnictwo wyższe w roku akademickim 2024/2025”; CBOS „Kto jest najbardziej narażony na samotność?” (2024); PAP Nauka w Polsce, badanie samotności pokolenia Z; Sprout Social Q2 2025 Pulse Survey; McKinsey „The value of getting personalization right—or wrong—is multiplying”; Kulp i in. 2021, „Types of Extracurricular Campus Activities and First-Year Students' Academic Success”.
 
 ## Challenges
 
@@ -162,7 +170,7 @@ npm run dev
 # Aplikacja: http://localhost:5173
 ```
 
-Klucze do modeli AI (`OPENCODE_API_KEY`, `LLM_API_KEY`) podajemy w `apps/backend/.env`. Bez kluczy aplikacja działa, ale bez funkcji AI.
+Klucz do modeli AI (`OPENCODE_API_KEY`) podajemy w `apps/backend/.env`. Bez klucza aplikacja działa, a funkcje AI pokazują przykładową odpowiedź.
 
 ## Presentation
 

@@ -30,9 +30,13 @@ class CardFetchResponse(BaseModel):
     starts_at: datetime = Field(description="Start of the event, ISO 8601")
     ends_at: datetime | None = Field(description="End of the event, ISO 8601, may be null")
     address: str = Field(max_length=300, description="Address shown to the user")
-    lat: float = Field(ge=-90, le=90, description="Latitude for the map pin")
-    lng: float = Field(ge=-180, le=180, description="Longitude for the map pin")
-    price: float = Field(ge=0, description="Price in PLN, 0 = free")
+    lat: float | None = Field(
+        ge=-90, le=90, description="Latitude for the map pin, null when the place is not geocoded yet"
+    )
+    lng: float | None = Field(
+        ge=-180, le=180, description="Longitude for the map pin, null when the place is not geocoded yet"
+    )
+    price: float | None = Field(ge=0, description="Price in PLN, 0 = free, null when unknown")
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -93,3 +97,17 @@ class CardResponseOut(BaseModel):
             decision=Decision.RIGHT if swipe.swipe else Decision.LEFT,
             created_at=swipe.created_at,
         )
+
+
+class InfoOut(BaseModel):
+    user_id: UUID7 = Field(description="Identifier of the user the JSON was saved for")
+    updated_at: datetime = Field(description="Time the JSON was saved, ISO 8601 in UTC")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "user_id": "018f3b5e-7c1a-7d2b-9a4e-3f6c2b1d5e90",
+                "updated_at": "2026-10-03T15:42:10.123456Z",
+            }
+        }
+    )

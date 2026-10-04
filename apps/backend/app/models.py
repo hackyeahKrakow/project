@@ -54,9 +54,9 @@ class Card(Base):
     starts_at: Mapped[datetime] = mapped_column(UTCDateTime)
     ends_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     address: Mapped[str] = mapped_column(String(300))
-    lat: Mapped[float] = mapped_column(Float)
-    lng: Mapped[float] = mapped_column(Float)
-    price: Mapped[float] = mapped_column(Float, default=0)
+    lat: Mapped[float | None] = mapped_column(Float)
+    lng: Mapped[float | None] = mapped_column(Float)
+    price: Mapped[float | None] = mapped_column(Float)  # 0 = free, NULL = unknown
 
 
 class UserCardProgress(Base):
@@ -76,5 +76,17 @@ class CardSwipe(Base):
     card_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("cards.id"), primary_key=True)
     swipe: Mapped[bool] = mapped_column(Boolean)
     created_at: Mapped[datetime] = mapped_column(
+        UTCDateTime, default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class UserInfo(Base):
+    """Whatever JSON the client sent about the user; Jev gets it as the user's choices."""
+
+    __tablename__ = "user_info"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    data: Mapped[str] = mapped_column(Text)  # the JSON document as text
+    updated_at: Mapped[datetime] = mapped_column(
         UTCDateTime, default=lambda: datetime.now(timezone.utc)
     )

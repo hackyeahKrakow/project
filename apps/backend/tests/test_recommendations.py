@@ -4,6 +4,7 @@ import httpx
 from uuid6 import uuid7
 
 from app.models import Card, CardSwipe, Decision
+from app.seed import SEED_CARDS
 from tests.conftest import add_cards, jev_override, make_jev_client
 
 
@@ -102,7 +103,7 @@ async def test_invalid_user_id_is_rejected_without_calling_jev(db_client):
 async def test_thirty_unanswered_cards_gives_ten(session_factory, db_client):
     fake = FakeJev()
     jev_override(make_jev_client(fake))
-    await add_cards(session_factory, 25)
+    await add_cards(session_factory, 30 - (len(SEED_CARDS) - 1))  # 30 unanswered once one seed card is answered
     user = uuid7()
     seeded = await seeded_cards(session_factory)
     first_seed = [c for c in seeded if not c.event_name.startswith(("Music", "Sport"))][:1]
@@ -118,9 +119,11 @@ async def test_thirty_unanswered_cards_gives_ten(session_factory, db_client):
 async def test_six_unanswered_cards_returns_all_six(session_factory, db_client):
     fake = FakeJev()
     jev_override(make_jev_client(fake))
+    seeded = await seeded_cards(session_factory)
     extra = await add_cards(session_factory, 1)
     user = uuid7()
-    await answer(session_factory, user, extra, Decision.LEFT)
+    # leave exactly six cards unanswered: everything but the last six seeded cards
+    await answer(session_factory, user, extra + seeded[:-6], Decision.LEFT)
 
     response = await db_client.get(f"/card/recommendations/{user}")
 
