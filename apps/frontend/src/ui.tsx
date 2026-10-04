@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   CalendarPlus,
   Calendar,
+  ChevronDown,
   Compass,
   Heart,
   Map as MapIcon,
@@ -28,7 +29,7 @@ import { createPortal } from 'react-dom'
 import { Dojazd } from '@/Dojazd'
 import { locate } from '@/lib/geo'
 import { type Category, category } from '@/lib/categories'
-import { SIZE_LABEL, WHEELCHAIR_LABEL, formatPrice, formatRange, type Organizer, type SpottedEvent } from '@/lib/events'
+import { ACCESS_FIELD_LABEL, RELIABILITY_LABEL, SIZE_LABEL, SURFACE_LABEL, TRI_LABEL, WHEELCHAIR_LABEL, formatPrice, formatRange, type AccessField, type Accessibility as AccessibilityInfo, type Organizer, type SpottedEvent } from '@/lib/events'
 import { downloadIcs } from '@/lib/ics'
 import { describe, myPersona } from '@/lib/persona'
 import { photoUrl } from '@/lib/photos'
@@ -158,6 +159,71 @@ export function FollowButton({ orgId, name }: { orgId: string; name?: string }) 
   )
 }
 
+const ACCESS_ORDER: AccessField[] = [
+  'step_free_entry',
+  'ramp',
+  'lift',
+  'threshold',
+  'accessible_toilet',
+  'disabled_parking',
+  'rest_places',
+  'induction_loop',
+]
+
+/** Detailed accessibility for a venue, with its source, date and reliability. Native <details> keeps it keyboard- and screen-reader-friendly. */
+export function AccessibilityPanel({ acc }: { acc: AccessibilityInfo }) {
+  const confirmed = acc.reliability === 'confirmed'
+  return (
+    <details className="group rounded-2xl border border-line bg-canvas">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3.5 py-2 text-[15px] font-semibold">
+        <Accessibility size={18} aria-hidden />
+        Szczegóły dostępności
+        <ChevronDown size={16} className="ml-auto transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="flex flex-col gap-2.5 px-3.5 pb-3 text-[14px]">
+        <dl className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+          {ACCESS_ORDER.map((f) => {
+            const v = acc.fields[f] ?? 'unknown'
+            return (
+              <div key={f} className="flex items-start justify-between gap-3">
+                <dt className="text-muted">{ACCESS_FIELD_LABEL[f]}</dt>
+                <dd className={`flex-none font-medium ${v === 'unknown' ? 'text-muted' : 'text-fg'}`}>{TRI_LABEL[v]}</dd>
+              </div>
+            )
+          })}
+        </dl>
+        {acc.surface && (
+          <p className="text-muted">
+            Nawierzchnia: <span className="font-medium text-fg">{SURFACE_LABEL[acc.surface]}</span>
+          </p>
+        )}
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-2.5 text-[13px] text-muted">
+          <span>
+            Źródło:{' '}
+            {acc.source_url ? (
+              <a className="font-medium text-link underline" href={acc.source_url} target="_blank" rel="noreferrer">
+                {acc.source_label}
+              </a>
+            ) : (
+              <span className="font-medium text-fg">{acc.source_label}</span>
+            )}
+          </span>
+          <span aria-hidden>·</span>
+          <span>Aktualizacja: {acc.updated_at}</span>
+          <span aria-hidden>·</span>
+          <span className={confirmed ? 'text-fg' : 'font-semibold text-fg'}>{RELIABILITY_LABEL[acc.reliability]}</span>
+        </p>
+        {!confirmed && (
+          <p role="note" className="rounded-lg bg-track px-2.5 py-1.5 text-[13px] text-fg">
+            Informacja niepotwierdzona. Przed wyjściem dopytać organizatora.
+          </p>
+        )}
+        {acc.note && <p className="text-[13px] text-muted">{acc.note}</p>}
+      </div>
+    </details>
+  )
+}
+
 // Preline "Card", order from docs/DESIGN.md: image → title → badge → date → address → price → organizer → description.
 export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: boolean; onLike: () => void }) {
   const c = category(ev.category)
@@ -176,7 +242,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
           {ev.wheelchair && (
             <span className="inline-flex items-center gap-1 rounded-full bg-track px-2.5 py-1 text-[13px] font-medium">
               <Accessibility size={14} aria-hidden />
-              {WHEELCHAIR_LABEL[ev.wheelchair]}
+              {WHEELCHAIR_LABEL[ev.accessibility?.status ?? ev.wheelchair]}
             </span>
           )}
           {!ev.wheelchair && state.profile.stepFree && (
@@ -186,6 +252,7 @@ export function EventCard({ ev, liked, onLike }: { ev: SpottedEvent; liked: bool
             </span>
           )}
         </div>
+        {ev.accessibility && <AccessibilityPanel acc={ev.accessibility} />}
         <div className="flex flex-col gap-1.5 text-[15px]">
           <div className="flex items-center gap-2">
             <Calendar size={18} aria-hidden />

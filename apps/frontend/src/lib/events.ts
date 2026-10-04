@@ -27,12 +27,66 @@ export type SpottedEvent = {
   district: string
   organizer: Organizer
   promoted?: boolean
-  wheelchair?: Wheelchair // declared by the organizer; missing = unknown
+  wheelchair?: Wheelchair // overall wheelchair status; missing = unknown
+  accessibility?: Accessibility // detailed barriers/facilities with source, date and reliability
 }
 
 // The same values as OpenStreetMap's wheelchair=* tag (and Wheelmap), so venue data can be taken from OSM later.
-export type Wheelchair = 'yes' | 'limited' | 'no'
-export const WHEELCHAIR_LABEL: Record<Wheelchair, string> = { yes: 'Bez barier', limited: 'Częściowo bez barier', no: 'Z barierami' }
+// "unknown" is a real state: no source found, or only an unverified report (docs/LEGAL.md).
+export type Wheelchair = 'yes' | 'limited' | 'no' | 'unknown'
+export const WHEELCHAIR_LABEL: Record<Wheelchair, string> = { yes: 'Bez barier', limited: 'Częściowo bez barier', no: 'Z barierami', unknown: 'Dostępność nieznana' }
+
+// Detailed accessibility for people in wheelchairs (Cracow without barriers). Every value can be "unknown":
+// the app shows what it knows and never treats a missing answer as "accessible" (docs/ACCESSIBILITY.md).
+export type Tri = 'yes' | 'no' | 'unknown'
+export type AccessSource = 'venue' | 'organizer' | 'osm' | 'users'
+export type Reliability = 'confirmed' | 'reported' | 'unknown'
+export type AccessField =
+  | 'step_free_entry'
+  | 'ramp'
+  | 'lift'
+  | 'threshold'
+  | 'accessible_toilet'
+  | 'disabled_parking'
+  | 'rest_places'
+  | 'induction_loop'
+export type Surface = 'smooth' | 'cobble' | 'unknown'
+export type Accessibility = {
+  status: Wheelchair
+  fields: Partial<Record<AccessField, Tri>>
+  door_width_cm?: number
+  surface?: Surface
+  source: AccessSource
+  source_label: string
+  source_url?: string
+  updated_at: string // ISO date the information was checked
+  reliability: Reliability
+  note?: string
+}
+
+export const TRI_LABEL: Record<Tri, string> = { yes: 'Tak', no: 'Nie', unknown: 'Brak danych' }
+export const ACCESS_FIELD_LABEL: Record<AccessField, string> = {
+  step_free_entry: 'Wejście bez schodów i progu',
+  ramp: 'Podjazd lub pochylnia',
+  lift: 'Winda',
+  threshold: 'Progi',
+  accessible_toilet: 'Toaleta dla osób z niepełnosprawnością',
+  disabled_parking: 'Miejsce parkingowe dla osób z niepełnosprawnością',
+  rest_places: 'Miejsca odpoczynku',
+  induction_loop: 'Pętla indukcyjna',
+}
+export const SURFACE_LABEL: Record<Surface, string> = { smooth: 'Gładka', cobble: 'Kostka / nierówna', unknown: 'Brak danych' }
+export const SOURCE_LABEL: Record<AccessSource, string> = {
+  venue: 'Deklaracja obiektu',
+  organizer: 'Organizator wydarzenia',
+  osm: 'OpenStreetMap',
+  users: 'Zgłoszenie użytkownika',
+}
+export const RELIABILITY_LABEL: Record<Reliability, string> = {
+  confirmed: 'Potwierdzone przez obiekt',
+  reported: 'Niepotwierdzone (zgłoszenie)',
+  unknown: 'Wiarygodność nieznana',
+}
 
 export const SIZE_LABEL: Record<Size, string> = { small: 'kameralne', medium: 'średnie', large: 'duże' }
 
@@ -119,13 +173,91 @@ const ROWS: Row[] = [
 
 // The backend catalog (GET /card/new, POST /card): same file and ids as data/events_oneoff.json, so swipes can be saved.
 // It has no size, district or organizer: they get the default size, the nearest district and a neutral organizer.
-// Step-free access from each venue's own accessibility page (checked 3.10.2026); venues not listed stay "unknown".
-const VENUE_WHEELCHAIR: [venue: string, access: Wheelchair][] = [
-  ['TAURON Arena', 'yes'], // tauronarenakrakow.pl/dla-osob-z-niepelnosprawnosciami: 52 wheelchair places on level A
-  ['ICE Kraków', 'yes'], // icekrakow.pl/deklaracja-dostepnosci: wheelchair platforms in the auditoriums
-  ['Nowohuckie Centrum Kultury', 'yes'], // nck.krakow.pl/o-nck/deklaracja-dostepnosci: lift to every floor
-]
-const venueAccess = (address: string) => VENUE_WHEELCHAIR.find(([venue]) => address.includes(venue))?.[1]
+// Detailed accessibility for the venues that publish an official accessibility statement (checked 3-4.10.2026).
+// Venues we have no source for stay "unknown": the app does not guess (docs/LEGAL.md, docs/ACCESSIBILITY.md).
+const VENUE_ACCESS: Record<string, Accessibility> = {
+  'TAURON Arena': {
+    status: 'yes',
+    fields: {
+      step_free_entry: 'yes',
+      ramp: 'yes',
+      lift: 'yes',
+      threshold: 'unknown',
+      accessible_toilet: 'yes',
+      disabled_parking: 'yes',
+      rest_places: 'unknown',
+      induction_loop: 'unknown',
+    },
+    surface: 'smooth',
+    source: 'venue',
+    source_label: 'Deklaracja dostępności TAURON Arena Kraków',
+    source_url: 'https://www.tauronarenakrakow.pl/dla-osob-z-niepelnosprawnosciami',
+    updated_at: '2026-10-03',
+    reliability: 'confirmed',
+    note: '52 miejsca dla osób na wózkach na poziomie A (+ 52 dla opiekunów), winda dostosowana do wózków, bezpłatne miejsca parkingowe.',
+  },
+  'ICE Kraków': {
+    status: 'yes',
+    fields: {
+      step_free_entry: 'yes',
+      ramp: 'yes',
+      lift: 'yes',
+      threshold: 'no',
+      accessible_toilet: 'yes',
+      disabled_parking: 'yes',
+      rest_places: 'unknown',
+      induction_loop: 'no',
+    },
+    surface: 'smooth',
+    source: 'venue',
+    source_label: 'Deklaracja dostępności ICE Kraków',
+    source_url: 'https://icekrakow.pl/deklaracja-dostepnosci',
+    updated_at: '2026-10-03',
+    reliability: 'confirmed',
+    note: 'Drzwi bezprogowe i fotokomórka obok drzwi obrotowych, windy z parkingu do foyer, miejsca dla wózków w salach S1–S3.',
+  },
+  'Nowohuckie Centrum Kultury': {
+    status: 'yes',
+    fields: {
+      step_free_entry: 'yes',
+      ramp: 'yes',
+      lift: 'yes',
+      threshold: 'no',
+      accessible_toilet: 'unknown',
+      disabled_parking: 'yes',
+      rest_places: 'unknown',
+      induction_loop: 'yes',
+    },
+    surface: 'smooth',
+    source: 'venue',
+    source_label: 'Deklaracja dostępności Nowohuckiego Centrum Kultury',
+    source_url: 'https://nck.krakow.pl/o-nck/deklaracja-dostepnosci',
+    updated_at: '2026-10-03',
+    reliability: 'confirmed',
+    note: '8 miejsc parkingowych dla osób z niepełnosprawnością, winda w budynku A, dwa stopnie z pochylnią między budynkami A i C.',
+  },
+  // A user report we could not confirm: shown separately from official statements, never as a guarantee.
+  // The overall status stays "unknown" (docs/LEGAL.md): Klub Studio has no official source.
+  'Klub Studio': {
+    status: 'unknown',
+    fields: {
+      step_free_entry: 'yes',
+      ramp: 'unknown',
+      lift: 'unknown',
+      threshold: 'unknown',
+      accessible_toilet: 'unknown',
+      disabled_parking: 'unknown',
+      rest_places: 'unknown',
+      induction_loop: 'unknown',
+    },
+    source: 'users',
+    source_label: 'Zgłoszenie użytkownika (niepotwierdzone)',
+    updated_at: '2026-10-04',
+    reliability: 'reported',
+    note: 'Zgłoszenie niezweryfikowane: brak oficjalnej deklaracji obiektu. Dopytać organizatora przed wyjściem.',
+  },
+}
+const venueAccess = (address: string) => Object.entries(VENUE_ACCESS).find(([venue]) => address.includes(venue))?.[1]
 const nearest = (lat: number, lng: number) => Object.entries(DISTRICTS).sort(([, a], [, b]) => km(a, [lat, lng]) - km(b, [lat, lng]))[0][0]
 export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
   ...e,
@@ -135,7 +267,7 @@ export const CARDS: SpottedEvent[] = ONEOFF.map(({ ends_at, ...e }) => ({
   district: nearest(e.lat, e.lng),
   // Fictional demo events name their (fictional, "(demo)") student association; real ones have no organizer field.
   organizer: 'organizer' in e && e.organizer ? o(`org_${e.organizer}`, e.organizer) : ORGANIZER_TBD,
-  ...(venueAccess(e.address) && { wheelchair: venueAccess(e.address) }),
+  ...(venueAccess(e.address) && { accessibility: venueAccess(e.address), wheelchair: venueAccess(e.address)!.status }),
 }))
 export const CARD_IDS = new Set(CARDS.map((e) => e.id))
 // The first six are the fixed starter sequence served by GET /card/new/{user_id}.
