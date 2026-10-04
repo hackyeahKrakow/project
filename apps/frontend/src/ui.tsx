@@ -544,7 +544,17 @@ export function EventMap({
 
   useEffect(() => {
     const ev = events.find((e) => e.id === selectedId)
-    if (ev && map.current) map.current.easeTo({ center: [ev.lng, ev.lat], offset: [0, -110], duration: 500 })
+    if (!ev || !map.current) return
+    // Center the pin in the part of the map the event sheet leaves visible: bottom sheet on phones, right panel from sm up.
+    // offset* ignores the sheet's slide-in transform, so this is its final position.
+    const el = map.current.getContainer()
+    const sheet = el.parentElement?.querySelector<HTMLElement>('[role=dialog]')
+    // An offset, not padding: MapLibre keeps padding after the move, which would skew the map once the sheet closes.
+    const side = sheet && sheet.offsetLeft > 0
+    const right = side ? el.clientWidth - sheet.offsetLeft : 0
+    const bottom = sheet && !side ? el.clientHeight - sheet.offsetTop : 0
+    const top = 56 // filter chips
+    map.current.easeTo({ center: [ev.lng, ev.lat], offset: [-right / 2, (top - bottom) / 2], duration: 500 })
   }, [selectedId]) // eslint-disable-line react-hooks/exhaustive-deps -- only when the selection changes
 
   return (

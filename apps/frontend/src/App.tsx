@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { catalog } from '@/lib/events'
+import { canNotify, scheduleReminders } from '@/lib/notify'
 import { StoreContext, fresh, load, save, type Store } from '@/lib/store'
 import { BottomNav, SideNav } from '@/ui'
 import Dodaj from '@/pages/Dodaj'
@@ -70,6 +71,9 @@ export default function App() {
   const r = route || (state.onboarded ? 'odkrywaj' : 'start')
   const events = useMemo(() => [...catalog(), ...state.myEvents], [state.myEvents])
   const liked = useMemo(() => new Set(Object.keys(state.swipes).filter((id) => state.swipes[id] === 'right')), [state.swipes])
+  useEffect(() => {
+    if (state.notifications && canNotify()) return scheduleReminders(events.filter((e) => liked.has(e.id)))
+  }, [state.notifications, events, liked])
 
   const page = {
     start: <Start events={events} />,

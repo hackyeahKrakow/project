@@ -103,11 +103,10 @@ async def test_invalid_user_id_is_rejected_without_calling_jev(db_client):
 async def test_thirty_unanswered_cards_gives_ten(session_factory, db_client):
     fake = FakeJev()
     jev_override(make_jev_client(fake))
-    await add_cards(session_factory, 30 - (len(SEED_CARDS) - 1))  # 30 unanswered once one seed card is answered
+    await add_cards(session_factory, max(0, 31 - len(SEED_CARDS)))
     user = uuid7()
-    seeded = await seeded_cards(session_factory)
-    first_seed = [c for c in seeded if not c.event_name.startswith(("Music", "Sport"))][:1]
-    await answer(session_factory, user, first_seed, Decision.RIGHT)
+    cards = await seeded_cards(session_factory)
+    await answer(session_factory, user, cards[: len(cards) - 30], Decision.RIGHT)  # leave exactly 30 unanswered
 
     response = await db_client.get(f"/card/recommendations/{user}")
 

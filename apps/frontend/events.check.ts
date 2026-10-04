@@ -61,6 +61,7 @@ assert.ok(!recommend(events, { ...profile, interests: [...profile.interests] }, 
 const cal = ics([{ ...events[0], event_name: 'A, B; C' }], new Date('2026-10-03T10:00:00Z'))
 assert.ok(cal.includes('SUMMARY:A\\, B\\; C'))
 assert.equal(cal.match(/BEGIN:VEVENT/g)?.length, 1)
+assert.ok(cal.includes('BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H')) // the calendar reminds an hour before
 assert.match(cal, /DTSTART:\d{8}T\d{6}Z/)
 // Following an organizer lifts its events and is named in the reason.
 const lib = events.find((e) => e.id === 'evt_ksiazka')!
@@ -92,7 +93,7 @@ const { readFileSync } = await import('node:fs')
 const read = (f: string) => JSON.parse(readFileSync(new URL(f, import.meta.url), 'utf8'))
 assert.deepEqual(read('./src/lib/events_oneoff.json'), read('../../data/events_oneoff.json'))
 const { CARDS, STARTER } = await import('./src/lib/events.ts')
-assert.equal(CARDS.length, 20)
+assert.equal(CARDS.length, 48)
 assert.deepEqual(STARTER, CARDS.slice(0, 6))
 // The app shows only the 20 backend cards; the demo events stay in demoCatalog().
 assert.deepEqual(catalog(), CARDS)
@@ -114,9 +115,11 @@ const access = catalog().map((e, i) => (i === 7 ? { ...e, wheelchair: 'no' as co
 const stepFree = recommend(access, { ...EMPTY_PROFILE, stepFree: true }, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
 assert.ok(!stepFree.some((x) => x.ev.wheelchair === 'no'))
 assert.equal(stepFree.length, CARDS.length - 1)
-assert.equal(stepFree[0].ev.wheelchair, 'yes')
-assert.ok(stepFree[0].reason.includes('Bez barier'))
-assert.equal(recommend(access, EMPTY_PROFILE, {}, new Set(), 50, undefined, new Set(), '2026-10-03').length, CARDS.length)
+const unfiltered = recommend(access, EMPTY_PROFILE, {}, new Set(), 50, undefined, new Set(), '2026-10-03')
+const firstYes = stepFree.findIndex((x) => x.ev.wheelchair === 'yes')
+assert.ok(firstYes < unfiltered.findIndex((x) => x.ev.id === stepFree[firstYes].ev.id))
+assert.ok(stepFree[firstYes].reason.includes('Bez barier'))
+assert.equal(unfiltered.length, CARDS.length)
 // A fix far from Kraków (e.g. a laptop located by IP) is not used as the start of a trip.
 assert.ok(inKrakow([50.0647, 19.9232]) && !inKrakow([52.2297, 21.0122]))
 console.log('accessibility checks ok')
