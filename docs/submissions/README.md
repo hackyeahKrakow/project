@@ -47,9 +47,10 @@ Wspólne dane (nazwa, członkowie, repo, instrukcja uruchomienia) są w każdym 
 
 ### Kraków bez barier
 - [ ] Wdrożyć PR #99 (panel dostępności) na produkcję, żeby demo i nagranie pokazywały szczegóły barier
-- [ ] Nagrać mp4 ≤ 3 min (scenariusz: [`scenariusz-wideo.md`](krakow-bez-barier/scenariusz-wideo.md); automatyzacja: `scripts/record-demo.mjs`)
-- [ ] Napisy PL wypalone lub dołączone ([`.srt`](krakow-bez-barier/spootted-krakow-bez-barier.srt))
-- [ ] Film w otwartym repozytorium (np. `docs/submissions/krakow-bez-barier/spootted-krakow-bez-barier.mp4`)
+- [x] Nagrać mp4 ≤ 3 min (scenariusz: [`scenariusz-wideo.md`](krakow-bez-barier/scenariusz-wideo.md); automatyzacja: `scripts/record-demo.mjs`) — gotowe: [`spootted-krakow-bez-barier.mp4`](krakow-bez-barier/spootted-krakow-bez-barier.mp4) (2:45, 1920×1080)
+- [x] Napisy PL wypalone ([`.srt`](krakow-bez-barier/spootted-krakow-bez-barier.srt) w repo)
+- [x] Film w otwartym repozytorium (`docs/submissions/krakow-bez-barier/spootted-krakow-bez-barier.mp4`)
+- [ ] Opcjonalnie: nagrać ponownie na produkcji po wdrożeniu PR #99 (obecne nagranie z lokalnej wersji z pełnym panelem dostępności)
 - [ ] Zgłoszenie na **HackTribe** (polski)
 
 ### SMART CITY / AI
